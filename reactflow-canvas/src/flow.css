@@ -1,8 +1,12 @@
 html, body, #root, .app-root { height: 100vh; width: 100vw; }
 html, body { margin: 0; }
-.app-root { display: flex; background: rgb(17,17,17); color: rgb(243,244,246); height: 100vh; width: 100vw; }
-.sidebar { width: 240px; border-right: 1px solid #333; padding: 12px; background: #141414; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
-.canvas { flex: 1; height: 100%; }
+.app-root { display: grid; grid-template-columns: 260px 1fr 320px; grid-template-rows: 100vh; background: rgb(17,17,17); color: rgb(243,244,246); height: 100vh; width: 100vw; }
+.leftbar { border-right: 1px solid #2a2a2a; padding: 12px; background: #111; display: flex; flex-direction: column; gap: 12px; }
+.rightbar { border-left: 1px solid #2a2a2a; padding: 12px; background: #111; overflow: auto; }
+.canvas { position: relative; }
+.spacer { flex: 1; }
+.topbar { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); border: 1px solid #2a2a2a; padding: 6px 8px; border-radius: 8px; z-index: 5; }
+.topbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
 
 .palette { display: flex; flex-direction: column; gap: 8px; }
 .palette-title { font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
@@ -62,3 +66,8 @@ html, body { margin: 0; }
 .react-flow__controls button path { fill: var(--text-color); }
 .react-flow__attribution { background: rgba(200, 200, 200, 0.2); }
 .react-flow__attribution a { color: #95679e; }
+
+.context-menu { position: fixed; z-index: 10; background: #0f0f11; border: 1px solid #2a2a2a; border-radius: 6px; display: flex; flex-direction: column; min-width: 140px; overflow: hidden; }
+.context-menu button { background: transparent; color: #f3f4f6; padding: 8px 10px; text-align: left; border: none; border-bottom: 1px solid #222; }
+.context-menu button:last-child { border-bottom: none; }
+.context-menu button:hover { background: #171717; }

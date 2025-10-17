@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -7,12 +7,14 @@ import {
   MiniMap,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   addEdge,
   type Node,
   type Edge,
   type OnConnect,
   MarkerType,
   ConnectionMode,
+  SelectionMode,
 } from '@xyflow/react'
 
 import '@xyflow/react/dist/base.css'
@@ -21,6 +23,7 @@ import './flow.css'
 import { Palette } from './components/Palette'
 import { TurboEdge } from './components/TurboEdge'
 import { TurboNode, type TurboNodeData } from './components/TurboNode'
+import { FiPlay, FiZap, FiGitBranch, FiCheckCircle, FiUploadCloud, FiDownloadCloud, FiMaximize2 } from 'react-icons/fi'
 
 type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo'
 
@@ -47,6 +50,9 @@ export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const rf = useReactFlow()
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
@@ -66,10 +72,9 @@ export default function App() {
       }
 
       const id = `n-${Date.now()}`
-      const data: TurboNodeData = {
-        title: type.charAt(0).toUpperCase() + type.slice(1),
-        subtitle: type,
-      }
+      const icon =
+        type === 'input' ? <FiPlay /> : type === 'action' ? <FiZap /> : type === 'decision' ? <FiGitBranch /> : type === 'output' ? <FiCheckCircle /> : undefined
+      const data: TurboNodeData = { title: type.charAt(0).toUpperCase() + type.slice(1), subtitle: type, icon }
 
       setNodes((nds) => nds.concat({ id, type: 'turbo', position, data }))
     },
@@ -98,6 +103,15 @@ export default function App() {
 
   const onNodeClick = useCallback((_: any, node: Node<TurboNodeData>) => {
     setSelectedNodeId(node.id)
+  }, [])
+
+  const onNodeContextMenu = useCallback((evt: React.MouseEvent, node: Node<TurboNodeData>) => {
+    evt.preventDefault()
+    setContextMenu({ id: node.id, x: evt.clientX, y: evt.clientY })
+  }, [])
+
+  const onPaneClick = useCallback(() => {
+    setContextMenu(null)
   }, [])
 
   const selectedNode = useMemo(
@@ -142,39 +156,44 @@ export default function App() {
 
   return (
     <div className="app-root">
-      <div className="sidebar">
+      <div className="leftbar">
         <Palette />
-        <div className="section">
-          <div className="section-title">Properties</div>
-          {selectedNode ? (
-            <div className="form">
-              <label className="field">
-                <span>Title</span>
-                <input
-                  value={selectedNode.data?.title ?? ''}
-                  onChange={(e) => updateSelectedNode({ title: e.target.value })}
-                />
-              </label>
-              <label className="field">
-                <span>Subtitle</span>
-                <input
-                  value={selectedNode.data?.subtitle ?? ''}
-                  onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
-                />
-              </label>
-            </div>
-          ) : (
-            <div className="muted">Select a node to edit</div>
-          )}
-        </div>
+        <div className="spacer" />
         <div className="section actions">
           <button onClick={loadAgenticDemo}>Load Agentic Demo</button>
-          <button className="export" onClick={exportJson}>
-            Export JSON
-          </button>
         </div>
       </div>
       <div className="canvas" onDrop={onDrop} onDragOver={onDragOver}>
+        <div className="topbar">
+          <button onClick={() => rf.fitView()} title="Fit View">
+            <FiMaximize2 />
+            <span>Fit</span>
+          </button>
+          <button onClick={() => fileInputRef.current?.click()} title="Import JSON">
+            <FiUploadCloud />
+            <span>Import</span>
+          </button>
+          <button onClick={exportJson} title="Export JSON">
+            <FiDownloadCloud />
+            <span>Export</span>
+          </button>
+          <input
+            type="file"
+            accept="application/json"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const f = e.target.files?.[0]
+              if (!f) return
+              const txt = await f.text()
+              try {
+                const { nodes: n, edges: ed } = JSON.parse(txt)
+                setNodes(n)
+                setEdges(ed)
+              } catch {}
+            }}
+          />
+        </div>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -182,6 +201,8 @@ export default function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onNodeContextMenu={onNodeContextMenu}
+          onPaneClick={onPaneClick}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -189,6 +210,13 @@ export default function App() {
           proOptions={proOptions}
           connectionMode={ConnectionMode.Loose}
           connectOnClick
+          snapToGrid
+          snapGrid={[16, 16]}
+          selectionOnDrag
+          selectionMode={SelectionMode.Partial}
+          panOnScroll
+          panOnDrag
+          zoomOnDoubleClick={false}
           connectionLineStyle={{ stroke: '#2a8af6', strokeWidth: 2, opacity: 0.85 }}
         >
           <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
@@ -215,6 +243,76 @@ export default function App() {
             </defs>
           </svg>
         </ReactFlow>
+        {contextMenu && (
+          <div
+            className="context-menu"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+            onMouseLeave={() => setContextMenu(null)}
+          >
+            <button
+              onClick={() => {
+                const n = nodes.find((x) => x.id === contextMenu.id)
+                if (!n) return
+                const newId = `n-${Date.now()}`
+                setNodes((nds) => nds.concat({ ...n, id: newId, position: { x: n.position.x + 40, y: n.position.y + 40 } }))
+                setContextMenu(null)
+              }}
+            >
+              Duplicate
+            </button>
+            <button
+              onClick={() => {
+                const id = contextMenu.id
+                setNodes((nds) => nds.filter((n) => n.id !== id))
+                setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id))
+                setContextMenu(null)
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="rightbar">
+        <div className="section">
+          <div className="section-title">Properties</div>
+          {selectedNode ? (
+            <div className="form">
+              <label className="field">
+                <span>Title</span>
+                <input
+                  value={selectedNode.data?.title ?? ''}
+                  onChange={(e) => updateSelectedNode({ title: e.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>Type</span>
+                <select
+                  value={selectedNode.data?.subtitle ?? 'action'}
+                  onChange={(e) => {
+                    const t = e.target.value as NodeType
+                    const icon = t === 'input' ? <FiPlay /> : t === 'action' ? <FiZap /> : t === 'decision' ? <FiGitBranch /> : t === 'output' ? <FiCheckCircle /> : undefined
+                    updateSelectedNode({ subtitle: t, icon })
+                  }}
+                >
+                  <option value="input">Input</option>
+                  <option value="action">Action</option>
+                  <option value="decision">Decision</option>
+                  <option value="output">Output</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Subtitle</span>
+                <input
+                  value={selectedNode.data?.subtitle ?? ''}
+                  onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
+                />
+              </label>
+            </div>
+          ) : (
+            <div className="muted">Select a node to edit</div>
+          )}
+        </div>
       </div>
     </div>
   )
