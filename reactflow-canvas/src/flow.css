@@ -10,6 +10,14 @@ html, body { margin: 0; }
 .palette-item:hover { border-color: #888; }
 .export { margin-top: auto; }
 
+.section { border-top: 1px solid #2a2a2a; padding-top: 10px; }
+.section-title { font-size: 12px; color: #9a9a9a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+.form { display: flex; flex-direction: column; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field span { font-size: 12px; color: #bdbdbd; }
+.field input { background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; border-radius: 6px; padding: 6px 8px; }
+.muted { color: #777; font-size: 12px; }
+
 .react-flow { --bg-color: rgb(17, 17, 17); --text-color: rgb(243, 244, 246); --node-border-radius: 10px; --node-box-shadow: 10px 0 15px rgba(42, 138, 246, 0.3), -10px 0 15px rgba(233, 42, 103, 0.3); background-color: var(--bg-color); color: var(--text-color); }
 
 .react-flow__node-turbo { border-radius: var(--node-border-radius); display: flex; height: 70px; min-width: 150px; font-family: 'Fira Mono', Monospace; font-weight: 500; letter-spacing: -0.2px; box-shadow: var(--node-box-shadow); }

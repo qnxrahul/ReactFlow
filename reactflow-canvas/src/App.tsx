@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -12,6 +12,7 @@ import {
   type Edge,
   type OnConnect,
   MarkerType,
+  ConnectionMode,
 } from '@xyflow/react'
 
 import '@xyflow/react/dist/base.css'
@@ -45,6 +46,7 @@ const defaultEdgeOptions: Partial<Edge> = {
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
@@ -94,13 +96,83 @@ export default function App() {
 
   const proOptions = useMemo(() => ({ hideAttribution: true }), [])
 
+  const onNodeClick = useCallback((_: any, node: Node<TurboNodeData>) => {
+    setSelectedNodeId(node.id)
+  }, [])
+
+  const selectedNode = useMemo(
+    () => nodes.find((n) => n.id === selectedNodeId) as Node<TurboNodeData> | undefined,
+    [nodes, selectedNodeId],
+  )
+
+  const updateSelectedNode = useCallback(
+    (updates: Partial<TurboNodeData>) => {
+      if (!selectedNodeId) return
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === selectedNodeId ? { ...n, data: { ...n.data, ...updates } } : n,
+        ),
+      )
+    },
+    [selectedNodeId, setNodes],
+  )
+
+  const loadAgenticDemo = useCallback(() => {
+    const demoNodes: Node<TurboNodeData>[] = [
+      { id: 'trg', type: 'turbo', position: { x: 80, y: 140 }, data: { title: 'Trigger', subtitle: 'start' } },
+      { id: 'ingest', type: 'turbo', position: { x: 320, y: 60 }, data: { title: 'Ingest Docs', subtitle: 'loader' } },
+      { id: 'embed', type: 'turbo', position: { x: 580, y: 60 }, data: { title: 'Embed', subtitle: 'vectorize' } },
+      { id: 'retr', type: 'turbo', position: { x: 320, y: 220 }, data: { title: 'Retrieve', subtitle: 'similarity' } },
+      { id: 'plan', type: 'turbo', position: { x: 580, y: 220 }, data: { title: 'Plan', subtitle: 'agent' } },
+      { id: 'call', type: 'turbo', position: { x: 840, y: 140 }, data: { title: 'Call Tool', subtitle: 'search' } },
+      { id: 'ans', type: 'turbo', position: { x: 1100, y: 140 }, data: { title: 'Answer', subtitle: 'LLM' } },
+    ]
+    const demoEdges: Edge[] = [
+      { id: 'e1', source: 'trg', target: 'ingest' },
+      { id: 'e2', source: 'ingest', target: 'embed' },
+      { id: 'e3', source: 'trg', target: 'retr' },
+      { id: 'e4', source: 'retr', target: 'plan' },
+      { id: 'e5', source: 'embed', target: 'plan' },
+      { id: 'e6', source: 'plan', target: 'call' },
+      { id: 'e7', source: 'call', target: 'ans' },
+    ]
+    setNodes(demoNodes)
+    setEdges(demoEdges)
+  }, [setNodes, setEdges])
+
   return (
     <div className="app-root">
       <div className="sidebar">
         <Palette />
-        <button className="export" onClick={exportJson}>
-          Export JSON
-        </button>
+        <div className="section">
+          <div className="section-title">Properties</div>
+          {selectedNode ? (
+            <div className="form">
+              <label className="field">
+                <span>Title</span>
+                <input
+                  value={selectedNode.data?.title ?? ''}
+                  onChange={(e) => updateSelectedNode({ title: e.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>Subtitle</span>
+                <input
+                  value={selectedNode.data?.subtitle ?? ''}
+                  onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
+                />
+              </label>
+            </div>
+          ) : (
+            <div className="muted">Select a node to edit</div>
+          )}
+        </div>
+        <div className="section actions">
+          <button onClick={loadAgenticDemo}>Load Agentic Demo</button>
+          <button className="export" onClick={exportJson}>
+            Export JSON
+          </button>
+        </div>
       </div>
       <div className="canvas" onDrop={onDrop} onDragOver={onDragOver}>
         <ReactFlow
@@ -109,11 +181,15 @@ export default function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           proOptions={proOptions}
+          connectionMode={ConnectionMode.Loose}
+          connectOnClick
+          connectionLineStyle={{ stroke: '#2a8af6', strokeWidth: 2, opacity: 0.85 }}
         >
           <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
           <MiniMap pannable zoomable />
