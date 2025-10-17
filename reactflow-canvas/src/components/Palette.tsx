@@ -5,6 +5,7 @@ const ITEMS = [
   { type: 'action', label: 'Action' },
   { type: 'decision', label: 'Decision' },
   { type: 'output', label: 'Output' },
+  { type: 'report', label: 'AI Report' },
 ]
 
 export function Palette() {

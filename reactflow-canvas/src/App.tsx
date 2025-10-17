@@ -23,11 +23,12 @@ import './flow.css'
 import { Palette } from './components/Palette'
 import { TurboEdge } from './components/TurboEdge'
 import { TurboNode, type TurboNodeData } from './components/TurboNode'
+import { ReportNode, type ReportNodeData } from './components/ReportNode'
 import { FiPlay, FiZap, FiGitBranch, FiCheckCircle, FiUploadCloud, FiDownloadCloud, FiMaximize2 } from 'react-icons/fi'
 
-type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo'
+type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo' | 'report'
 
-const initialNodes: Node<TurboNodeData>[] = [
+const initialNodes: Node<any>[] = [
   {
     id: 'n-1',
     type: 'turbo',
@@ -38,7 +39,7 @@ const initialNodes: Node<TurboNodeData>[] = [
 
 const initialEdges: Edge[] = []
 
-const nodeTypes = { turbo: TurboNode }
+const nodeTypes = { turbo: TurboNode, report: ReportNode }
 const edgeTypes = { turbo: TurboEdge }
 
 const defaultEdgeOptions: Partial<Edge> = {
@@ -47,12 +48,12 @@ const defaultEdgeOptions: Partial<Edge> = {
 }
 
 export default function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<any>>(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const rfRef = useRef<ReactFlowInstance<Node<TurboNodeData>, Edge> | null>(null)
+  const rfRef = useRef<ReactFlowInstance<Node<any>, Edge> | null>(null)
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
@@ -72,11 +73,23 @@ export default function App() {
       }
 
       const id = `n-${Date.now()}`
-      const icon =
-        type === 'input' ? <FiPlay /> : type === 'action' ? <FiZap /> : type === 'decision' ? <FiGitBranch /> : type === 'output' ? <FiCheckCircle /> : undefined
-      const data: TurboNodeData = { title: type.charAt(0).toUpperCase() + type.slice(1), subtitle: type, icon }
-
-      setNodes((nds) => nds.concat({ id, type: 'turbo', position, data }))
+      if (type === 'report') {
+        const data: ReportNodeData = {
+          title: 'AI Report',
+          subtitle: 'summary',
+          imageSrc: 'https://picsum.photos/seed/ai-report/200/120',
+          summary: 'Detected 12 entities, 3 topics and 2 anomalies. Confidence score 0.86.',
+          chartData: [12, 7, 5, 9, 3, 11],
+          chartLabels: ['A', 'B', 'C', 'D', 'E', 'F'],
+          confidence: 0.86,
+        }
+        setNodes((nds) => nds.concat({ id, type: 'report', position, data }))
+      } else {
+        const icon =
+          type === 'input' ? <FiPlay /> : type === 'action' ? <FiZap /> : type === 'decision' ? <FiGitBranch /> : type === 'output' ? <FiCheckCircle /> : undefined
+        const data: TurboNodeData = { title: type.charAt(0).toUpperCase() + type.slice(1), subtitle: type, icon }
+        setNodes((nds) => nds.concat({ id, type: 'turbo', position, data }))
+      }
     },
     [setNodes],
   )

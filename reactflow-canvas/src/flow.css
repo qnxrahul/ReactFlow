@@ -71,3 +71,18 @@ html, body { margin: 0; }
 .context-menu button { background: transparent; color: #f3f4f6; padding: 8px 10px; text-align: left; border: none; border-bottom: 1px solid #222; }
 .context-menu button:last-child { border-bottom: none; }
 .context-menu button:hover { background: #171717; }
+
+/* Report node styling */
+.react-flow__node-report .report-node { background: #0e0e10; border: 1px solid #2a2a2a; border-radius: 12px; padding: 12px; width: 280px; color: #e5e7eb; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.react-flow__node-report .report-header { margin-bottom: 8px; }
+.react-flow__node-report .report-title { font-weight: 600; font-size: 14px; }
+.react-flow__node-report .report-subtitle { color: #9ca3af; font-size: 12px; }
+.react-flow__node-report .report-image { width: 100%; border-radius: 8px; margin: 8px 0; display: block; }
+.react-flow__node-report .report-summary { font-size: 12px; color: #cbd5e1; margin: 8px 0; }
+.react-flow__node-report .report-chart { display: flex; align-items: flex-end; gap: 8px; height: 96px; margin: 8px 0; }
+.react-flow__node-report .report-chart .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 28px; }
+.react-flow__node-report .report-chart .bar > div { width: 100%; background: linear-gradient(180deg, #2a8af6, #a853ba); border-radius: 4px; }
+.react-flow__node-report .report-chart .bar span { font-size: 10px; color: #9ca3af; }
+.react-flow__node-report .report-meter { display: flex; align-items: center; gap: 8px; }
+.react-flow__node-report .report-meter .meter-bg { flex: 1; height: 8px; border-radius: 999px; background: #1f2937; overflow: hidden; }
+.react-flow__node-report .report-meter .meter-fill { height: 100%; background: linear-gradient(90deg, #e92a67, #a853ba, #2a8af6); }
