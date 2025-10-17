@@ -1,8 +1,8 @@
-html, body, #root, .app-root { height: 100vh; }
+html, body, #root, .app-root { height: 100vh; width: 100vw; }
 html, body { margin: 0; }
-.app-root { display: flex; background: rgb(17,17,17); color: rgb(243,244,246); }
-.sidebar { width: 220px; border-right: 1px solid #333; padding: 12px; background: #141414; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
-.canvas { flex: 1; }
+.app-root { display: flex; background: rgb(17,17,17); color: rgb(243,244,246); height: 100vh; width: 100vw; }
+.sidebar { width: 240px; border-right: 1px solid #333; padding: 12px; background: #141414; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
+.canvas { flex: 1; height: 100%; }
 
 .palette { display: flex; flex-direction: column; gap: 8px; }
 .palette-title { font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
