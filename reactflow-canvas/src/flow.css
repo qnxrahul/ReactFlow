@@ -28,7 +28,19 @@ html, body { margin: 0; }
 .react-flow__node-turbo .cloud { border-radius: 100%; width: 30px; height: 30px; right: 0; position: absolute; top: 0; transform: translate(50%, -50%); display: flex; transform-origin: center center; padding: 2px; overflow: hidden; box-shadow: var(--node-box-shadow); z-index: 1; }
 .react-flow__node-turbo .cloud div { background-color: var(--bg-color); flex-grow: 1; border-radius: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
 
-.react-flow__handle { opacity: 0; }
+.react-flow__handle {
+  opacity: 0;
+  width: 10px;
+  height: 10px;
+  background: #2a8af6;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transition: opacity 0.2s ease;
+  cursor: crosshair;
+}
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+}
 .react-flow__handle.source { right: -10px; }
 .react-flow__handle.target { left: -10px; }
 .react-flow__node:focus { outline: none; }
