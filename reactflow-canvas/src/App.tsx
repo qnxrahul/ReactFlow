@@ -7,11 +7,11 @@ import {
   MiniMap,
   useNodesState,
   useEdgesState,
-  useReactFlow,
   addEdge,
   type Node,
   type Edge,
   type OnConnect,
+  type ReactFlowInstance,
   MarkerType,
   ConnectionMode,
   SelectionMode,
@@ -52,7 +52,7 @@ export default function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const rf = useReactFlow()
+  const rfRef = useRef<ReactFlowInstance<Node<TurboNodeData>, Edge> | null>(null)
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
@@ -165,7 +165,7 @@ export default function App() {
       </div>
       <div className="canvas" onDrop={onDrop} onDragOver={onDragOver}>
         <div className="topbar">
-          <button onClick={() => rf.fitView()} title="Fit View">
+          <button onClick={() => rfRef.current?.fitView()} title="Fit View">
             <FiMaximize2 />
             <span>Fit</span>
           </button>
@@ -204,6 +204,7 @@ export default function App() {
           onNodeContextMenu={onNodeContextMenu}
           onPaneClick={onPaneClick}
           fitView
+          onInit={(inst) => (rfRef.current = inst)}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
