@@ -8,6 +8,11 @@ html, body { margin: 0; }
 .topbar { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); border: 1px solid #2a2a2a; padding: 6px 8px; border-radius: 8px; z-index: 5; }
 .topbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
 
+/* top nav for router (rendered outside flow) */
+.app-nav { position: fixed; top: 8px; right: 8px; z-index: 20; display: flex; gap: 8px; }
+.app-nav a { background: rgba(0,0,0,.55); color: #e5e7eb; padding: 6px 10px; border-radius: 6px; border: 1px solid #2a2a2a; text-decoration: none; font-size: 12px; }
+.app-nav a:hover { background: rgba(0,0,0,.7); }
+
 .palette { display: flex; flex-direction: column; gap: 8px; }
 .palette-title { font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
 .palette-item { border: 1px dashed #555; padding: 8px 10px; border-radius: 8px; cursor: grab; background: #1a1a1a; }
