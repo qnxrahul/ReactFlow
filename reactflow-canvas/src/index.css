@@ -1,0 +1,7 @@
+/* Minimal base to enable full-screen canvas */
+html, body, #root {
+  height: 100vh;
+  width: 100vw;
+}
+html, body { margin: 0; }
+body { display: block; overflow: hidden; }
