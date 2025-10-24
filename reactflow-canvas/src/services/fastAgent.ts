@@ -25,7 +25,8 @@ function env(name: string): string | undefined {
 }
 
 function hasFastAgentConfig() {
-  return Boolean(env('VITE_FAST_AGENT_BASE_URL') && env('VITE_FAST_AGENT_API_KEY'))
+  // A base URL is sufficient (local Python agent may not need an API key)
+  return Boolean(env('VITE_FAST_AGENT_BASE_URL'))
 }
 
 export async function runNode(params: RunNodeParams): Promise<RunNodeResult> {
@@ -34,14 +35,14 @@ export async function runNode(params: RunNodeParams): Promise<RunNodeResult> {
   }
 
   const baseUrl = env('VITE_FAST_AGENT_BASE_URL')!
-  const apiKey = env('VITE_FAST_AGENT_API_KEY')!
+  const apiKey = env('VITE_FAST_AGENT_API_KEY')
 
   try {
     const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/agent/run`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       body: JSON.stringify({
         nodeType: params.type,
