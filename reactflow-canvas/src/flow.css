@@ -1,0 +1,112 @@
+html, body, #root, .app-root { height: 100vh; width: 100vw; }
+html, body { margin: 0; }
+.app-root { display: grid; grid-template-columns: 260px 1fr 320px; grid-template-rows: 100vh; background: rgb(17,17,17); color: rgb(243,244,246); height: 100vh; width: 100vw; }
+.leftbar { border-right: 1px solid #2a2a2a; padding: 12px; background: #111; display: flex; flex-direction: column; gap: 12px; }
+.rightbar { border-left: 1px solid #2a2a2a; padding: 12px; background: #111; overflow: auto; }
+.canvas { position: relative; }
+.spacer { flex: 1; }
+.topbar { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); border: 1px solid #2a2a2a; padding: 6px 8px; border-radius: 8px; z-index: 5; }
+.topbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
+.rightbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
+
+/* top nav for router (rendered outside flow) */
+.app-nav { position: fixed; top: 8px; right: 8px; z-index: 20; display: flex; gap: 8px; }
+.app-nav a { background: rgba(0,0,0,.55); color: #e5e7eb; padding: 6px 10px; border-radius: 6px; border: 1px solid #2a2a2a; text-decoration: none; font-size: 12px; }
+.app-nav a:hover { background: rgba(0,0,0,.7); }
+
+.palette { display: flex; flex-direction: column; gap: 8px; }
+.palette-title { font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
+.palette-item { border: 1px dashed #555; padding: 8px 10px; border-radius: 8px; cursor: grab; background: #1a1a1a; }
+.palette-item:hover { border-color: #888; }
+.export { margin-top: auto; }
+
+.section { border-top: 1px solid #2a2a2a; padding-top: 10px; }
+.section-title { font-size: 12px; color: #9a9a9a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+.form { display: flex; flex-direction: column; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field span { font-size: 12px; color: #bdbdbd; }
+.field input { background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; border-radius: 6px; padding: 6px 8px; }
+.muted { color: #777; font-size: 12px; }
+
+.react-flow { --bg-color: rgb(17, 17, 17); --text-color: rgb(243, 244, 246); --node-border-radius: 10px; --node-box-shadow: 10px 0 15px rgba(42, 138, 246, 0.3), -10px 0 15px rgba(233, 42, 103, 0.3); background-color: var(--bg-color); color: var(--text-color); }
+
+.react-flow__node-turbo { border-radius: var(--node-border-radius); display: flex; height: 70px; min-width: 150px; font-family: 'Fira Mono', Monospace; font-weight: 500; letter-spacing: -0.2px; box-shadow: var(--node-box-shadow); }
+.react-flow__node-turbo .wrapper { overflow: hidden; display: flex; padding: 2px; position: relative; border-radius: var(--node-border-radius); flex-grow: 1; }
+
+.gradient:before { content: ''; position: absolute; padding-bottom: calc(100% * 1.41421356237); width: calc(100% * 1.41421356237); background: conic-gradient(from -160deg at 50% 50%, #e92a67 0deg, #a853ba 120deg, #2a8af6 240deg, #e92a67 360deg); left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 100%; }
+.react-flow__node-turbo.selected .wrapper.gradient:before { content: ''; background: conic-gradient(from -160deg at 50% 50%, #e92a67 0deg, #a853ba 120deg, #2a8af6 240deg, rgba(42, 138, 246, 0) 360deg); animation: spinner 4s linear infinite; transform: translate(-50%, -50%) rotate(0deg); z-index: -1; }
+@keyframes spinner { 100% { transform: translate(-50%, -50%) rotate(-360deg); } }
+
+.react-flow__node-turbo .inner { background: var(--bg-color); padding: 16px 20px; border-radius: var(--node-border-radius); display: flex; flex-direction: column; justify-content: center; flex-grow: 1; position: relative; }
+.react-flow__node-turbo .icon { margin-right: 8px; }
+.react-flow__node-turbo .body { display: flex; }
+.react-flow__node-turbo .title { font-size: 16px; margin-bottom: 2px; line-height: 1; }
+.react-flow__node-turbo .subtitle { font-size: 12px; color: #777; }
+
+.react-flow__node-turbo .status { font-size: 11px; margin-top: 4px; opacity: 0.9; }
+.react-flow__node-turbo .status-running { color: #2a8af6; }
+.react-flow__node-turbo .status-success { color: #34d399; }
+.react-flow__node-turbo .status-error { color: #f87171; }
+.react-flow__node-turbo .output-preview { font-size: 11px; color: #9ca3af; margin-top: 4px; max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.react-flow__node-turbo .cloud { border-radius: 100%; width: 30px; height: 30px; right: 0; position: absolute; top: 0; transform: translate(50%, -50%); display: flex; transform-origin: center center; padding: 2px; overflow: hidden; box-shadow: var(--node-box-shadow); z-index: 1; }
+.react-flow__node-turbo .cloud div { background-color: var(--bg-color); flex-grow: 1; border-radius: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+
+.react-flow__handle {
+  opacity: 0;
+  width: 10px;
+  height: 10px;
+  background: #2a8af6;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transition: opacity 0.2s ease;
+  cursor: crosshair;
+}
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+}
+.react-flow__handle.source { right: -10px; }
+.react-flow__handle.target { left: -10px; }
+.react-flow__node:focus { outline: none; }
+
+.react-flow__edge .react-flow__edge-path { stroke: url(#edge-gradient); stroke-width: 2; stroke-opacity: 0.75; }
+
+.react-flow__controls button { background-color: var(--bg-color); color: var(--text-color); border: 1px solid #95679e; border-bottom: none; }
+.react-flow__controls button:hover { background-color: rgb(37, 37, 37); }
+.react-flow__controls button:first-child { border-radius: 5px 5px 0 0; }
+.react-flow__controls button:last-child { border-bottom: 1px solid #95679e; border-radius: 0 0 5px 5px; }
+.react-flow__controls button path { fill: var(--text-color); }
+.react-flow__attribution { background: rgba(200, 200, 200, 0.2); }
+.react-flow__attribution a { color: #95679e; }
+
+.context-menu { position: fixed; z-index: 10; background: #0f0f11; border: 1px solid #2a2a2a; border-radius: 6px; display: flex; flex-direction: column; min-width: 140px; overflow: hidden; }
+.context-menu button { background: transparent; color: #f3f4f6; padding: 8px 10px; text-align: left; border: none; border-bottom: 1px solid #222; }
+.context-menu button:last-child { border-bottom: none; }
+.context-menu button:hover { background: #171717; }
+
+/* Report node styling */
+.react-flow__node-report .report-node { background: #0e0e10; border: 1px solid #2a2a2a; border-radius: 12px; padding: 12px; width: 320px; color: #e5e7eb; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.react-flow__node-report .report-header { margin-bottom: 8px; }
+.react-flow__node-report .report-title { font-weight: 600; font-size: 14px; }
+.react-flow__node-report .report-subtitle { color: #9ca3af; font-size: 12px; }
+.react-flow__node-report .report-image { width: 100%; border-radius: 8px; margin: 8px 0; display: block; }
+.react-flow__node-report .report-summary { font-size: 12px; color: #cbd5e1; margin: 8px 0; }
+.react-flow__node-report .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.react-flow__node-report .tabs button { background: #111316; color: #e5e7eb; border: 1px solid #2a2a2a; border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+.react-flow__node-report .tabs button.active { background: #1a1d22; border-color: #3a3a3a; }
+.react-flow__node-report .report-section { display: flex; flex-direction: column; gap: 8px; }
+.react-flow__node-report .report-chart { display: flex; align-items: flex-end; gap: 8px; height: 96px; margin: 8px 0; }
+.react-flow__node-report .report-chart .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 28px; }
+.react-flow__node-report .report-chart .bar > div { width: 100%; background: linear-gradient(180deg, #2a8af6, #a853ba); border-radius: 4px; }
+.react-flow__node-report .report-chart .bar span { font-size: 10px; color: #9ca3af; }
+.react-flow__node-report .report-meter { display: flex; align-items: center; gap: 8px; }
+.react-flow__node-report .report-meter .meter-bg { flex: 1; height: 8px; border-radius: 999px; background: #1f2937; overflow: hidden; }
+.react-flow__node-report .report-meter .meter-fill { height: 100%; background: linear-gradient(90deg, #e92a67, #a853ba, #2a8af6); }
+.react-flow__node-report .actions { display: flex; gap: 8px; }
+.react-flow__node-report .actions button { background: #14161a; color: #eaeef6; border: 1px solid #2a2a2a; border-radius: 6px; padding: 6px 8px; font-size: 12px; }
+.react-flow__node-report .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.react-flow__node-report .controls .ctrl { display: flex; flex-direction: column; gap: 6px; }
+.react-flow__node-report .controls .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.react-flow__node-report .controls textarea { background: #0f1013; border: 1px solid #2a2a2a; color: #e5e7eb; border-radius: 6px; padding: 6px 8px; }
+.react-flow__node-report .accordion summary { cursor: pointer; color: #9aa2b2; }
+.react-flow__node-report .adv { display: flex; gap: 10px; margin-top: 6px; color: #c5cbd6; }
