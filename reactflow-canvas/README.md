@@ -14,16 +14,23 @@ npm run dev
 - Visit `/` for the ReactFlow canvas (Classic)
 - Visit `/fluent` for the Fluent UI demo canvas
 
-## Fast Agent Integration
+## Fast Agent Integration (local or cloud)
 
-Set the following environment variables (Vite-style):
+Set envs in `.env` (Vite-style):
 
 ```bash
-VITE_FAST_AGENT_BASE_URL=https://fast-agent.ai
+# Local Python agent (default)
+VITE_FAST_AGENT_BASE_URL=http://localhost:8000
+
+# fast-agent.ai cloud (optional)
+VITE_FAST_AGENT_BASE_URL=https://api.fast-agent.ai
 VITE_FAST_AGENT_API_KEY=sk_live_...
+VITE_FAST_AGENT_AGENT_ID=agnt_12345
+# If your workspace uses a custom path:
+VITE_FAST_AGENT_RUN_PATH=/api/v1/agents/:id/run
 ```
 
-If these are not provided, the app uses a mock that simulates outputs.
+If `VITE_FAST_AGENT_BASE_URL` is unset, the app falls back to a built-in mock.
 
 ## Execute Nodes
 

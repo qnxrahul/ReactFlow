@@ -46,31 +46,47 @@ export async function runNode(params: RunNodeParams): Promise<RunNodeResult> {
 
   const baseUrl = env('VITE_FAST_AGENT_BASE_URL')!
   const apiKey = env('VITE_FAST_AGENT_API_KEY')
+  const agentId = env('VITE_FAST_AGENT_AGENT_ID')
+  const overridePath = env('VITE_FAST_AGENT_RUN_PATH')
 
   try {
-    // eslint-disable-next-line no-console
-    console.debug('[fastAgent] POST', `${baseUrl.replace(/\/$/, '')}/api/agent/run`, { type: params.type })
-    const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/agent/run`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
-      body: JSON.stringify({
-        nodeType: params.type,
-        input: params.input,
-        context: params.context,
-      }),
-      signal: params.signal,
-    })
-
-    if (!res.ok) {
-      return simulateRun(params)
+    const url = baseUrl.replace(/\/$/, '')
+    const candidates: string[] = []
+    if (overridePath) {
+      if (agentId) candidates.push(url + overridePath.replace(':id', agentId))
+      candidates.push(url + overridePath)
+    } else if (agentId) {
+      candidates.push(`${url}/api/v1/agents/${agentId}/run`)
+      candidates.push(`${url}/agents/${agentId}/run`)
+      candidates.push(`${url}/api/agents/${agentId}/run`)
     }
+    candidates.push(`${url}/api/agent/run`)
 
-    const json = (await res.json().catch(() => ({}))) as Record<string, unknown>
-    const output = typeof json.output === 'string' ? json.output : JSON.stringify(json)
-    return { output, data: json }
+    const payload: Record<string, unknown> = agentId
+      ? { input: params.input, context: params.context }
+      : { nodeType: params.type, input: params.input, context: params.context }
+
+    for (const runUrl of candidates) {
+      // eslint-disable-next-line no-console
+      console.debug('[fastAgent] POST', runUrl, { type: params.type })
+      const res = await fetch(runUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        },
+        body: JSON.stringify(payload),
+        signal: params.signal,
+      })
+      if (res.status === 404 || res.status === 405) continue
+      if (!res.ok) return simulateRun(params)
+      const text = await res.text()
+      let json: Record<string, unknown>
+      try { json = JSON.parse(text) } catch { json = { output: text } }
+      const output = typeof json.output === 'string' ? json.output : JSON.stringify(json)
+      return { output, data: json }
+    }
+    return simulateRun(params)
   } catch {
     return simulateRun(params)
   }

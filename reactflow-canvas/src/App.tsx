@@ -208,11 +208,45 @@ export default function App() {
     // simple BFS over DAG
     const visited = new Set<string>()
     const queue: string[] = [startId]
+    const produced: Record<string, string> = {}
     while (queue.length) {
       const current = queue.shift()!
       if (visited.has(current)) continue
       visited.add(current)
-      await executeNode(current)
+      // determine input from predecessors' outputs (concat newest)
+      const preds = edges.filter((e) => e.target === current).map((e) => e.source)
+      const input = preds.map((p) => produced[p]).filter(Boolean).join('\n') || undefined
+      const n = nodes.find((x) => x.id === current)
+      if (n && n.type === 'turbo') {
+        const nodeType = (n.data as TurboNodeData)?.subtitle ?? 'action'
+        setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'running' } }) : x))
+        try {
+          const res = await runNode({ type: nodeType, input })
+          produced[current] = res.output
+          setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'success', output: res.output } }) : x))
+          // push to connected report nodes
+          const targets = edges.filter((e) => e.source === current).map((e) => e.target)
+          setNodes((nds) => nds.map((x) => {
+            if (x.type === 'report' && targets.includes(x.id)) {
+              const rd = (x.data as ReportNodeData) ?? ({} as ReportNodeData)
+              return {
+                ...x,
+                data: {
+                  ...rd,
+                  summary: res.output,
+                  selectedTab: rd.selectedTab ?? 'summary',
+                  chartLabels: rd.chartLabels ?? ['A','B','C','D','E','F'],
+                  chartData: (rd.chartLabels ?? ['A','B','C','D','E','F']).map(() => Math.max(2, Math.round(Math.random() * 12))),
+                  confidence: rd.confidence ?? Math.round((0.65 + Math.random() * 0.3) * 100) / 100,
+                } as ReportNodeData,
+              }
+            }
+            return x
+          }))
+        } catch (e) {
+          setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'error', output: String(e) } }) : x))
+        }
+      }
       const next = edges.filter((e) => e.source === current).map((e) => e.target)
       queue.push(...next)
     }
