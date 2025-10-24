@@ -13,6 +13,7 @@ export type RunNodeResult = {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+let didWarnMock = false
 
 function env(name: string): string | undefined {
   try {
@@ -30,7 +31,16 @@ function hasFastAgentConfig() {
 }
 
 export async function runNode(params: RunNodeParams): Promise<RunNodeResult> {
+  const forceNetwork = (env('VITE_FAST_AGENT_FORCE_NETWORK') || '').toLowerCase() === 'true'
   if (!hasFastAgentConfig()) {
+    if (forceNetwork) {
+      throw new Error('VITE_FAST_AGENT_BASE_URL is not set but VITE_FAST_AGENT_FORCE_NETWORK=true')
+    }
+    if (!didWarnMock) {
+      // eslint-disable-next-line no-console
+      console.warn('[fastAgent] No VITE_FAST_AGENT_BASE_URL set; using mock responses')
+      didWarnMock = true
+    }
     return simulateRun(params)
   }
 
@@ -38,6 +48,8 @@ export async function runNode(params: RunNodeParams): Promise<RunNodeResult> {
   const apiKey = env('VITE_FAST_AGENT_API_KEY')
 
   try {
+    // eslint-disable-next-line no-console
+    console.debug('[fastAgent] POST', `${baseUrl.replace(/\/$/, '')}/api/agent/run`, { type: params.type })
     const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/agent/run`, {
       method: 'POST',
       headers: {
