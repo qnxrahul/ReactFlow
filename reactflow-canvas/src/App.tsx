@@ -25,6 +25,7 @@ import { TurboEdge } from './components/TurboEdge'
 import { TurboNode, type TurboNodeData } from './components/TurboNode'
 import { ReportNode, type ReportNodeData } from './components/ReportNode'
 import { FiPlay, FiZap, FiGitBranch, FiCheckCircle, FiUploadCloud, FiDownloadCloud, FiMaximize2 } from 'react-icons/fi'
+import { runNode } from './services/fastAgent'
 
 type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo' | 'report'
 
@@ -146,13 +147,14 @@ export default function App() {
 
   const loadAgenticDemo = useCallback(() => {
     const demoNodes: Node<TurboNodeData>[] = [
-      { id: 'trg', type: 'turbo', position: { x: 80, y: 140 }, data: { title: 'Trigger', subtitle: 'start' } },
-      { id: 'ingest', type: 'turbo', position: { x: 320, y: 60 }, data: { title: 'Ingest Docs', subtitle: 'loader' } },
-      { id: 'embed', type: 'turbo', position: { x: 580, y: 60 }, data: { title: 'Embed', subtitle: 'vectorize' } },
-      { id: 'retr', type: 'turbo', position: { x: 320, y: 220 }, data: { title: 'Retrieve', subtitle: 'similarity' } },
-      { id: 'plan', type: 'turbo', position: { x: 580, y: 220 }, data: { title: 'Plan', subtitle: 'agent' } },
-      { id: 'call', type: 'turbo', position: { x: 840, y: 140 }, data: { title: 'Call Tool', subtitle: 'search' } },
-      { id: 'ans', type: 'turbo', position: { x: 1100, y: 140 }, data: { title: 'Answer', subtitle: 'LLM' } },
+      { id: 'trg', type: 'turbo', position: { x: 80, y: 140 }, data: { title: 'Trigger', subtitle: 'start', status: 'idle' } },
+      { id: 'ingest', type: 'turbo', position: { x: 320, y: 60 }, data: { title: 'Ingest Docs', subtitle: 'ingest', status: 'idle' } },
+      { id: 'embed', type: 'turbo', position: { x: 580, y: 60 }, data: { title: 'Embed', subtitle: 'vectorize', status: 'idle' } },
+      { id: 'retr', type: 'turbo', position: { x: 320, y: 220 }, data: { title: 'Retrieve', subtitle: 'similarity', status: 'idle' } },
+      { id: 'plan', type: 'turbo', position: { x: 580, y: 220 }, data: { title: 'Plan', subtitle: 'agent', status: 'idle' } },
+      { id: 'call', type: 'turbo', position: { x: 840, y: 140 }, data: { title: 'Call Tool', subtitle: 'search', status: 'idle' } },
+      { id: 'ans', type: 'turbo', position: { x: 1100, y: 140 }, data: { title: 'Answer', subtitle: 'LLM', status: 'idle' } },
+      { id: 'rep', type: 'report', position: { x: 1360, y: 100 }, data: { title: 'AI Report', subtitle: 'summary', imageSrc: 'https://picsum.photos/seed/ai-report/200/120', summary: '', chartLabels: ['A','B','C','D','E','F'], chartData: [6,3,5,7,4,6], confidence: 0.8 } as ReportNodeData },
     ]
     const demoEdges: Edge[] = [
       { id: 'e1', source: 'trg', target: 'ingest' },
@@ -162,10 +164,93 @@ export default function App() {
       { id: 'e5', source: 'embed', target: 'plan' },
       { id: 'e6', source: 'plan', target: 'call' },
       { id: 'e7', source: 'call', target: 'ans' },
+      { id: 'e8', source: 'ans', target: 'rep' },
     ]
     setNodes(demoNodes)
     setEdges(demoEdges)
   }, [setNodes, setEdges])
+
+  // Execute a single node via fast-agent, update status/output
+  const executeNode = useCallback(async (nodeId: string) => {
+    const n = nodes.find((x) => x.id === nodeId)
+    if (!n || n.type !== 'turbo') return
+    const nodeType = (n.data as TurboNodeData)?.subtitle ?? 'action'
+    setNodes((nds) => nds.map((x) => x.id === nodeId ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'running' } }) : x))
+    try {
+      const res = await runNode({ type: nodeType })
+      setNodes((nds) => {
+        const updated = nds.map((x) => x.id === nodeId ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'success', output: res.output } }) : x)
+        // Also push output to any connected Report nodes
+        const targets = edges.filter((e) => e.source === nodeId).map((e) => e.target)
+        return updated.map((x) => {
+          if (x.type === 'report' && targets.includes(x.id)) {
+            const rd = (x.data as ReportNodeData) ?? ({} as ReportNodeData)
+            const newData: ReportNodeData = {
+              ...rd,
+              summary: res.output,
+              selectedTab: rd.selectedTab ?? 'summary',
+              chartLabels: rd.chartLabels ?? ['A','B','C','D','E','F'],
+              chartData: (rd.chartLabels ?? ['A','B','C','D','E','F']).map(() => Math.max(2, Math.round(Math.random() * 12))),
+              confidence: rd.confidence ?? Math.round((0.65 + Math.random() * 0.3) * 100) / 100,
+            }
+            return { ...x, data: newData }
+          }
+          return x
+        })
+      })
+    } catch (e) {
+      setNodes((nds) => nds.map((x) => x.id === nodeId ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'error', output: String(e) } }) : x))
+    }
+  }, [nodes, edges, setNodes])
+
+  // Execute forward along edges starting from a node
+  const executeFrom = useCallback(async (startId: string) => {
+    // simple BFS over DAG
+    const visited = new Set<string>()
+    const queue: string[] = [startId]
+    const produced: Record<string, string> = {}
+    while (queue.length) {
+      const current = queue.shift()!
+      if (visited.has(current)) continue
+      visited.add(current)
+      // determine input from predecessors' outputs (concat newest)
+      const preds = edges.filter((e) => e.target === current).map((e) => e.source)
+      const input = preds.map((p) => produced[p]).filter(Boolean).join('\n') || undefined
+      const n = nodes.find((x) => x.id === current)
+      if (n && n.type === 'turbo') {
+        const nodeType = (n.data as TurboNodeData)?.subtitle ?? 'action'
+        setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'running' } }) : x))
+        try {
+          const res = await runNode({ type: nodeType, input })
+          produced[current] = res.output
+          setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'success', output: res.output } }) : x))
+          // push to connected report nodes
+          const targets = edges.filter((e) => e.source === current).map((e) => e.target)
+          setNodes((nds) => nds.map((x) => {
+            if (x.type === 'report' && targets.includes(x.id)) {
+              const rd = (x.data as ReportNodeData) ?? ({} as ReportNodeData)
+              return {
+                ...x,
+                data: {
+                  ...rd,
+                  summary: res.output,
+                  selectedTab: rd.selectedTab ?? 'summary',
+                  chartLabels: rd.chartLabels ?? ['A','B','C','D','E','F'],
+                  chartData: (rd.chartLabels ?? ['A','B','C','D','E','F']).map(() => Math.max(2, Math.round(Math.random() * 12))),
+                  confidence: rd.confidence ?? Math.round((0.65 + Math.random() * 0.3) * 100) / 100,
+                } as ReportNodeData,
+              }
+            }
+            return x
+          }))
+        } catch (e) {
+          setNodes((nds) => nds.map((x) => x.id === current ? ({ ...x, data: { ...(x.data as TurboNodeData), status: 'error', output: String(e) } }) : x))
+        }
+      }
+      const next = edges.filter((e) => e.source === current).map((e) => e.target)
+      queue.push(...next)
+    }
+  }, [edges, executeNode])
 
   return (
     <div className="app-root">
@@ -214,6 +299,7 @@ export default function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onNodeDoubleClick={(_, n) => executeFrom(n.id)}
           onNodeContextMenu={onNodeContextMenu}
           onPaneClick={onPaneClick}
           fitView
@@ -276,6 +362,22 @@ export default function App() {
             </button>
             <button
               onClick={() => {
+                executeNode(contextMenu.id)
+                setContextMenu(null)
+              }}
+            >
+              Run Node
+            </button>
+            <button
+              onClick={() => {
+                executeFrom(contextMenu.id)
+                setContextMenu(null)
+              }}
+            >
+              Run From Here
+            </button>
+            <button
+              onClick={() => {
                 const id = contextMenu.id
                 setNodes((nds) => nds.filter((n) => n.id !== id))
                 setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id))
@@ -322,6 +424,10 @@ export default function App() {
                   onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
                 />
               </label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => selectedNode && executeNode(selectedNode.id)}>Run</button>
+                <button onClick={() => selectedNode && executeFrom(selectedNode.id)}>Run From Here</button>
+              </div>
             </div>
           ) : (
             <div className="muted">Select a node to edit</div>

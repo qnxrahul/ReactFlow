@@ -14,6 +14,7 @@ export type ReportNodeData = {
   showChart?: boolean
   showSummary?: boolean
   notes?: string
+  fromNodeOutputId?: string
 }
 
 export const ReportNode = memo(({ id, data }: NodeProps<Node<ReportNodeData>>) => {
@@ -74,7 +75,11 @@ export const ReportNode = memo(({ id, data }: NodeProps<Node<ReportNodeData>>) =
           {showImage && data.imageSrc && (
             <img src={data.imageSrc} alt={data.title} className="report-image" />
           )}
-          {showSummary && data.summary && <div className="report-summary">{data.summary}</div>}
+          {showSummary && (
+            <div className="report-summary">
+              {data.summary || 'No summary yet. Run upstream nodes to populate output.'}
+            </div>
+          )}
           {typeof data.confidence === 'number' && (
             <div className="report-meter">
               <div className="meter-bg">

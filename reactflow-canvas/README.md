@@ -1,8 +1,46 @@
-# React + TypeScript + Vite
+# ReactFlow Agentic Canvas + Fast Agent
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An agentic workflow canvas built on ReactFlow with a Fluent UI variant, extended to execute nodes via [Fast Agent](https://fast-agent.ai/).
 
-Currently, two official plugins are available:
+## Getting Started
+
+```bash
+cd reactflow-canvas
+npm install
+cp .env.example .env # set your Fast Agent creds
+npm run dev
+```
+
+- Visit `/` for the ReactFlow canvas (Classic)
+- Visit `/fluent` for the Fluent UI demo canvas
+
+## Fast Agent Integration (local or cloud)
+
+Set envs in `.env` (Vite-style):
+
+```bash
+# Local Python agent (default)
+VITE_FAST_AGENT_BASE_URL=http://localhost:8000
+
+# fast-agent.ai cloud (optional)
+VITE_FAST_AGENT_BASE_URL=https://api.fast-agent.ai
+VITE_FAST_AGENT_API_KEY=sk_live_...
+VITE_FAST_AGENT_AGENT_ID=agnt_12345
+# If your workspace uses a custom path:
+VITE_FAST_AGENT_RUN_PATH=/api/v1/agents/:id/run
+```
+
+If `VITE_FAST_AGENT_BASE_URL` is unset, the app falls back to a built-in mock.
+
+## Execute Nodes
+
+- Right-click a node → Run Node or Run From Here
+- Select a node and use the buttons in the Properties panel
+- The node status and output preview appear on the node
+
+---
+
+This project uses Vite + React + TypeScript. Useful links:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh

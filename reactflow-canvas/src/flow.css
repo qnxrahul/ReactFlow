@@ -7,6 +7,7 @@ html, body { margin: 0; }
 .spacer { flex: 1; }
 .topbar { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); border: 1px solid #2a2a2a; padding: 6px 8px; border-radius: 8px; z-index: 5; }
 .topbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
+.rightbar button { display: inline-flex; align-items: center; gap: 6px; background: #101010; color: #f3f4f6; border: 1px solid #2a2a2a; padding: 6px 10px; border-radius: 6px; }
 
 /* top nav for router (rendered outside flow) */
 .app-nav { position: fixed; top: 8px; right: 8px; z-index: 20; display: flex; gap: 8px; }
@@ -41,6 +42,12 @@ html, body { margin: 0; }
 .react-flow__node-turbo .body { display: flex; }
 .react-flow__node-turbo .title { font-size: 16px; margin-bottom: 2px; line-height: 1; }
 .react-flow__node-turbo .subtitle { font-size: 12px; color: #777; }
+
+.react-flow__node-turbo .status { font-size: 11px; margin-top: 4px; opacity: 0.9; }
+.react-flow__node-turbo .status-running { color: #2a8af6; }
+.react-flow__node-turbo .status-success { color: #34d399; }
+.react-flow__node-turbo .status-error { color: #f87171; }
+.react-flow__node-turbo .output-preview { font-size: 11px; color: #9ca3af; margin-top: 4px; max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .react-flow__node-turbo .cloud { border-radius: 100%; width: 30px; height: 30px; right: 0; position: absolute; top: 0; transform: translate(50%, -50%); display: flex; transform-origin: center center; padding: 2px; overflow: hidden; box-shadow: var(--node-box-shadow); z-index: 1; }
 .react-flow__node-turbo .cloud div { background-color: var(--bg-color); flex-grow: 1; border-radius: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
