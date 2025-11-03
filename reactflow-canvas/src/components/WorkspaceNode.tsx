@@ -2,27 +2,20 @@ import type { NodeProps } from '@xyflow/react'
 
 export type WorkspaceNodeData = {
   title: string
-  description: string
-  owner: string
-  status: string
-  accent?: string
+  meta: string
+  color?: string
 }
 
 export function WorkspaceNode({ data, selected }: NodeProps<WorkspaceNodeData>) {
-  const accent = data.accent ?? '#4f46e5'
+  const color = data.color ?? '#5f79c6'
 
   return (
-    <div
-      className={`workspace-node ${selected ? 'workspace-node--selected' : ''}`}
-      style={{ borderTopColor: accent }}
-    >
-      <div className="workspace-node__title">{data.title}</div>
-      <div className="workspace-node__meta">
-        <span>{data.description}</span>
-        <span className="workspace-node__dot" />
-        <span>{data.owner}</span>
+    <div className={`workspace-node ${selected ? 'workspace-node--selected' : ''}`}>
+      <div className="workspace-node__square" style={{ backgroundColor: color }} />
+      <div className="workspace-node__caption">
+        <div className="workspace-node__title">{data.title}</div>
+        <div className="workspace-node__meta">{data.meta}</div>
       </div>
-      <div className="workspace-node__status">{data.status}</div>
     </div>
   )
 }

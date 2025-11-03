@@ -7,7 +7,7 @@ import {
   type Node,
   SelectionMode,
 } from '@xyflow/react'
-import { FiEdit3, FiExternalLink, FiPlay, FiTrash2 } from 'react-icons/fi'
+import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
 
@@ -15,55 +15,47 @@ type WorkspaceNodeType = Node<WorkspaceNodeData>
 
 const initialNodes: WorkspaceNodeType[] = [
   {
-    id: 'space-1',
+    id: 'space-q1',
     type: 'workspace',
-    position: { x: 260, y: 120 },
+    position: { x: 320, y: 110 },
     data: {
-      title: 'GPT-45',
-      description: 'Ideation space',
-      owner: 'Marketing',
-      status: '3 active threads',
-      accent: '#6366f1',
-    },
+      title: 'Q1 FY25',
+      meta: '5 boards, 2 cards, 10 files',
+      color: '#5f79c6',
+    } satisfies WorkspaceNodeData,
     draggable: false,
   },
   {
-    id: 'space-2',
+    id: 'space-q2',
     type: 'workspace',
-    position: { x: 520, y: 60 },
+    position: { x: 540, y: 60 },
     data: {
-      title: 'GPT-95',
-      description: 'Draft review',
-      owner: 'Product',
-      status: 'Awaiting feedback',
-      accent: '#0ea5e9',
-    },
+      title: 'Q2 FY25',
+      meta: '5 boards, 2 cards, 10 files',
+      color: '#5f79c6',
+    } satisfies WorkspaceNodeData,
     draggable: false,
   },
   {
-    id: 'space-3',
+    id: 'space-q3',
     type: 'workspace',
-    position: { x: 520, y: 220 },
+    position: { x: 320, y: 260 },
     data: {
-      title: 'GPT-25',
-      description: 'Customer intel',
-      owner: 'CX team',
-      status: 'Synced today',
-      accent: '#f97316',
-    },
+      title: 'Q3 FY25',
+      meta: '5 boards, 2 cards, 10 files',
+      color: '#5f79c6',
+    } satisfies WorkspaceNodeData,
     draggable: false,
   },
   {
-    id: 'space-4',
+    id: 'space-q4',
     type: 'workspace',
-    position: { x: 780, y: 140 },
+    position: { x: 760, y: 140 },
     data: {
-      title: 'GPT-05',
-      description: 'Experiment',
-      owner: 'Research',
-      status: 'New prompts ready',
-      accent: '#22c55e',
-    },
+      title: 'Q4 FY25',
+      meta: '5 boards, 2 cards, 10 files',
+      color: '#5f79c6',
+    } satisfies WorkspaceNodeData,
     draggable: false,
   },
 ]
@@ -71,16 +63,23 @@ const initialNodes: WorkspaceNodeType[] = [
 const edges: Edge[] = []
 
 const menuItems = [
-  { id: 'open', icon: <FiExternalLink />, label: 'Open space' },
-  { id: 'rename', icon: <FiEdit3 />, label: 'Rename' },
-  { id: 'start', icon: <FiPlay />, label: 'Start workflow' },
-  { id: 'delete', icon: <FiTrash2 />, label: 'Remove' },
+  'Create board',
+  'Add task',
+  'Add connection',
+  'Copy',
+  'Paste here',
+  'Fit Page >',
+  'Option',
+  'Option',
+  'Option',
+  'Invite/Share',
+  'Lock/Unlock',
 ]
 
 const nodeTypes = { workspace: WorkspaceNode }
 
 export default function WorkspaceCanvas() {
-  const [selectedId, setSelectedId] = useState<string>('space-2')
+  const [selectedId, setSelectedId] = useState<string>('space-q2')
   const nodes = useMemo(
     () =>
       initialNodes.map((n) => ({
@@ -98,35 +97,34 @@ export default function WorkspaceCanvas() {
 
       <div className="workspace-body">
         <nav className="workspace-rail" aria-label="Primary">
-          {['??', '??', '???', '??'].map((glyph, idx) => (
+          {[FiGrid, FiCompass, FiLayers, FiSettings].map((Icon, idx) => (
             <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
-              <span style={{ fontSize: 18 }}>{glyph}</span>
+              <Icon />
             </button>
           ))}
         </nav>
 
         <aside className="workspace-sidebar">
-          <h2>Engagement Spaces</h2>
-          <ul>
-            <li>
-              <strong>GPT-45</strong>
-              <span>Marketing launch messaging</span>
-              <span>Last updated 2h ago</span>
-            </li>
-            <li>
-              <strong>GPT-95</strong>
-              <span>Draft feedback loop</span>
-              <span>5 collaborators inside</span>
-            </li>
-            <li>
-              <strong>GPT-05</strong>
-              <span>Research experiments</span>
-              <span>Private ? 3 automations</span>
-            </li>
+          <h2>To do list</h2>
+          <ul className="workspace-tasks">
+            {['Task label', 'Task label', 'Task label'].map((label, idx) => (
+              <li key={idx} className="workspace-task">
+                <input type="checkbox" aria-label={label} />
+                <span>{label}</span>
+              </li>
+            ))}
           </ul>
+          <div className="workspace-sidebar-links">
+            <button type="button">Send for digital signature</button>
+            <button type="button">Updates</button>
+          </div>
         </aside>
 
         <div className="workspace-canvas">
+          <div className="workspace-board-top">
+            <div>Engagement > Spaces</div>
+            <span>Frame 2110704767</span>
+          </div>
           <div className="workspace-flow">
             <ReactFlow
               nodes={nodes}
@@ -134,6 +132,7 @@ export default function WorkspaceCanvas() {
               nodeTypes={nodeTypes}
               proOptions={{ hideAttribution: true }}
               defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+              style={{ width: '100%', height: '100%' }}
               zoomOnScroll={false}
               zoomOnPinch={false}
               zoomOnDoubleClick={false}
@@ -145,34 +144,32 @@ export default function WorkspaceCanvas() {
               translateExtent={[[-200, -200], [1600, 900]]}
               selectionMode={SelectionMode.Partial}
               onNodeClick={(_, node) => setSelectedId(node.id)}
-              onPaneClick={() => setSelectedId('space-2')}
+              onPaneClick={() => setSelectedId('space-q2')}
               fitView
               fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
             >
-              <Background variant={BackgroundVariant.Dots} gap={40} size={1} color="#cbd5f5" />
+              <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />
             </ReactFlow>
           </div>
 
           <div className="workspace-action-bar">
-            <button type="button">Create space</button>
-            <button type="button">Duplicate</button>
-            <button type="button">Share</button>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <span key={idx} className="workspace-action-dot">+</span>
+            ))}
+            <span className="workspace-action-label">[Action bar]</span>
           </div>
 
           <div className="workspace-chat">
-            <label htmlFor="workspace-chat-input">Ask the assistant</label>
-            <textarea id="workspace-chat-input" placeholder="Describe what the new space should do..." />
+            <label htmlFor="workspace-chat-input">Chat about the next step in the process</label>
+            <textarea id="workspace-chat-input" placeholder="Ask me anything..." />
             <button type="button">Send</button>
           </div>
 
           <div className="workspace-context-menu">
             <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
             <ul>
-              {menuItems.map((item) => (
-                <li key={item.id}>
-                  <span>{item.icon}</span>
-                  {item.label}
-                </li>
+              {menuItems.map((item, idx) => (
+                <li key={`${item}-${idx}`}>{item}</li>
               ))}
             </ul>
           </div>
