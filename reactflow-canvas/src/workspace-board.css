@@ -261,6 +261,8 @@
   gap: 14px;
   text-align: center;
   color: #0f172a;
+  cursor: pointer;
+  user-select: none;
 }
 
 .workspace-node::before {
@@ -309,9 +311,7 @@
 
 .workspace-context-menu {
   position: absolute;
-  top: 48%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-12px, -12px);
   width: 240px;
   border-radius: 16px;
   background: #101f3d;
@@ -319,6 +319,8 @@
   border: 1px solid rgba(99, 102, 241, 0.35);
   color: #eef2ff;
   overflow: hidden;
+  pointer-events: auto;
+  z-index: 20;
 }
 
 .workspace-context-menu header {

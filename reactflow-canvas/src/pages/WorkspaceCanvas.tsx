@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -80,6 +80,8 @@ const nodeTypes = { workspace: WorkspaceNode }
 
 export default function WorkspaceCanvas() {
   const [selectedId, setSelectedId] = useState<string>('space-q2')
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
+  const canvasRef = useRef<HTMLDivElement | null>(null)
   const nodes = useMemo(
     () =>
       initialNodes.map((n) => ({
@@ -87,6 +89,29 @@ export default function WorkspaceCanvas() {
         selected: n.id === selectedId,
       })),
     [selectedId],
+  )
+
+  const closeMenu = useCallback(() => setMenuPosition(null), [])
+
+  useEffect(() => {
+    const handler = (evt: KeyboardEvent) => {
+      if (evt.key === 'Escape') closeMenu()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [closeMenu])
+
+  const handlePaneContextMenu = useCallback(
+    (evt: ReactMouseEvent) => {
+      evt.preventDefault()
+      const bounds = canvasRef.current?.getBoundingClientRect()
+      if (!bounds) return
+      setMenuPosition({
+        x: evt.clientX - bounds.left,
+        y: evt.clientY - bounds.top,
+      })
+    },
+    [],
   )
 
   return (
@@ -120,7 +145,11 @@ export default function WorkspaceCanvas() {
           </div>
         </aside>
 
-        <div className="workspace-canvas">
+        <div
+          className="workspace-canvas"
+          ref={canvasRef}
+          onClick={() => closeMenu()}
+        >
           <div className="workspace-board-top">
             <div>Engagement > Spaces</div>
             <span>Frame 2110704767</span>
@@ -143,8 +172,18 @@ export default function WorkspaceCanvas() {
               edgesUpdatable={false}
               translateExtent={[[-200, -200], [1600, 900]]}
               selectionMode={SelectionMode.Partial}
-              onNodeClick={(_, node) => setSelectedId(node.id)}
-              onPaneClick={() => setSelectedId('space-q2')}
+              onNodeClick={(_, node) => {
+                setSelectedId(node.id)
+                closeMenu()
+              }}
+              onNodeContextMenu={(evt) => {
+                evt.preventDefault()
+                closeMenu()
+              }}
+              onPaneClick={() => {
+                closeMenu()
+              }}
+              onPaneContextMenu={handlePaneContextMenu}
               fitView
               fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
             >
@@ -165,14 +204,21 @@ export default function WorkspaceCanvas() {
             <button type="button">Send</button>
           </div>
 
-          <div className="workspace-context-menu">
-            <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
-            <ul>
-              {menuItems.map((item, idx) => (
-                <li key={`${item}-${idx}`}>{item}</li>
-              ))}
-            </ul>
-          </div>
+          {menuPosition && (
+            <div
+              className="workspace-context-menu"
+              style={{ left: menuPosition.x, top: menuPosition.y }}
+              onMouseLeave={closeMenu}
+              onClick={(evt) => evt.stopPropagation()}
+            >
+              <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
+              <ul>
+                {menuItems.map((item, idx) => (
+                  <li key={`${item}-${idx}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
