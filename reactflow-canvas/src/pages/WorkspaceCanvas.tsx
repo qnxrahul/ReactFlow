@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Background,
   BackgroundVariant,
@@ -79,6 +80,7 @@ const menuItems = [
 const nodeTypes = { workspace: WorkspaceNode }
 
 export default function WorkspaceCanvas() {
+  const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string>('space-q2')
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
@@ -112,6 +114,16 @@ export default function WorkspaceCanvas() {
       })
     },
     [],
+  )
+
+  const handleMenuSelect = useCallback(
+    (item: string) => {
+      closeMenu()
+      if (item === 'Create board') {
+        navigate('/workspace/new')
+      }
+    },
+    [closeMenu, navigate],
   )
 
   return (
@@ -208,13 +220,12 @@ export default function WorkspaceCanvas() {
             <div
               className="workspace-context-menu"
               style={{ left: menuPosition.x, top: menuPosition.y }}
-              onMouseLeave={closeMenu}
               onClick={(evt) => evt.stopPropagation()}
             >
               <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
               <ul>
                 {menuItems.map((item, idx) => (
-                  <li key={`${item}-${idx}`}>{item}</li>
+                  <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
                 ))}
               </ul>
             </div>

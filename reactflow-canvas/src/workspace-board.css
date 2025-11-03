@@ -22,10 +22,27 @@
   letter-spacing: -0.01em;
 }
 
+.workspace-hero--new {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-hero--new p {
+  margin: 0;
+  font-size: 15px;
+  color: #cbd5f5;
+  max-width: 620px;
+}
+
 .workspace-body {
   display: grid;
   grid-template-columns: 72px 280px 1fr;
   min-height: calc(100vh - 84px);
+}
+
+.workspace-body--single {
+  grid-template-columns: 72px 1fr;
 }
 
 .workspace-rail {
@@ -114,6 +131,12 @@
   padding: 0;
 }
 
+.workspace-new-canvas {
+  position: relative;
+  background: linear-gradient(180deg, #102142 0%, #102142 58px, #f6f8ff 58px, #f6f8ff 100%);
+  overflow: hidden;
+}
+
 .workspace-summary {
   list-style: none;
   margin: 0;
@@ -175,6 +198,10 @@
 
 .workspace-flow .react-flow {
   background: transparent;
+}
+
+.workspace-flow--blank {
+  min-height: calc(100vh - 84px);
 }
 
 .workspace-action-bar {
@@ -253,6 +280,11 @@
   cursor: pointer;
 }
 
+.workspace-chat--new {
+  background: #eef1ff;
+  border: 1px solid rgba(79, 70, 229, 0.35);
+}
+
 .workspace-node {
   position: relative;
   display: flex;
@@ -309,6 +341,88 @@
   color: #4b5563;
 }
 
+.workspace-template-card {
+  position: absolute;
+  top: 24%;
+  right: 120px;
+  width: 340px;
+  background: white;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+  gap: 18px;
+  z-index: 12;
+}
+
+.workspace-template-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.workspace-template-header button {
+  border: none;
+  background: rgba(79, 70, 229, 0.12);
+  color: #4f46e5;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.workspace-template-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-template-item {
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(248, 250, 255, 0.85);
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.workspace-template-item--active {
+  border-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.2);
+}
+
+.workspace-template-item small {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.workspace-template-more {
+  font-size: 13px;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+.workspace-template-cta {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .workspace-context-menu {
   position: absolute;
   transform: translate(-12px, -12px);
@@ -338,6 +452,7 @@
 .workspace-context-menu li {
   padding: 10px 18px;
   font-size: 14px;
+  cursor: pointer;
 }
 
 .workspace-context-menu li:hover {
