@@ -11,27 +11,25 @@ import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
 
-type UploadNode = Edge['data']
-
 const initialUploadNodes = [
   {
     id: 'todo-lane',
     type: 'uploadLane',
-    position: { x: 340, y: 0 },
+    position: { x: 360, y: 20 },
     data: { title: 'Items to be tested', files: ['theprojektis-design-tokens.zip'] } satisfies UploadLaneData,
     draggable: false,
   },
   {
     id: 'sample-lane',
     type: 'uploadLane',
-    position: { x: 620, y: 0 },
+    position: { x: 660, y: 20 },
     data: { title: 'Sample Documentation', files: [] } satisfies UploadLaneData,
     draggable: false,
   },
   {
     id: 'mapping-lane',
     type: 'uploadLane',
-    position: { x: 900, y: 0 },
+    position: { x: 960, y: 20 },
     data: { title: 'Document Mapping', files: [] } satisfies UploadLaneData,
     draggable: false,
   },
@@ -41,8 +39,8 @@ const initialEdges: Edge[] = []
 
 const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
 
-const templates = [
-  { label: 'Empty board', description: 'Start from scratch', active: true },
+const templateOptions = [
+  { label: 'Empty board', description: 'Start from scratch' },
   { label: 'Project plan', description: 'Outline deliverables' },
   { label: 'Account response report', description: 'Summarise key updates' },
   { label: 'Walkthrough', description: 'Guide stakeholders' },
@@ -50,11 +48,23 @@ const templates = [
   { label: 'Weekly plan', description: 'Sprint priorities' },
 ]
 
+const todoItems = [
+  'Upload items to be test',
+  'Review data extraction',
+  'Approve data extraction',
+  'Confirm document mapping',
+  'Create workpaper',
+  'Review work paper',
+  'Approve work paper',
+]
+
 const nodeTypes = { uploadLane: UploadLaneNode }
 
 export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(templateOptions[0].label)
+  const [templatePickerVisible, setTemplatePickerVisible] = useState(true)
 
   const handleFilesChange = useCallback(
     (laneId: string, files: string[]) => {
@@ -63,7 +73,10 @@ export default function WorkspaceNewBoard() {
           node.id === laneId
             ? {
                 ...node,
-                data: { ...node.data, files } as UploadLaneData,
+                data: {
+                  ...(node.data as UploadLaneData),
+                  files: Array.from(new Set([...(node.data as UploadLaneData).files, ...files])),
+                } as UploadLaneData,
               }
             : node,
         ),
@@ -92,6 +105,8 @@ export default function WorkspaceNewBoard() {
     [nodes, handleFilesChange],
   )
 
+  const boardVisible = !templatePickerVisible
+
   return (
     <div className="workspace-page workspace-page--new">
       <header className="workspace-hero workspace-hero--new">
@@ -113,44 +128,63 @@ export default function WorkspaceNewBoard() {
             <div>Engagement &gt; Spaces &gt; New board</div>
             <span>Frame 2110704769</span>
           </div>
-          <div className="workspace-flow workspace-flow--blank">
-            <ReactFlow
-              nodes={nodesWithHandlers}
-              edges={edges}
-              proOptions={{ hideAttribution: true }}
-              fitView
-              nodesDraggable={false}
-              elementsSelectable={false}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              panOnDrag
-              panOnScroll
-              zoomOnScroll={false}
-              zoomOnPinch={false}
-              zoomOnDoubleClick={false}
-              style={{ width: '100%', height: '100%' }}
-              nodeTypes={nodeTypes}
-            >
-              <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
-            </ReactFlow>
-          </div>
 
-          <div className="workspace-template-card">
-            <div className="workspace-template-header">
-              <span>Choose template</span>
-              <button type="button">Top picks</button>
+          {boardVisible && (
+            <div className="workspace-flow workspace-flow--blank">
+              <ReactFlow
+                nodes={nodesWithHandlers}
+                edges={edges}
+                proOptions={{ hideAttribution: true }}
+                fitView
+                nodesDraggable={false}
+                elementsSelectable={false}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                panOnDrag
+                panOnScroll
+                zoomOnScroll={false}
+                zoomOnPinch={false}
+                zoomOnDoubleClick={false}
+                style={{ width: '100%', height: '100%' }}
+                nodeTypes={nodeTypes}
+              >
+                <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
+              </ReactFlow>
             </div>
-            <ul className="workspace-template-list">
-              {templates.map((tpl) => (
-                <li key={tpl.label} className={tpl.active ? 'workspace-template-item workspace-template-item--active' : 'workspace-template-item'}>
-                  <div>{tpl.label}</div>
-                  <small>{tpl.description}</small>
-                </li>
-              ))}
-              <li className="workspace-template-more">More templates</li>
-            </ul>
-            <button type="button" className="workspace-template-cta">Continue</button>
-          </div>
+          )}
+
+          {templatePickerVisible && (
+            <div className="workspace-template-card">
+              <div className="workspace-template-header">
+                <span>Choose template</span>
+                <button type="button">Top picks</button>
+              </div>
+              <ul className="workspace-template-list">
+                {templateOptions.map((tpl) => (
+                  <li
+                    key={tpl.label}
+                    className={
+                      tpl.label === selectedTemplate
+                        ? 'workspace-template-item workspace-template-item--active'
+                        : 'workspace-template-item'
+                    }
+                    onClick={() => setSelectedTemplate(tpl.label)}
+                  >
+                    <div>{tpl.label}</div>
+                    <small>{tpl.description}</small>
+                  </li>
+                ))}
+                <li className="workspace-template-more">More templates</li>
+              </ul>
+              <button
+                type="button"
+                className="workspace-template-cta"
+                onClick={() => setTemplatePickerVisible(false)}
+              >
+                Continue
+              </button>
+            </div>
+          )}
 
           <div className="workspace-action-bar">
             {Array.from({ length: 6 }).map((_, idx) => (
@@ -160,10 +194,30 @@ export default function WorkspaceNewBoard() {
           </div>
 
           <div className="workspace-chat workspace-chat--new">
-              <label htmlFor="workspace-chat-template">Ask me anything...</label>
+            <label htmlFor="workspace-chat-template">Ask me anything...</label>
             <textarea id="workspace-chat-template" placeholder="Request automations, templates, or help." />
             <button type="button">Send</button>
           </div>
+
+          {boardVisible && (
+            <div className="workspace-todo-card">
+              <div className="workspace-todo-header">
+                <strong>To Do List</strong>
+                <span>{todoItems.length} cards</span>
+              </div>
+              <ul className="workspace-todo-items">
+                {todoItems.map((item) => (
+                  <li key={item} className="workspace-todo-item">
+                    <label>
+                      <input type="checkbox" />
+                      <span>{item}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" className="workspace-todo-update">Update</button>
+            </div>
+          )}
         </div>
       </div>
     </div>

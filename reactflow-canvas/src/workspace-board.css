@@ -394,6 +394,7 @@
   gap: 4px;
   font-size: 13px;
   color: #1f2937;
+  cursor: pointer;
 }
 
 .workspace-template-item--active {
@@ -421,6 +422,179 @@
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.upload-lane {
+  width: 280px;
+  min-height: 180px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #ffffff;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+
+.upload-lane__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #0f172a;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.upload-lane__header span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.upload-lane__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upload-lane__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #2563eb, #4338ca);
+  color: #eef2ff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.upload-lane__file-icon {
+  font-size: 14px;
+}
+
+.upload-lane__file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-lane__empty {
+  font-size: 12px;
+  color: #64748b;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.upload-lane__upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.45);
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.upload-lane__upload input {
+  display: none;
+}
+
+.workspace-todo-card {
+  position: absolute;
+  top: 140px;
+  left: 120px;
+  width: 260px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 11;
+}
+
+.workspace-todo-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #0f172a;
+}
+
+.workspace-todo-header span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.workspace-todo-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-todo-item label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.workspace-todo-item input {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  border-radius: 4px;
+  appearance: none;
+  background: #ffffff;
+  position: relative;
+}
+
+.workspace-todo-item input:checked {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.workspace-todo-item input:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: 2px solid #ffffff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.workspace-todo-update {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .workspace-context-menu {

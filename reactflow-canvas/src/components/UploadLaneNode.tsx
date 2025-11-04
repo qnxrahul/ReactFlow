@@ -1,4 +1,5 @@
 import type { NodeProps } from '@xyflow/react'
+import { FiFileText } from 'react-icons/fi'
 
 export type UploadLaneData = {
   title: string
@@ -16,7 +17,7 @@ export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
       <div className="upload-lane__body">
         {data.files.map((file) => (
           <div key={file} className="upload-lane__file">
-            <span className="upload-lane__file-icon" aria-hidden>??</span>
+            <FiFileText className="upload-lane__file-icon" aria-hidden />
             <span className="upload-lane__file-name">{file}</span>
           </div>
         ))}
