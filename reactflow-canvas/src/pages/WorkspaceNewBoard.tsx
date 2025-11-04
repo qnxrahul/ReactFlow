@@ -173,7 +173,7 @@ export default function WorkspaceNewBoard() {
               </div>
 
               <div className="workspace-board-region">
-                <div className="workspace-flow workspace-flow--blank">
+                <div className="workspace-board-canvas">
                   <ReactFlow
                     nodes={nodesWithHandlers}
                     edges={edges}
