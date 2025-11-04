@@ -15,21 +15,21 @@ const initialUploadNodes = [
   {
     id: 'todo-lane',
     type: 'uploadLane',
-    position: { x: 360, y: 20 },
+    position: { x: 0, y: 0 },
     data: { title: 'Items to be tested', files: ['theprojektis-design-tokens.zip'] } satisfies UploadLaneData,
     draggable: false,
   },
   {
     id: 'sample-lane',
     type: 'uploadLane',
-    position: { x: 660, y: 20 },
+    position: { x: 320, y: 0 },
     data: { title: 'Sample Documentation', files: [] } satisfies UploadLaneData,
     draggable: false,
   },
   {
     id: 'mapping-lane',
     type: 'uploadLane',
-    position: { x: 960, y: 20 },
+    position: { x: 640, y: 0 },
     data: { title: 'Document Mapping', files: [] } satisfies UploadLaneData,
     draggable: false,
   },
@@ -179,6 +179,7 @@ export default function WorkspaceNewBoard() {
                     edges={edges}
                     proOptions={{ hideAttribution: true }}
                     fitView
+                    fitViewOptions={{ padding: 0.4 }}
                     nodesDraggable={false}
                     elementsSelectable={false}
                     onNodesChange={onNodesChange}
