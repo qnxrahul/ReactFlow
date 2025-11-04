@@ -458,6 +458,10 @@
   cursor: pointer;
 }
 
+.react-flow__node-uploadLane {
+  cursor: default !important;
+}
+
 .upload-lane {
   width: 280px;
   min-height: 180px;
@@ -469,6 +473,7 @@
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  cursor: default !important;
 }
 
 
@@ -541,6 +546,7 @@
   width: 100%;
   position: relative;
   overflow: hidden;
+  pointer-events: all;
 }
 
 .upload-lane__upload input {
