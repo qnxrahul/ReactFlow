@@ -1,18 +1,43 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   Background,
   BackgroundVariant,
   ReactFlow,
+  useEdgesState,
+  useNodesState,
   type Edge,
-  type Node,
 } from '@xyflow/react'
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
+import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
 
-type TemplateNode = Node
+type UploadNode = Edge['data']
 
-const emptyNodes: TemplateNode[] = []
-const emptyEdges: Edge[] = []
+const initialUploadNodes = [
+  {
+    id: 'todo-lane',
+    type: 'uploadLane',
+    position: { x: 340, y: 0 },
+    data: { title: 'Items to be tested', files: ['theprojektis-design-tokens.zip'] } satisfies UploadLaneData,
+    draggable: false,
+  },
+  {
+    id: 'sample-lane',
+    type: 'uploadLane',
+    position: { x: 620, y: 0 },
+    data: { title: 'Sample Documentation', files: [] } satisfies UploadLaneData,
+    draggable: false,
+  },
+  {
+    id: 'mapping-lane',
+    type: 'uploadLane',
+    position: { x: 900, y: 0 },
+    data: { title: 'Document Mapping', files: [] } satisfies UploadLaneData,
+    draggable: false,
+  },
+]
+
+const initialEdges: Edge[] = []
 
 const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
 
@@ -25,13 +50,46 @@ const templates = [
   { label: 'Weekly plan', description: 'Sprint priorities' },
 ]
 
+const nodeTypes = { uploadLane: UploadLaneNode }
+
 export default function WorkspaceNewBoard() {
-  const flowProps = useMemo(
-    () => ({
-      nodes: emptyNodes,
-      edges: emptyEdges,
-    }),
-    [],
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+
+  const handleFilesChange = useCallback(
+    (laneId: string, files: string[]) => {
+      setNodes((prev) =>
+        prev.map((node) =>
+          node.id === laneId
+            ? {
+                ...node,
+                data: { ...node.data, files } as UploadLaneData,
+              }
+            : node,
+        ),
+      )
+    },
+    [setNodes],
+  )
+
+  const nodesWithHandlers = useMemo(
+    () =>
+      nodes.map((node) =>
+        node.type === 'uploadLane'
+          ? {
+              ...node,
+              data: {
+                ...(node.data as UploadLaneData),
+                onFilesChange: (fileList: FileList | null) => {
+                  if (!fileList) return
+                  const names = Array.from(fileList).map((f) => f.name)
+                  handleFilesChange(node.id, names)
+                },
+              },
+            }
+          : node,
+      ),
+    [nodes, handleFilesChange],
   )
 
   return (
@@ -57,18 +115,21 @@ export default function WorkspaceNewBoard() {
           </div>
           <div className="workspace-flow workspace-flow--blank">
             <ReactFlow
-              nodes={flowProps.nodes}
-              edges={flowProps.edges}
+              nodes={nodesWithHandlers}
+              edges={edges}
               proOptions={{ hideAttribution: true }}
               fitView
               nodesDraggable={false}
               elementsSelectable={false}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
               panOnDrag
               panOnScroll
               zoomOnScroll={false}
               zoomOnPinch={false}
               zoomOnDoubleClick={false}
               style={{ width: '100%', height: '100%' }}
+              nodeTypes={nodeTypes}
             >
               <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
             </ReactFlow>
@@ -99,7 +160,7 @@ export default function WorkspaceNewBoard() {
           </div>
 
           <div className="workspace-chat workspace-chat--new">
-            <label htmlFor="workspace-chat-template">Ask me anything?</label>
+              <label htmlFor="workspace-chat-template">Ask me anything...</label>
             <textarea id="workspace-chat-template" placeholder="Request automations, templates, or help." />
             <button type="button">Send</button>
           </div>
