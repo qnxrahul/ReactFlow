@@ -23,7 +23,16 @@ export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
         ))}
         {data.files.length === 0 && <div className="upload-lane__empty">Drop files or click to upload</div>}
         <label className="upload-lane__upload">
-          <input type="file" multiple onChange={(evt) => data.onFilesChange?.(evt.target.files)} />
+          <input
+            type="file"
+            multiple
+            onChange={(evt) => {
+              data.onFilesChange?.(evt.target.files)
+              if (evt.target) {
+                evt.target.value = ''
+              }
+            }}
+          />
           Upload files
         </label>
       </div>

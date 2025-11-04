@@ -134,8 +134,9 @@
 .workspace-new-canvas {
   position: relative;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 24px;
+  align-items: start;
   background: linear-gradient(180deg, #102142 0%, #102142 58px, #f6f8ff 58px, #f6f8ff 100%);
   overflow: hidden;
   padding: 58px 48px 48px 48px;
@@ -177,8 +178,8 @@
 .workspace-board-top {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 48px;
+  right: 48px;
   height: 58px;
   display: flex;
   align-items: center;
@@ -198,10 +199,19 @@
   height: 100%;
   padding-top: 58px;
   box-sizing: border-box;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .workspace-flow .react-flow {
   background: transparent;
+}
+
+.workspace-board-region {
+  grid-column: 2;
+  position: relative;
+  align-self: start;
+  min-height: calc(100vh - 84px);
 }
 
 .workspace-flow--blank {
@@ -516,8 +526,9 @@
 
 .workspace-todo-card {
   position: relative;
-  margin-top: 120px;
-  margin-left: 120px;
+  margin-top: 0;
+  grid-column: 1;
+  justify-self: start;
   width: 260px;
   background: #ffffff;
   border-radius: 18px;
