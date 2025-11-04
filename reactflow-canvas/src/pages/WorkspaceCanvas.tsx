@@ -163,7 +163,7 @@ export default function WorkspaceCanvas() {
           onClick={() => closeMenu()}
         >
           <div className="workspace-board-top">
-            <div>Engagement > Spaces</div>
+            <div>Engagement  Spaces</div>
             <span>Frame 2110704767</span>
           </div>
           <div className="workspace-flow">
