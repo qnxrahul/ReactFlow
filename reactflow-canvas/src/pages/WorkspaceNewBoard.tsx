@@ -105,7 +105,7 @@ export default function WorkspaceNewBoard() {
     [nodes, handleFilesChange],
   )
 
-  const boardVisible = !templatePickerVisible && selectedTemplate !== null
+  const boardVisible = selectedTemplate !== null
 
   return (
     <div className="workspace-page workspace-page--new">
@@ -153,7 +153,7 @@ export default function WorkspaceNewBoard() {
             </div>
           )}
 
-            {templatePickerVisible && (
+          {templatePickerVisible && (
             <div className="workspace-template-card">
               <div className="workspace-template-header">
                 <span>Choose template</span>

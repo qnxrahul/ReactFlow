@@ -133,8 +133,12 @@
 
 .workspace-new-canvas {
   position: relative;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
   background: linear-gradient(180deg, #102142 0%, #102142 58px, #f6f8ff 58px, #f6f8ff 100%);
   overflow: hidden;
+  padding: 58px 48px 48px 48px;
 }
 
 .workspace-summary {
@@ -343,7 +347,7 @@
 
 .workspace-template-card {
   position: absolute;
-  top: 24%;
+  top: 140px;
   right: 120px;
   width: 340px;
   background: white;
@@ -511,9 +515,9 @@
 }
 
 .workspace-todo-card {
-  position: absolute;
-  top: 140px;
-  left: 120px;
+  position: relative;
+  margin-top: 120px;
+  margin-left: 120px;
   width: 260px;
   background: #ffffff;
   border-radius: 18px;
