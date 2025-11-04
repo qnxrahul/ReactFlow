@@ -63,7 +63,7 @@ const nodeTypes = { uploadLane: UploadLaneNode }
 export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
-  const [selectedTemplate, setSelectedTemplate] = useState<string>(templateOptions[0].label)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [templatePickerVisible, setTemplatePickerVisible] = useState(true)
 
   const handleFilesChange = useCallback(
@@ -105,7 +105,7 @@ export default function WorkspaceNewBoard() {
     [nodes, handleFilesChange],
   )
 
-  const boardVisible = !templatePickerVisible
+  const boardVisible = !templatePickerVisible && selectedTemplate !== null
 
   return (
     <div className="workspace-page workspace-page--new">
@@ -153,7 +153,7 @@ export default function WorkspaceNewBoard() {
             </div>
           )}
 
-          {templatePickerVisible && (
+            {templatePickerVisible && (
             <div className="workspace-template-card">
               <div className="workspace-template-header">
                 <span>Choose template</span>
@@ -164,11 +164,14 @@ export default function WorkspaceNewBoard() {
                   <li
                     key={tpl.label}
                     className={
-                      tpl.label === selectedTemplate
+                        tpl.label === selectedTemplate
                         ? 'workspace-template-item workspace-template-item--active'
                         : 'workspace-template-item'
                     }
-                    onClick={() => setSelectedTemplate(tpl.label)}
+                      onClick={() => {
+                        setSelectedTemplate(tpl.label)
+                        setTemplatePickerVisible(false)
+                      }}
                   >
                     <div>{tpl.label}</div>
                     <small>{tpl.description}</small>
@@ -176,13 +179,6 @@ export default function WorkspaceNewBoard() {
                 ))}
                 <li className="workspace-template-more">More templates</li>
               </ul>
-              <button
-                type="button"
-                className="workspace-template-cta"
-                onClick={() => setTemplatePickerVisible(false)}
-              >
-                Continue
-              </button>
             </div>
           )}
 
