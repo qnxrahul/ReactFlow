@@ -24,8 +24,7 @@ export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
         {data.files.length === 0 && <div className="upload-lane__empty">Drop files or click to upload</div>}
         <label
           className="upload-lane__upload"
-          onPointerDown={(evt) => evt.stopPropagation()}
-          onClick={(evt) => evt.stopPropagation()}
+          onMouseDown={(evt) => evt.stopPropagation()}
         >
           <input
             type="file"
