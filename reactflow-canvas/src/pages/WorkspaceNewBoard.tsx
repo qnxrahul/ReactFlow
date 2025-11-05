@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect, type ChangeEvent } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -10,6 +10,8 @@ import {
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
+import { useBoards } from '../state/BoardsProvider'
+import { useNavigate } from 'react-router-dom'
 
 const initialUploadNodes = [
   {
@@ -64,6 +66,10 @@ export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [boardName, setBoardName] = useState('')
+  const [nameEdited, setNameEdited] = useState(false)
+  const { createBoard } = useBoards()
+  const navigate = useNavigate()
 
   const handleFilesChange = useCallback(
     (laneId: string, files: string[]) => {
@@ -104,7 +110,51 @@ export default function WorkspaceNewBoard() {
     [nodes, handleFilesChange],
   )
 
+  const laneData = useMemo(
+    () =>
+      nodes
+        .filter((node) => node.type === 'uploadLane')
+        .map((node) => {
+          const data = node.data as UploadLaneData
+          return {
+            id: node.id,
+            title: data.title,
+            files: data.files,
+          }
+        }),
+    [nodes],
+  )
+
   const boardVisible = selectedTemplate !== null
+
+  useEffect(() => {
+    if (selectedTemplate && !nameEdited) {
+      setBoardName(selectedTemplate)
+    }
+  }, [selectedTemplate, nameEdited])
+
+  const handleBoardNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    setBoardName(value)
+    setNameEdited(value.trim().length > 0)
+  }, [])
+
+  const handleCreateBoard = useCallback(() => {
+    if (!boardVisible) return
+    const trimmedName = boardName.trim() || selectedTemplate || 'Untitled board'
+    const board = createBoard({
+      title: trimmedName,
+      template: selectedTemplate,
+      lanes: laneData,
+      tasksCount: todoItems.length,
+    })
+    setBoardName('')
+    setNameEdited(false)
+    setSelectedTemplate(null)
+    navigate('/workspace', { state: { createdBoardId: board.id } })
+  }, [boardVisible, boardName, createBoard, laneData, navigate, selectedTemplate])
+
+  const canCreateBoard = boardVisible && laneData.length > 0
 
   return (
     <div className="workspace-page workspace-page--new">
@@ -173,6 +223,26 @@ export default function WorkspaceNewBoard() {
               </div>
 
               <div className="workspace-board-region">
+                <div className="workspace-board-actions">
+                  <label className="workspace-board-name">
+                    <span>Board name</span>
+                    <input
+                      type="text"
+                      value={boardName}
+                      onChange={handleBoardNameChange}
+                      placeholder="Enter board name"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="workspace-board-save"
+                    onClick={handleCreateBoard}
+                    disabled={!canCreateBoard}
+                  >
+                    Create board
+                  </button>
+                </div>
+
                 <div className="workspace-board-canvas">
                   <ReactFlow
                     nodes={nodesWithHandlers}

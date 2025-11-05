@@ -7,6 +7,7 @@ import FluentCanvas from './pages/FluentCanvas'
 import WorkspaceCanvas from './pages/WorkspaceCanvas'
 import WorkspaceNewBoard from './pages/WorkspaceNewBoard'
 import { createBrowserRouter, RouterProvider, Link, Outlet } from 'react-router-dom'
+import { BoardsProvider } from './state/BoardsProvider'
 
 function Layout() {
   return (
@@ -36,6 +37,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <BoardsProvider>
+      <RouterProvider router={router} />
+    </BoardsProvider>
   </StrictMode>,
 )

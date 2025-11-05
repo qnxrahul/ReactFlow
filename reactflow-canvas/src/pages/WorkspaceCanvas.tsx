@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Background,
   BackgroundVariant,
@@ -11,55 +11,9 @@ import {
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
+import { useBoards } from '../state/BoardsProvider'
 
 type WorkspaceNodeType = Node<WorkspaceNodeData>
-
-const initialNodes: WorkspaceNodeType[] = [
-  {
-    id: 'space-q1',
-    type: 'workspace',
-    position: { x: 320, y: 110 },
-    data: {
-      title: 'Q1 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q2',
-    type: 'workspace',
-    position: { x: 540, y: 60 },
-    data: {
-      title: 'Q2 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q3',
-    type: 'workspace',
-    position: { x: 320, y: 260 },
-    data: {
-      title: 'Q3 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q4',
-    type: 'workspace',
-    position: { x: 760, y: 140 },
-    data: {
-      title: 'Q4 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-]
 
 const edges: Edge[] = []
 
@@ -81,17 +35,48 @@ const nodeTypes = { workspace: WorkspaceNode }
 
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
-  const [selectedId, setSelectedId] = useState<string>('space-q2')
+  const location = useLocation()
+  const { boards } = useBoards()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const nodes = useMemo(
     () =>
-      initialNodes.map((n) => ({
-        ...n,
-        selected: n.id === selectedId,
+      boards.map<WorkspaceNodeType>((board) => ({
+        id: board.id,
+        type: 'workspace',
+        position: board.position,
+        data: {
+          title: board.title,
+          meta: board.meta,
+          color: board.color,
+        } satisfies WorkspaceNodeData,
+        draggable: false,
+        selected: board.id === selectedId,
       })),
-    [selectedId],
+    [boards, selectedId],
   )
+
+  useEffect(() => {
+    if (boards.length === 0) {
+      setSelectedId(null)
+      return
+    }
+
+    const state = location.state as { createdBoardId?: string } | null
+    if (state?.createdBoardId) {
+      const exists = boards.some((board) => board.id === state.createdBoardId)
+      if (exists) {
+        setSelectedId(state.createdBoardId)
+        navigate(location.pathname, { replace: true, state: {} })
+        return
+      }
+    }
+
+    if (!selectedId || !boards.some((board) => board.id === selectedId)) {
+      setSelectedId(boards[0].id)
+    }
+  }, [boards, location, navigate, selectedId])
 
   const closeMenu = useCallback(() => setMenuPosition(null), [])
 
@@ -222,7 +207,7 @@ export default function WorkspaceCanvas() {
               style={{ left: menuPosition.x, top: menuPosition.y }}
               onClick={(evt) => evt.stopPropagation()}
             >
-              <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
+                <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
               <ul>
                 {menuItems.map((item, idx) => (
                   <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>

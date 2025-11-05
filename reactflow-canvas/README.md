@@ -13,6 +13,14 @@ npm run dev
 
 - Visit `/` for the ReactFlow canvas (Classic)
 - Visit `/fluent` for the Fluent UI demo canvas
+- Visit `/workspace` for the workspace overview
+- Visit `/workspace/new` for the new board creation flow
+
+## Workspace Boards
+
+- Boards on `/workspace` are backed by a shared `BoardsProvider`, persisted to `localStorage`.
+- Creating a board from the context menu routes to `/workspace/new`, where the template and upload lanes can be configured and saved back to the workspace view.
+- Planned realtime sync will leverage [Yjs](https://yjs.dev/) (MIT license) with a pluggable provider (`y-websocket`, `y-webrtc`, or an in-house WebSocket gateway) to satisfy enterprise licensing requirements.
 
 ## Fast Agent Integration (local or cloud)
 
