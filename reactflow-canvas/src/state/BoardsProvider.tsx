@@ -1,4 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import * as Y from 'yjs'
+import type { YArrayEvent, YMapEvent } from 'yjs'
+import { WebsocketProvider } from 'y-websocket'
 
 export type WorkspaceLane = {
   id: string
@@ -35,16 +38,20 @@ type BoardsContextValue = {
 }
 
 const STORAGE_KEY = 'fast-agent.workspace.boards'
+const SYNC_ENDPOINT = import.meta.env.VITE_WORKSPACE_SYNC_ENDPOINT ?? 'wss://demos.yjs.dev'
+const SYNC_ROOM = import.meta.env.VITE_WORKSPACE_SYNC_ROOM ?? 'reactflow-workspace-boards'
 
-const INITIAL_BOARDS: WorkspaceBoard[] = [
+const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
+
+const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
+
+const INITIAL_BOARD_BLUEPRINTS: Array<Pick<WorkspaceBoard, 'id' | 'title' | 'meta' | 'color' | 'position'>> = [
   {
     id: 'space-q1',
     title: 'Q1 FY25',
     meta: '5 boards, 2 cards, 10 files',
     color: '#5f79c6',
     position: { x: 320, y: 110 },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: 'space-q2',
@@ -52,8 +59,6 @@ const INITIAL_BOARDS: WorkspaceBoard[] = [
     meta: '5 boards, 2 cards, 10 files',
     color: '#60a5fa',
     position: { x: 540, y: 60 },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: 'space-q3',
@@ -61,8 +66,6 @@ const INITIAL_BOARDS: WorkspaceBoard[] = [
     meta: '5 boards, 2 cards, 10 files',
     color: '#22d3ee',
     position: { x: 320, y: 260 },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: 'space-q4',
@@ -70,14 +73,17 @@ const INITIAL_BOARDS: WorkspaceBoard[] = [
     meta: '5 boards, 2 cards, 10 files',
     color: '#f97316',
     position: { x: 760, y: 140 },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
 ]
 
-const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
-
-const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
+function createInitialBoards(): WorkspaceBoard[] {
+  const timestamp = new Date().toISOString()
+  return INITIAL_BOARD_BLUEPRINTS.map((board) => ({
+    ...board,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }))
+}
 
 function computePosition(index: number): { x: number; y: number } {
   const columnWidth = 220
@@ -94,15 +100,15 @@ function computePosition(index: number): { x: number; y: number } {
 }
 
 function deserializeBoards(): WorkspaceBoard[] {
-  if (typeof window === 'undefined') return INITIAL_BOARDS
+  if (typeof window === 'undefined') return createInitialBoards()
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return INITIAL_BOARDS
+    if (!raw) return createInitialBoards()
     const parsed = JSON.parse(raw) as WorkspaceBoard[]
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_BOARDS
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : createInitialBoards()
   } catch (error) {
     console.warn('Failed to read workspace boards from storage', error)
-    return INITIAL_BOARDS
+    return createInitialBoards()
   }
 }
 
@@ -115,35 +121,111 @@ function serializeBoards(boards: WorkspaceBoard[]) {
   }
 }
 
+function generateBoardId() {
+  if (typeof window !== 'undefined' && typeof window.crypto?.randomUUID === 'function') {
+    return `board-${window.crypto.randomUUID()}`
+  }
+  return `board-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
 export function BoardsProvider({ children }: { children: ReactNode }) {
+  const [doc] = useState(() => new Y.Doc())
+  const boardMapRef = useRef<Y.Map<WorkspaceBoard>>(doc.getMap<WorkspaceBoard>('workspace:boards'))
+  const orderRef = useRef<Y.Array<string>>(doc.getArray<string>('workspace:order'))
   const [boards, setBoards] = useState<WorkspaceBoard[]>(() => deserializeBoards())
-  const isInitialised = useRef(false)
 
   useEffect(() => {
-    if (!isInitialised.current) {
-      isInitialised.current = true
+    if (typeof window === 'undefined') {
       return
     }
-    serializeBoards(boards)
-  }, [boards])
+
+    const boardMap = boardMapRef.current
+    const order = orderRef.current
+
+    if (boardMap.size === 0 && order.length === 0) {
+      const seedBoards = deserializeBoards()
+      doc.transact(() => {
+        seedBoards.forEach((board) => {
+          boardMap.set(board.id, board)
+          order.push([board.id])
+        })
+      })
+    }
+
+    const syncFromDoc = () => {
+      const orderIds = order.toArray()
+      const seen = new Set<string>()
+      const next: WorkspaceBoard[] = []
+
+      for (const id of orderIds) {
+        const board = boardMap.get(id)
+        if (board) {
+          next.push(board)
+          seen.add(id)
+        }
+      }
+
+      boardMap.forEach((board, id) => {
+        if (!seen.has(id)) {
+          next.push(board)
+        }
+      })
+
+      setBoards(next)
+      serializeBoards(next)
+    }
+
+    const handleOrder = (_event: YArrayEvent<string>) => {
+      syncFromDoc()
+    }
+
+    const handleMap = (_event: YMapEvent<WorkspaceBoard>) => {
+      syncFromDoc()
+    }
+
+    syncFromDoc()
+
+    order.observe(handleOrder)
+    boardMap.observe(handleMap)
+
+    const provider = new WebsocketProvider(SYNC_ENDPOINT, SYNC_ROOM, doc)
+
+    const handleSync = (synced: boolean) => {
+      if (synced) {
+        syncFromDoc()
+      }
+    }
+
+    provider.on('sync', handleSync)
+
+    return () => {
+      order.unobserve(handleOrder)
+      boardMap.unobserve(handleMap)
+      provider.off('sync', handleSync)
+      provider.destroy()
+    }
+  }, [doc])
 
   const createBoard = useCallback(
     (input: NewBoardInput): WorkspaceBoard => {
+      const boardMap = boardMapRef.current
+      const order = orderRef.current
       const now = new Date().toISOString()
       const filesCount = input.lanes?.reduce((acc, lane) => acc + lane.files.length, 0) ?? 0
       const tasksCount = input.tasksCount ?? 0
-      const metaParts = []
+      const metaParts: string[] = []
       if (input.lanes?.length) metaParts.push(`${input.lanes.length} lanes`)
       if (tasksCount) metaParts.push(`${tasksCount} tasks`)
       if (filesCount) metaParts.push(`${filesCount} files`)
       const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
 
+      const index = order.length
       const newBoard: WorkspaceBoard = {
-        id: `board-${Date.now()}`,
+        id: generateBoardId(),
         title: input.title,
         meta,
-        color: palette[boards.length % palette.length],
-        position: computePosition(boards.length),
+        color: palette[index % palette.length],
+        position: computePosition(index),
         template: input.template ?? null,
         lanes: input.lanes,
         tasksCount,
@@ -152,29 +234,61 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
         updatedAt: now,
       }
 
-      setBoards((prev) => prev.concat(newBoard))
+      doc.transact(() => {
+        boardMap.set(newBoard.id, newBoard)
+        order.push([newBoard.id])
+      })
+
       return newBoard
     },
-    [boards],
+    [doc],
   )
 
-  const updateBoard = useCallback((id: string, updater: (prev: WorkspaceBoard) => WorkspaceBoard) => {
-    setBoards((prev) =>
-      prev.map((board, index) =>
-        board.id === id
-          ? {
-              ...updater(board),
-              updatedAt: new Date().toISOString(),
-              position: board.position ?? computePosition(index),
-            }
-          : board,
-      ),
-    )
-  }, [])
+  const updateBoard = useCallback(
+    (id: string, updater: (prev: WorkspaceBoard) => WorkspaceBoard) => {
+      const boardMap = boardMapRef.current
+      const order = orderRef.current
+      const existing = boardMap.get(id)
+      if (!existing) return
+
+      const orderIndex = order.toArray().indexOf(id)
+      const fallbackPosition = orderIndex >= 0 ? existing.position ?? computePosition(orderIndex) : existing.position ?? computePosition(0)
+
+      const updated = updater(existing)
+      const next: WorkspaceBoard = {
+        ...existing,
+        ...updated,
+        id: existing.id,
+        position: updated.position ?? fallbackPosition,
+        updatedAt: new Date().toISOString(),
+      }
+
+      doc.transact(() => {
+        boardMap.set(id, next)
+      })
+    },
+    [doc],
+  )
 
   const resetBoards = useCallback(() => {
-    setBoards(INITIAL_BOARDS)
-  }, [])
+    const boardMap = boardMapRef.current
+    const order = orderRef.current
+
+    doc.transact(() => {
+      boardMap.clear()
+      order.delete(0, order.length)
+
+      const seeded = createInitialBoards()
+      seeded.forEach((board, index) => {
+        const hydrated = {
+          ...board,
+          position: board.position ?? computePosition(index),
+        }
+        boardMap.set(hydrated.id, hydrated)
+        order.push([hydrated.id])
+      })
+    })
+  }, [doc])
 
   const value = useMemo<BoardsContextValue>(
     () => ({ boards, createBoard, updateBoard, resetBoards }),

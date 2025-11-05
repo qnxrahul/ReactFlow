@@ -20,7 +20,14 @@ npm run dev
 
 - Boards on `/workspace` are backed by a shared `BoardsProvider`, persisted to `localStorage`.
 - Creating a board from the context menu routes to `/workspace/new`, where the template and upload lanes can be configured and saved back to the workspace view.
-- Planned realtime sync will leverage [Yjs](https://yjs.dev/) (MIT license) with a pluggable provider (`y-websocket`, `y-webrtc`, or an in-house WebSocket gateway) to satisfy enterprise licensing requirements.
+- Realtime sync uses [Yjs](https://yjs.dev/) (MIT license) with a pluggable provider (`y-websocket`, `y-webrtc`, or an in-house WebSocket gateway) to satisfy enterprise licensing requirements.
+
+### Realtime Sync
+
+- By default we connect to the Yjs demo server (`wss://demos.yjs.dev`). For production, set:
+  - `VITE_WORKSPACE_SYNC_ENDPOINT` – your WebSocket endpoint (e.g. `wss://workspace-sync.internal`)
+  - `VITE_WORKSPACE_SYNC_ROOM` – the room/channel identifier shared between clients
+- To run locally, install [`y-websocket`](https://github.com/yjs/y-websocket) and start a server: `npx y-websocket-server --port 1234`, then set `VITE_WORKSPACE_SYNC_ENDPOINT=ws://localhost:1234`.
 
 ## Fast Agent Integration (local or cloud)
 
