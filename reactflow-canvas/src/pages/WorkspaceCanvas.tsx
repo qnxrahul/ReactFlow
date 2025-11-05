@@ -36,7 +36,7 @@ const nodeTypes = { workspace: WorkspaceNode }
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { boards } = useBoards()
+  const { boards, updateBoard } = useBoards()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
@@ -51,7 +51,7 @@ export default function WorkspaceCanvas() {
           meta: board.meta,
           color: board.color,
         } satisfies WorkspaceNodeData,
-        draggable: false,
+        draggable: true,
         selected: board.id === selectedId,
       })),
     [boards, selectedId],
@@ -163,9 +163,9 @@ export default function WorkspaceCanvas() {
               zoomOnPinch={false}
               zoomOnDoubleClick={false}
               panOnScroll
-              panOnDrag={false}
+                panOnDrag={false}
               elementsSelectable
-              nodesDraggable={false}
+                nodesDraggable
               edgesUpdatable={false}
               translateExtent={[[-200, -200], [1600, 900]]}
               selectionMode={SelectionMode.Partial}
@@ -181,6 +181,9 @@ export default function WorkspaceCanvas() {
                 closeMenu()
               }}
               onPaneContextMenu={handlePaneContextMenu}
+                onNodeDragStop={(_, node) => {
+                  updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
+                }}
               fitView
               fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
             >
