@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, type ChangeEvent } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -66,8 +66,6 @@ export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [boardName, setBoardName] = useState('')
-  const [nameEdited, setNameEdited] = useState(false)
   const { createBoard } = useBoards()
   const navigate = useNavigate()
 
@@ -127,32 +125,16 @@ export default function WorkspaceNewBoard() {
 
   const boardVisible = selectedTemplate !== null
 
-  useEffect(() => {
-    if (selectedTemplate && !nameEdited) {
-      setBoardName(selectedTemplate)
-    }
-  }, [selectedTemplate, nameEdited])
-
-  const handleBoardNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    setBoardName(value)
-    setNameEdited(value.trim().length > 0)
-  }, [])
-
   const handleCreateBoard = useCallback(() => {
     if (!boardVisible) return
-    const trimmedName = boardName.trim() || selectedTemplate || 'Untitled board'
     const board = createBoard({
-      title: trimmedName,
       template: selectedTemplate,
       lanes: laneData,
       tasksCount: todoItems.length,
     })
-    setBoardName('')
-    setNameEdited(false)
     setSelectedTemplate(null)
     navigate('/workspace', { state: { createdBoardId: board.id } })
-  }, [boardVisible, boardName, createBoard, laneData, navigate, selectedTemplate])
+  }, [boardVisible, createBoard, laneData, navigate, selectedTemplate])
 
   const canCreateBoard = boardVisible && laneData.length > 0
 
@@ -223,16 +205,10 @@ export default function WorkspaceNewBoard() {
               </div>
 
               <div className="workspace-board-region">
-                <div className="workspace-board-actions">
-                  <label className="workspace-board-name">
-                    <span>Board name</span>
-                    <input
-                      type="text"
-                      value={boardName}
-                      onChange={handleBoardNameChange}
-                      placeholder="Enter board name"
-                    />
-                  </label>
+                  <div className="workspace-board-actions">
+                    <div className="workspace-board-note">
+                      <span>Board name will be generated automatically.</span>
+                    </div>
                   <button
                     type="button"
                     className="workspace-board-save"

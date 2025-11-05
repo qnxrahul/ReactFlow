@@ -24,7 +24,7 @@ export type WorkspaceBoard = {
 }
 
 type NewBoardInput = {
-  title: string
+  title?: string
   template?: string | null
   lanes?: WorkspaceLane[]
   tasksCount?: number
@@ -119,6 +119,22 @@ function serializeBoards(boards: WorkspaceBoard[]) {
   } catch (error) {
     console.warn('Failed to persist workspace boards', error)
   }
+}
+
+function generateDefaultTitle(boardMap: Y.Map<WorkspaceBoard>, template?: string | null) {
+  const base = (template?.trim().length ? template.trim() : 'Workspace Board')
+  const existingTitles = new Set<string>()
+  boardMap.forEach((board) => {
+    existingTitles.add(board.title)
+  })
+  if (!existingTitles.has(base)) {
+    return base
+  }
+  let suffix = 2
+  while (existingTitles.has(`${base} ${suffix}`)) {
+    suffix += 1
+  }
+  return `${base} ${suffix}`
 }
 
 function generateBoardId() {
@@ -220,9 +236,10 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
 
       const index = order.length
+      const title = input.title?.trim().length ? input.title.trim() : generateDefaultTitle(boardMap, input.template)
       const newBoard: WorkspaceBoard = {
         id: generateBoardId(),
-        title: input.title,
+        title,
         meta,
         color: palette[index % palette.length],
         position: computePosition(index),

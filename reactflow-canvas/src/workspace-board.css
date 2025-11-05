@@ -236,27 +236,10 @@
   margin-bottom: 16px;
 }
 
-.workspace-board-name {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.workspace-board-note {
   font-size: 13px;
-  color: #0f172a;
-}
-
-.workspace-board-name input {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  background: #ffffff;
-  font-size: 14px;
-  color: #0f172a;
-  outline: none;
-}
-
-.workspace-board-name input:focus {
-  border-color: rgba(79, 70, 229, 0.6);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  color: #475569;
+  font-weight: 500;
 }
 
 .workspace-board-save {
