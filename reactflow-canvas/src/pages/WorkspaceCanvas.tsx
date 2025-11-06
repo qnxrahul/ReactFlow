@@ -4,14 +4,16 @@ import {
   Background,
   BackgroundVariant,
   ReactFlow,
+  type ReactFlowInstance,
   type Edge,
   type Node,
   SelectionMode,
 } from '@xyflow/react'
-import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
+import { FiCompass, FiGrid, FiLayers, FiSettings, FiPlus, FiZoomIn, FiZoomOut, FiRotateCw, FiGrid as FiGridToggle, FiMessageCircle } from 'react-icons/fi'
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
 import { useBoards } from '../state/BoardsProvider'
+import agentImage from '../assets/agent.png'
 
 type WorkspaceNodeType = Node<WorkspaceNodeData>
 
@@ -42,6 +44,8 @@ export default function WorkspaceCanvas() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
+  const flowRef = useRef<ReactFlowInstance | null>(null)
+  const [showGrid, setShowGrid] = useState(true)
   const nodes = useMemo(
     () =>
       boards.map<WorkspaceNodeType>((board) => ({
@@ -125,6 +129,33 @@ export default function WorkspaceCanvas() {
     [closeMenu, navigate],
   )
 
+  const handlePlusClick = useCallback(() => {
+    navigate('/workspace/new')
+  }, [navigate])
+
+  const handleZoomIn = useCallback(() => {
+    flowRef.current?.zoomIn?.({ duration: 200 })
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    flowRef.current?.zoomOut?.({ duration: 200 })
+  }, [])
+
+  const handleResetView = useCallback(() => {
+    flowRef.current?.fitView?.({ padding: 0.2, includeHiddenNodes: true, duration: 300 })
+  }, [])
+
+  const handleToggleGrid = useCallback(() => {
+    setShowGrid((prev) => !prev)
+  }, [])
+
+  const handleComment = useCallback(() => {
+    // Placeholder: integrate with agent/chat panel.
+    if (canvasRef.current) {
+      canvasRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [])
+
   return (
     <div className="workspace-page">
       <header className="workspace-hero">
@@ -156,84 +187,104 @@ export default function WorkspaceCanvas() {
           </div>
         </aside>
 
-        <div
-          className="workspace-canvas"
-          ref={canvasRef}
-          onClick={() => closeMenu()}
-        >
-          <div className="workspace-board-top">
-            <div>Engagement  Spaces</div>
-            <span>Frame 2110704767</span>
-          </div>
-          <div className="workspace-flow">
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              nodeTypes={nodeTypes}
-              proOptions={{ hideAttribution: true }}
-              defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-              style={{ width: '100%', height: '100%' }}
-              zoomOnScroll={false}
-              zoomOnPinch={false}
-              zoomOnDoubleClick={false}
-              panOnScroll
+          <div className="workspace-canvas" ref={canvasRef} onClick={() => closeMenu()}>
+            <div className="workspace-board-top">
+              <div>Engagement  Spaces</div>
+              <span>Frame 2110704767</span>
+            </div>
+
+            <div className="workspace-flow">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                proOptions={{ hideAttribution: true }}
+                defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+                style={{ width: '100%', height: '100%' }}
+                zoomOnScroll={false}
+                zoomOnPinch={false}
+                zoomOnDoubleClick={false}
+                panOnScroll
                 panOnDrag={false}
-              elementsSelectable
+                elementsSelectable
                 nodesDraggable
-              edgesUpdatable={false}
-              translateExtent={[[-200, -200], [1600, 900]]}
-              selectionMode={SelectionMode.Partial}
-              onNodeClick={(_, node) => {
-                setSelectedId(node.id)
-                closeMenu()
-              }}
-              onNodeContextMenu={(evt) => {
-                evt.preventDefault()
-                closeMenu()
-              }}
-              onPaneClick={() => {
-                closeMenu()
-              }}
-              onPaneContextMenu={handlePaneContextMenu}
+                edgesUpdatable={false}
+                translateExtent={[[-200, -200], [1600, 900]]}
+                selectionMode={SelectionMode.Partial}
+                onInit={(instance) => {
+                  flowRef.current = instance
+                }}
+                onNodeClick={(_, node) => {
+                  setSelectedId(node.id)
+                  closeMenu()
+                }}
+                onNodeContextMenu={(evt) => {
+                  evt.preventDefault()
+                  closeMenu()
+                }}
+                onPaneClick={() => {
+                  closeMenu()
+                }}
+                onPaneContextMenu={handlePaneContextMenu}
                 onNodeDragStop={(_, node) => {
                   updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
                 }}
-              fitView
-              fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
-            >
-              <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />
-            </ReactFlow>
-          </div>
-
-          <div className="workspace-action-bar">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <span key={idx} className="workspace-action-dot">+</span>
-            ))}
-            <span className="workspace-action-label">[Action bar]</span>
-          </div>
-
-          <div className="workspace-chat">
-            <label htmlFor="workspace-chat-input">Chat about the next step in the process</label>
-            <textarea id="workspace-chat-input" placeholder="Ask me anything..." />
-            <button type="button">Send</button>
-          </div>
-
-          {menuPosition && (
-            <div
-              className="workspace-context-menu"
-              style={{ left: menuPosition.x, top: menuPosition.y }}
-              onClick={(evt) => evt.stopPropagation()}
-            >
-                <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
-              <ul>
-                {menuItems.map((item, idx) => (
-                  <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
-                ))}
-              </ul>
+                fitView
+                fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
+              >
+                {showGrid && <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />}
+              </ReactFlow>
             </div>
-          )}
+
+            <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
+              <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
+                <FiPlus />
+              </button>
+              <span className="workspace-toolbar__divider" />
+              <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+                <FiZoomIn />
+              </button>
+              <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+                <FiZoomOut />
+              </button>
+              <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
+                <FiRotateCw />
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleGrid}
+                className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
+                title="Toggle grid"
+                aria-pressed={showGrid}
+                aria-label="Toggle grid"
+              >
+                <FiGridToggle />
+              </button>
+              <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
+                <FiMessageCircle />
+              </button>
+            </div>
+
+            <button type="button" className="workspace-agent" onClick={() => navigate('/workspace/new')} aria-label="Open agent workspace">
+              <img src={agentImage} alt="Ask me anything" />
+            </button>
+
+            {menuPosition && (
+              <div
+                className="workspace-context-menu"
+                style={{ left: menuPosition.x, top: menuPosition.y }}
+                onClick={(evt) => evt.stopPropagation()}
+              >
+                <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
+                <ul>
+                  {menuItems.map((item, idx) => (
+                    <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
