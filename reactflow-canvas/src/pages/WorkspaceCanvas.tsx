@@ -46,6 +46,7 @@ export default function WorkspaceCanvas() {
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const flowRef = useRef<ReactFlowInstance | null>(null)
   const [showGrid, setShowGrid] = useState(true)
+  const [zoom, setZoom] = useState(1)
   const nodes = useMemo(
     () =>
       boards.map<WorkspaceNodeType>((board) => ({
@@ -134,15 +135,21 @@ export default function WorkspaceCanvas() {
   }, [navigate])
 
   const handleZoomIn = useCallback(() => {
-    flowRef.current?.zoomIn?.({ duration: 200 })
+    if (!flowRef.current) return
+    flowRef.current.zoomIn?.({ duration: 200 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
   }, [])
 
   const handleZoomOut = useCallback(() => {
-    flowRef.current?.zoomOut?.({ duration: 200 })
+    if (!flowRef.current) return
+    flowRef.current.zoomOut?.({ duration: 200 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
   }, [])
 
   const handleResetView = useCallback(() => {
-    flowRef.current?.fitView?.({ padding: 0.2, includeHiddenNodes: true, duration: 300 })
+    if (!flowRef.current) return
+    flowRef.current.fitView?.({ padding: 0.2, includeHiddenNodes: true, duration: 300 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
   }, [])
 
   const handleToggleGrid = useCallback(() => {
@@ -155,6 +162,8 @@ export default function WorkspaceCanvas() {
       canvasRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }
   }, [])
+
+  const zoomPercent = Math.round(zoom * 100)
 
   return (
     <div className="workspace-page">
@@ -231,6 +240,7 @@ export default function WorkspaceCanvas() {
                 }}
                 fitView
                 fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
+                onMoveEnd={(_, state) => setZoom(state.zoom)}
               >
                 {showGrid && <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />}
               </ReactFlow>
@@ -241,11 +251,12 @@ export default function WorkspaceCanvas() {
                 <FiPlus />
               </button>
               <span className="workspace-toolbar__divider" />
-              <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
-                <FiZoomIn />
-              </button>
               <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
                 <FiZoomOut />
+              </button>
+              <span className="workspace-toolbar__label">{zoomPercent}%</span>
+              <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+                <FiZoomIn />
               </button>
               <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
                 <FiRotateCw />

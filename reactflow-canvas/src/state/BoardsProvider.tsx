@@ -45,51 +45,38 @@ const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
 
 const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
 
-const INITIAL_BOARD_BLUEPRINTS: Array<Pick<WorkspaceBoard, 'id' | 'title' | 'meta' | 'color' | 'position'>> = [
+const INITIAL_BOARD_BLUEPRINTS: Array<Pick<WorkspaceBoard, 'id' | 'title' | 'meta' | 'color'>> = [
   {
     id: 'space-q1',
     title: 'Q1 FY25',
     meta: '5 boards, 2 cards, 10 files',
     color: '#5f79c6',
-    position: { x: 320, y: 110 },
   },
   {
     id: 'space-q2',
     title: 'Q2 FY25',
     meta: '5 boards, 2 cards, 10 files',
     color: '#60a5fa',
-    position: { x: 540, y: 60 },
   },
   {
     id: 'space-q3',
     title: 'Q3 FY25',
     meta: '5 boards, 2 cards, 10 files',
     color: '#22d3ee',
-    position: { x: 320, y: 260 },
   },
   {
     id: 'space-q4',
     title: 'Q4 FY25',
     meta: '5 boards, 2 cards, 10 files',
     color: '#f97316',
-    position: { x: 760, y: 140 },
   },
 ]
 
-function createInitialBoards(): WorkspaceBoard[] {
-  const timestamp = new Date().toISOString()
-  return INITIAL_BOARD_BLUEPRINTS.map((board) => ({
-    ...board,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  }))
-}
-
 function computePosition(index: number): { x: number; y: number } {
-  const columnWidth = 220
-  const rowHeight = 160
-  const baseX = 320
-  const baseY = 110
+  const columnWidth = 200
+  const rowHeight = 140
+  const baseX = 260
+  const baseY = 90
   const columns = 4
   const col = index % columns
   const row = Math.floor(index / columns)
@@ -97,6 +84,16 @@ function computePosition(index: number): { x: number; y: number } {
     x: baseX + col * columnWidth,
     y: baseY + row * rowHeight,
   }
+}
+
+function createInitialBoards(): WorkspaceBoard[] {
+  const timestamp = new Date().toISOString()
+  return INITIAL_BOARD_BLUEPRINTS.map((board, index) => ({
+    ...board,
+    position: computePosition(index),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }))
 }
 
 function deserializeBoards(): WorkspaceBoard[] {
