@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import * as Y from 'yjs'
 import type { YArrayEvent, YMapEvent } from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
@@ -38,8 +38,8 @@ type BoardsContextValue = {
 }
 
 const STORAGE_KEY = 'fast-agent.workspace.boards'
-const SYNC_ENDPOINT = import.meta.env.VITE_WORKSPACE_SYNC_ENDPOINT ?? 'wss://demos.yjs.dev'
-const SYNC_ROOM = import.meta.env.VITE_WORKSPACE_SYNC_ROOM ?? 'reactflow-workspace-boards'
+const SYNC_ENDPOINT = (import.meta.env.VITE_WORKSPACE_SYNC_ENDPOINT ?? '').trim()
+const SYNC_ROOM = (import.meta.env.VITE_WORKSPACE_SYNC_ROOM ?? 'reactflow-workspace-boards').trim()
 
 const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
 
@@ -109,12 +109,15 @@ function deserializeBoards(): WorkspaceBoard[] {
   }
 }
 
-function serializeBoards(boards: WorkspaceBoard[]) {
-  if (typeof window === 'undefined') return
+function serializeBoards(boards: WorkspaceBoard[], options: { disabledRef: MutableRefObject<boolean> }) {
+  if (typeof window === 'undefined' || options.disabledRef.current) return
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(boards))
   } catch (error) {
-    console.warn('Failed to persist workspace boards', error)
+    options.disabledRef.current = true
+    if (import.meta.env.DEV) {
+      console.info('Disabling workspace board persistence due to storage quota', error)
+    }
   }
 }
 
@@ -146,6 +149,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   const boardMapRef = useRef<Y.Map<WorkspaceBoard>>(doc.getMap<WorkspaceBoard>('workspace:boards'))
   const orderRef = useRef<Y.Array<string>>(doc.getArray<string>('workspace:order'))
   const [boards, setBoards] = useState<WorkspaceBoard[]>(() => deserializeBoards())
+  const storageDisabledRef = useRef(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -185,7 +189,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       })
 
       setBoards(next)
-      serializeBoards(next)
+      serializeBoards(next, { disabledRef: storageDisabledRef })
     }
 
     const handleOrder = (_event: YArrayEvent<string>) => {
@@ -201,21 +205,33 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
     order.observe(handleOrder)
     boardMap.observe(handleMap)
 
-    const provider = new WebsocketProvider(SYNC_ENDPOINT, SYNC_ROOM, doc)
-
-    const handleSync = (synced: boolean) => {
-      if (synced) {
-        syncFromDoc()
+    let provider: WebsocketProvider | null = null
+    if (SYNC_ENDPOINT) {
+      try {
+        provider = new WebsocketProvider(SYNC_ENDPOINT, SYNC_ROOM, doc)
+        provider.on('sync', (synced: boolean) => {
+          if (synced) {
+            syncFromDoc()
+          }
+        })
+        provider.on('status', (event: { status: 'connected' | 'connecting' | 'disconnected' }) => {
+          if (event.status === 'disconnected' && import.meta.env.DEV) {
+            console.info('Workspace realtime sync disconnected; continuing in offline mode')
+          }
+        })
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.info('Workspace realtime sync unavailable; running offline', error)
+        }
       }
     }
-
-    provider.on('sync', handleSync)
 
     return () => {
       order.unobserve(handleOrder)
       boardMap.unobserve(handleMap)
-      provider.off('sync', handleSync)
-      provider.destroy()
+      if (provider) {
+        provider.destroy()
+      }
     }
   }, [doc])
 
