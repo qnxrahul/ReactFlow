@@ -29,6 +29,7 @@ npm run dev
   - Set `VITE_WORKSPACE_SYNC_ENDPOINT` to your WebSocket endpoint (e.g. `wss://workspace-sync.internal`)
   - Optionally set `VITE_WORKSPACE_SYNC_ROOM` to the room/channel identifier shared between clients (defaults to `reactflow-workspace-boards`)
 - To run locally, install [`y-websocket`](https://github.com/yjs/y-websocket) and start a server: `npx y-websocket-server --port 1234`, then set `VITE_WORKSPACE_SYNC_ENDPOINT=ws://localhost:1234`.
+- This repo includes a helper script: `npm run yjs` (from `reactflow-canvas/`) launches the local relay on port 1234.
 
 ## Fast Agent Integration (local or cloud)
 
