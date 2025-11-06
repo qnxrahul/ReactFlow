@@ -195,6 +195,25 @@
   color: rgba(226, 232, 240, 0.75);
 }
 
+.workspace-board-top--floating {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 96px);
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
+}
+
+.workspace-board-top--floating span {
+  color: rgba(226, 232, 240, 0.8);
+}
+
 .workspace-flow {
   height: 100%;
   padding-top: 24px;
@@ -287,10 +306,9 @@
 }
 
 .workspace-toolbar {
-  position: absolute;
-  bottom: 48px;
-  right: calc(40px + 260px + 16px);
-  margin: 0;
+  position: sticky;
+  top: 20px;
+  margin: 0 auto 16px auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -301,6 +319,7 @@
   box-shadow: 0 18px 32px rgba(15, 23, 42, 0.24);
   color: #e2e8f0;
   z-index: 6;
+  align-self: center;
 }
 
 .workspace-toolbar button {
@@ -376,11 +395,6 @@
 }
 
 @media (max-width: 1320px) {
-  .workspace-toolbar {
-    right: 40px;
-    bottom: 120px;
-  }
-
   .workspace-agent {
     right: 40px;
     bottom: 32px;

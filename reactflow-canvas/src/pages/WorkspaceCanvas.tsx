@@ -197,11 +197,6 @@ export default function WorkspaceCanvas() {
         </aside>
 
           <div className="workspace-canvas" ref={canvasRef} onClick={() => closeMenu()}>
-            <div className="workspace-board-top">
-              <div>Engagement  Spaces</div>
-              <span>Frame 2110704767</span>
-            </div>
-
             <div className="workspace-flow">
               <ReactFlow
                 nodes={nodes}
@@ -279,6 +274,11 @@ export default function WorkspaceCanvas() {
             <button type="button" className="workspace-agent" onClick={() => navigate('/workspace/new')} aria-label="Open agent workspace">
               <img src={agentImage} alt="Ask me anything" />
             </button>
+
+            <div className="workspace-board-top workspace-board-top--floating">
+              <div>Engagement  Spaces</div>
+              <span>Frame 2110704767</span>
+            </div>
 
             {menuPosition && (
               <div
