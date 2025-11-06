@@ -198,6 +198,43 @@ export default function WorkspaceCanvas() {
 
           <div className="workspace-canvas" ref={canvasRef} onClick={() => closeMenu()}>
             <div className="workspace-flow">
+              <div className="workspace-flow__overlay">
+                <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
+                  <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
+                    <FiPlus />
+                  </button>
+                  <span className="workspace-toolbar__divider" />
+                  <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+                    <FiZoomOut />
+                  </button>
+                  <span className="workspace-toolbar__label">{zoomPercent}%</span>
+                  <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+                    <FiZoomIn />
+                  </button>
+                  <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
+                    <FiRotateCw />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleGrid}
+                    className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
+                    title="Toggle grid"
+                    aria-pressed={showGrid}
+                    aria-label="Toggle grid"
+                  >
+                    <FiGridToggle />
+                  </button>
+                  <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
+                    <FiMessageCircle />
+                  </button>
+                </div>
+
+                <div className="workspace-board-top workspace-board-top--floating">
+                  <div>Engagement  Spaces</div>
+                  <span>Frame 2110704767</span>
+                </div>
+              </div>
+
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -241,44 +278,9 @@ export default function WorkspaceCanvas() {
               </ReactFlow>
             </div>
 
-            <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
-              <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
-                <FiPlus />
-              </button>
-              <span className="workspace-toolbar__divider" />
-              <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
-                <FiZoomOut />
-              </button>
-              <span className="workspace-toolbar__label">{zoomPercent}%</span>
-              <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
-                <FiZoomIn />
-              </button>
-              <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
-                <FiRotateCw />
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleGrid}
-                className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
-                title="Toggle grid"
-                aria-pressed={showGrid}
-                aria-label="Toggle grid"
-              >
-                <FiGridToggle />
-              </button>
-              <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
-                <FiMessageCircle />
-              </button>
-            </div>
-
             <button type="button" className="workspace-agent" onClick={() => navigate('/workspace/new')} aria-label="Open agent workspace">
               <img src={agentImage} alt="Ask me anything" />
             </button>
-
-            <div className="workspace-board-top workspace-board-top--floating">
-              <div>Engagement  Spaces</div>
-              <span>Frame 2110704767</span>
-            </div>
 
             {menuPosition && (
               <div
