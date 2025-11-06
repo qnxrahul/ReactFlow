@@ -228,11 +228,6 @@ export default function WorkspaceCanvas() {
                     <FiMessageCircle />
                   </button>
                 </div>
-
-                <div className="workspace-board-top workspace-board-top--floating">
-                  <div>Engagement  Spaces</div>
-                  <span>Frame 2110704767</span>
-                </div>
               </div>
 
               <ReactFlow
