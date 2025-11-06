@@ -33,6 +33,8 @@ const menuItems = [
 
 const nodeTypes = { workspace: WorkspaceNode }
 
+const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
+
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -70,6 +72,18 @@ export default function WorkspaceCanvas() {
         setSelectedId(state.createdBoardId)
         navigate(location.pathname, { replace: true, state: {} })
         return
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      const storedId = window.sessionStorage.getItem(LAST_CREATED_STORAGE_KEY)
+      if (storedId) {
+        const exists = boards.some((board) => board.id === storedId)
+        if (exists) {
+          setSelectedId(storedId)
+          window.sessionStorage.removeItem(LAST_CREATED_STORAGE_KEY)
+          return
+        }
       }
     }
 

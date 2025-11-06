@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -11,7 +11,6 @@ import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
 import { useBoards } from '../state/BoardsProvider'
-import { useNavigate } from 'react-router-dom'
 
 const initialUploadNodes = [
   {
@@ -62,12 +61,16 @@ const todoItems = [
 
 const nodeTypes = { uploadLane: UploadLaneNode }
 
+const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
+
 export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const { createBoard } = useBoards()
-  const navigate = useNavigate()
+  const { createBoard, updateBoard, boards } = useBoards()
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(null)
+  const hasAutoCreatedRef = useRef(false)
+  const autoCreatedBoardIdRef = useRef<string | null>(null)
 
   const handleFilesChange = useCallback(
     (laneId: string, files: string[]) => {
@@ -125,18 +128,83 @@ export default function WorkspaceNewBoard() {
 
   const boardVisible = selectedTemplate !== null
 
-  const handleCreateBoard = useCallback(() => {
-    if (!boardVisible) return
-    const board = createBoard({
-      template: selectedTemplate,
+  const activeBoard = useMemo(
+    () => (activeBoardId ? boards.find((board) => board.id === activeBoardId) ?? null : null),
+    [activeBoardId, boards],
+  )
+
+  const activeTemplateLabel = selectedTemplate ?? activeBoard?.template ?? null
+
+  useEffect(() => {
+    if (hasAutoCreatedRef.current) return
+    hasAutoCreatedRef.current = true
+    const created = createBoard({
+      template: null,
       lanes: laneData,
       tasksCount: todoItems.length,
     })
-    setSelectedTemplate(null)
-    navigate('/workspace', { state: { createdBoardId: board.id } })
-  }, [boardVisible, createBoard, laneData, navigate, selectedTemplate])
+    autoCreatedBoardIdRef.current = created.id
+    setActiveBoardId(created.id)
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+    }
+  }, [createBoard, laneData])
 
-  const canCreateBoard = boardVisible && laneData.length > 0
+  const handleTemplateSelect = useCallback(
+    (templateLabel: string) => {
+      setSelectedTemplate(templateLabel)
+      setActiveBoardId((current) => {
+        if (!current) {
+          const existingId = autoCreatedBoardIdRef.current
+          if (existingId) {
+            updateBoard(existingId, (prev) => ({ ...prev, template: templateLabel }))
+            if (typeof window !== 'undefined') {
+              window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, existingId)
+            }
+            return existingId
+          }
+          const created = createBoard({
+            template: templateLabel,
+            lanes: laneData,
+            tasksCount: todoItems.length,
+          })
+          autoCreatedBoardIdRef.current = created.id
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+          }
+          return created.id
+        }
+        updateBoard(current, (prev) => ({ ...prev, template: templateLabel }))
+        return current
+      })
+      const idToStore = autoCreatedBoardIdRef.current ?? activeBoardId
+      if (idToStore && typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, idToStore)
+      }
+    },
+    [activeBoardId, createBoard, laneData, updateBoard],
+  )
+
+  useEffect(() => {
+    if (!activeBoardId) return
+    const filesCount = laneData.reduce((total, lane) => total + lane.files.length, 0)
+    const metaParts: string[] = []
+    if (laneData.length) metaParts.push(`${laneData.length} lanes`)
+    if (todoItems.length) metaParts.push(`${todoItems.length} tasks`)
+    if (filesCount) metaParts.push(`${filesCount} files`)
+    const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
+
+    updateBoard(activeBoardId, (prev) => ({
+      ...prev,
+      lanes: laneData,
+      filesCount,
+      tasksCount: todoItems.length,
+      meta,
+    }))
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, activeBoardId)
+    }
+  }, [activeBoardId, laneData, updateBoard])
 
   return (
     <div className="workspace-page workspace-page--new">
@@ -160,103 +228,114 @@ export default function WorkspaceNewBoard() {
             <span>Frame 2110704769</span>
           </div>
 
-          {!boardVisible ? (
-            <div className="workspace-template-card">
-              <div className="workspace-template-header">
-                <span>Choose template</span>
-                <button type="button">Top picks</button>
-              </div>
-              <ul className="workspace-template-list">
-                {templateOptions.map((tpl) => (
-                  <li
-                    key={tpl.label}
-                    className={
-                      tpl.label === selectedTemplate
-                        ? 'workspace-template-item workspace-template-item--active'
-                        : 'workspace-template-item'
-                    }
-                    onClick={() => setSelectedTemplate(tpl.label)}
-                  >
-                    <div>{tpl.label}</div>
-                    <small>{tpl.description}</small>
-                  </li>
-                ))}
-                <li className="workspace-template-more">More templates</li>
-              </ul>
-            </div>
-          ) : (
-            <>
-              <div className="workspace-todo-card">
-                <div className="workspace-todo-header">
-                  <strong>To Do List</strong>
-                  <span>{todoItems.length} cards</span>
+            {!boardVisible ? (
+              <div className="workspace-template-card">
+                <div className="workspace-template-header">
+                  <span>Choose template</span>
+                  <button type="button">Top picks</button>
                 </div>
-                <ul className="workspace-todo-items">
-                  {todoItems.map((item) => (
-                    <li key={item} className="workspace-todo-item">
-                      <label>
-                        <input type="checkbox" />
-                        <span>{item}</span>
-                      </label>
+                <ul className="workspace-template-list">
+                  {templateOptions.map((tpl) => (
+                    <li
+                      key={tpl.label}
+                      className={
+                        tpl.label === activeTemplateLabel
+                          ? 'workspace-template-item workspace-template-item--active'
+                          : 'workspace-template-item'
+                      }
+                      onClick={() => handleTemplateSelect(tpl.label)}
+                    >
+                      <div>{tpl.label}</div>
+                      <small>{tpl.description}</small>
                     </li>
                   ))}
+                  <li className="workspace-template-more">More templates</li>
                 </ul>
-                <button type="button" className="workspace-todo-update">Update</button>
+                {activeBoard && (
+                  <div className="workspace-template-status">
+                    Autosaved as <strong>{activeBoard.title}</strong>
+                  </div>
+                )}
               </div>
+            ) : (
+              <>
+                <div className="workspace-todo-card">
+                  <div className="workspace-todo-header">
+                    <strong>To Do List</strong>
+                    <span>{todoItems.length} cards</span>
+                  </div>
+                  <ul className="workspace-todo-items">
+                    {todoItems.map((item) => (
+                      <li key={item} className="workspace-todo-item">
+                        <label>
+                          <input type="checkbox" />
+                          <span>{item}</span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                  <button type="button" className="workspace-todo-update">Update</button>
+                </div>
 
-              <div className="workspace-board-region">
+                <div className="workspace-board-region">
                   <div className="workspace-board-actions">
-                    <div className="workspace-board-note">
-                      <span>Board name will be generated automatically.</span>
+                    <div className="workspace-board-status">
+                      {activeBoard ? (
+                        <>
+                          <span className="workspace-board-status__label">Autosaved as</span>
+                          <strong>{activeBoard.title}</strong>
+                          <button
+                            type="button"
+                            className="workspace-board-status__action"
+                            onClick={() => setSelectedTemplate(null)}
+                          >
+                            Change template
+                          </button>
+                        </>
+                      ) : (
+                        <span>Select a template to auto-create a board.</span>
+                      )}
                     </div>
-                  <button
-                    type="button"
-                    className="workspace-board-save"
-                    onClick={handleCreateBoard}
-                    disabled={!canCreateBoard}
-                  >
-                    Create board
-                  </button>
-                </div>
+                  </div>
 
-                <div className="workspace-board-canvas">
-                  <ReactFlow
-                    nodes={nodesWithHandlers}
-                    edges={edges}
-                    proOptions={{ hideAttribution: true }}
-                    fitView
-                    fitViewOptions={{ padding: 0.4 }}
-                    nodesDraggable={false}
-                    elementsSelectable={false}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    panOnDrag
-                    panOnScroll
-                    zoomOnScroll={false}
-                    zoomOnPinch={false}
-                    zoomOnDoubleClick={false}
-                    style={{ width: '100%', height: '100%' }}
-                    nodeTypes={nodeTypes}
-                  >
-                    <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
-                  </ReactFlow>
-                </div>
+                  <div className="workspace-board-canvas">
+                    <ReactFlow
+                      nodes={nodesWithHandlers}
+                      edges={edges}
+                      proOptions={{ hideAttribution: true }}
+                      fitView
+                      fitViewOptions={{ padding: 0.4 }}
+                      nodesDraggable={false}
+                      elementsSelectable={false}
+                      onNodesChange={onNodesChange}
+                      onEdgesChange={onEdgesChange}
+                      panOnDrag
+                      panOnScroll
+                      zoomOnScroll={false}
+                      zoomOnPinch={false}
+                      zoomOnDoubleClick={false}
+                      style={{ width: '100%', height: '100%' }}
+                      nodeTypes={nodeTypes}
+                    >
+                      <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
+                    </ReactFlow>
+                  </div>
 
-                <div className="workspace-action-bar">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <span key={idx} className="workspace-action-dot">+</span>
-                  ))}
-                  <span className="workspace-action-label">[Action bar]</span>
-                </div>
+                  <div className="workspace-action-bar">
+                    {Array.from({ length: 6 }).map((_, idx) => (
+                      <span key={idx} className="workspace-action-dot">+</span>
+                    ))}
+                    <span className="workspace-action-label">[Action bar]</span>
+                  </div>
 
-                <div className="workspace-chat workspace-chat--new">
-                  <label htmlFor="workspace-chat-template">Ask me anything...</label>
-                  <textarea id="workspace-chat-template" placeholder="Request automations, templates, or help." />
-                  <button type="button">Send</button>
+                  <div className="workspace-chat workspace-chat--new">
+                    <label htmlFor="workspace-chat-template">Ask me anything...</label>
+                    <textarea id="workspace-chat-template" placeholder="Request automations, templates, or help." />
+                    <button type="button">Send</button>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
         </div>
       </div>
     </div>
