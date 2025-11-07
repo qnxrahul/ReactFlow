@@ -222,7 +222,11 @@ export default function WorkspaceNewBoard() {
         if (!current) {
           const existingId = autoCreatedBoardIdRef.current
           if (existingId) {
-            updateBoard(existingId, (prev) => ({ ...prev, template: templateLabel }))
+            updateBoard(existingId, (prev) => ({
+              ...prev,
+              template: templateLabel,
+              title: templateLabel,
+            }))
             if (typeof window !== 'undefined') {
               window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, existingId)
             }
@@ -232,6 +236,7 @@ export default function WorkspaceNewBoard() {
             template: templateLabel,
             lanes: laneData,
             tasksCount: todoItems.length,
+            title: templateLabel,
           })
           autoCreatedBoardIdRef.current = created.id
           if (typeof window !== 'undefined') {
@@ -239,7 +244,11 @@ export default function WorkspaceNewBoard() {
           }
           return created.id
         }
-        updateBoard(current, (prev) => ({ ...prev, template: templateLabel }))
+        updateBoard(current, (prev) => ({
+          ...prev,
+          template: templateLabel,
+          title: templateLabel,
+        }))
         return current
       })
       const idToStore = autoCreatedBoardIdRef.current ?? activeBoardId

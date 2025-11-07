@@ -47,6 +47,28 @@ const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
 
 const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
 
+function ensureUniqueTitle(
+  boardMap: Y.Map<WorkspaceBoard>,
+  desiredTitle: string,
+  currentId?: string | null,
+): string {
+  const base = desiredTitle.trim().length > 0 ? desiredTitle.trim() : 'Workspace Board'
+  const existingTitles = new Set<string>()
+  boardMap.forEach((board, id) => {
+    if (!currentId || id !== currentId) {
+      existingTitles.add(board.title.trim())
+    }
+  })
+  if (!existingTitles.has(base)) return base
+  let suffix = 2
+  let candidate = `${base} ${suffix}`
+  while (existingTitles.has(candidate)) {
+    suffix += 1
+    candidate = `${base} ${suffix}`
+  }
+  return candidate
+}
+
 function createInitialBoards(): WorkspaceBoard[] {
   return []
 }
@@ -219,15 +241,8 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
 
       const index = order.length
-      const baseTitle = input.title?.trim().length ? input.title.trim() : generateDefaultTitle(boardMap, input.template)
-      let title = baseTitle
-      let suffix = 2
-      const existingTitles = new Set<string>()
-      boardMap.forEach((board) => existingTitles.add(board.title))
-      while (existingTitles.has(title)) {
-        title = `${baseTitle} ${suffix}`
-        suffix += 1
-      }
+        const baseTitle = input.title?.trim().length ? input.title.trim() : generateDefaultTitle(boardMap, input.template)
+        const title = ensureUniqueTitle(boardMap, baseTitle)
 
       const newBoard: WorkspaceBoard = {
         id: generateBoardId(),
@@ -263,7 +278,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       const orderIndex = order.toArray().indexOf(id)
       const fallbackPosition = orderIndex >= 0 ? existing.position ?? computePosition(orderIndex) : existing.position ?? computePosition(0)
 
-      const updated = updater(existing)
+        const updated = updater(existing)
       const next: WorkspaceBoard = {
         ...existing,
         ...updated,
@@ -271,6 +286,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
         position: updated.position ?? fallbackPosition,
         updatedAt: new Date().toISOString(),
       }
+        next.title = ensureUniqueTitle(boardMap, next.title, id)
 
       doc.transact(() => {
         boardMap.set(id, next)
