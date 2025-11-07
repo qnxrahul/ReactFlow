@@ -262,6 +262,12 @@ export default function WorkspaceCanvas() {
                   closeMenu()
                 }}
                 onPaneContextMenu={handlePaneContextMenu}
+                onNodeDoubleClick={(_, node) => {
+                  if (typeof window !== 'undefined') {
+                    window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
+                  }
+                  navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
+                }}
                 onNodeDragStop={(_, node) => {
                   updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
                 }}

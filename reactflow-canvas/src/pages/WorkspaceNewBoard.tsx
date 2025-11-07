@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Background,
   BackgroundVariant,
@@ -68,9 +69,33 @@ export default function WorkspaceNewBoard() {
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const { createBoard, updateBoard, boards } = useBoards()
+  const [searchParams] = useSearchParams()
+  const boardIdParam = searchParams.get('boardId')
+  const editingBoard = useMemo(
+    () => (boardIdParam ? boards.find((board) => board.id === boardIdParam) ?? null : null),
+    [boardIdParam, boards],
+  )
+  const isEditing = editingBoard !== null
   const [activeBoardId, setActiveBoardId] = useState<string | null>(null)
   const hasAutoCreatedRef = useRef(false)
   const autoCreatedBoardIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (isEditing) return
+    hasAutoCreatedRef.current = false
+    autoCreatedBoardIdRef.current = null
+    setActiveBoardId(null)
+    setSelectedTemplate(null)
+    setNodes(
+      initialUploadNodes.map((node) => ({
+        ...node,
+        data: {
+          ...(node.data as UploadLaneData),
+          files: [...((node.data as UploadLaneData).files ?? [])],
+        },
+      })),
+    )
+  }, [isEditing, setNodes])
 
   const handleFilesChange = useCallback(
     (laneId: string, files: string[]) => {
@@ -126,7 +151,39 @@ export default function WorkspaceNewBoard() {
     [nodes],
   )
 
-  const boardVisible = selectedTemplate !== null
+  useEffect(() => {
+    if (!editingBoard) return
+    hasAutoCreatedRef.current = true
+    autoCreatedBoardIdRef.current = editingBoard.id
+    setActiveBoardId(editingBoard.id)
+    setSelectedTemplate(editingBoard.template ?? null)
+
+    const lanesSource =
+      editingBoard.lanes && editingBoard.lanes.length > 0
+        ? editingBoard.lanes
+        : initialUploadNodes.map((node) => ({
+            id: node.id,
+            title: (node.data as UploadLaneData).title,
+            files: (node.data as UploadLaneData).files ?? [],
+          }))
+
+    setNodes(
+      lanesSource.map((lane, idx) => ({
+        id: lane.id ?? initialUploadNodes[idx]?.id ?? `lane-${idx}`,
+        type: 'uploadLane' as const,
+        position: initialUploadNodes[idx]?.position ?? { x: idx * 320, y: 0 },
+        data: {
+          title: lane.title,
+          files: [...lane.files],
+        } satisfies UploadLaneData,
+        draggable: false,
+      })),
+    )
+
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, editingBoard.id)
+    }
+  }, [editingBoard, setNodes])
 
   const activeBoard = useMemo(
     () => (activeBoardId ? boards.find((board) => board.id === activeBoardId) ?? null : null),
@@ -134,9 +191,10 @@ export default function WorkspaceNewBoard() {
   )
 
   const activeTemplateLabel = selectedTemplate ?? activeBoard?.template ?? null
+  const boardVisible = activeTemplateLabel !== null
 
   useEffect(() => {
-    if (hasAutoCreatedRef.current) return
+    if (isEditing || hasAutoCreatedRef.current) return
     hasAutoCreatedRef.current = true
     const created = createBoard({
       template: null,
@@ -148,7 +206,7 @@ export default function WorkspaceNewBoard() {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
     }
-  }, [createBoard, laneData])
+  }, [createBoard, isEditing, laneData])
 
   const handleTemplateSelect = useCallback(
     (templateLabel: string) => {
@@ -287,7 +345,12 @@ export default function WorkspaceNewBoard() {
                           <button
                             type="button"
                             className="workspace-board-status__action"
-                            onClick={() => setSelectedTemplate(null)}
+                              onClick={() => {
+                                if (activeBoard) {
+                                  updateBoard(activeBoard.id, (prev) => ({ ...prev, template: null }))
+                                }
+                                setSelectedTemplate(null)
+                              }}
                           >
                             Change template
                           </button>
