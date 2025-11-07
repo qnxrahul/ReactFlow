@@ -39,6 +39,7 @@ type BoardsContextValue = {
 }
 
 const STORAGE_KEY = 'fast-agent.workspace.boards'
+const STORAGE_VERSION = 2
 const SYNC_ENDPOINT = (import.meta.env.VITE_WORKSPACE_SYNC_ENDPOINT ?? '').trim()
 const SYNC_ROOM = (import.meta.env.VITE_WORKSPACE_SYNC_ROOM ?? 'reactflow-workspace-boards').trim()
 
@@ -55,8 +56,22 @@ function deserializeBoards(): WorkspaceBoard[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return createInitialBoards()
-    const parsed = JSON.parse(raw) as WorkspaceBoard[]
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : createInitialBoards()
+    const parsed = JSON.parse(raw) as unknown
+    if (Array.isArray(parsed)) {
+      window.localStorage.removeItem(STORAGE_KEY)
+      return createInitialBoards()
+    }
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'version' in parsed &&
+      (parsed as any).version === STORAGE_VERSION &&
+      Array.isArray((parsed as any).boards)
+    ) {
+      return (parsed as any).boards as WorkspaceBoard[]
+    }
+    window.localStorage.removeItem(STORAGE_KEY)
+    return createInitialBoards()
   } catch (error) {
     console.warn('Failed to read workspace boards from storage', error)
     return createInitialBoards()
@@ -66,7 +81,8 @@ function deserializeBoards(): WorkspaceBoard[] {
 function serializeBoards(boards: WorkspaceBoard[], options: { disabledRef: MutableRefObject<boolean> }) {
   if (typeof window === 'undefined' || options.disabledRef.current) return
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(boards))
+    const payload = JSON.stringify({ version: STORAGE_VERSION, boards })
+    window.localStorage.setItem(STORAGE_KEY, payload)
   } catch (error) {
     options.disabledRef.current = true
     if (import.meta.env.DEV) {
