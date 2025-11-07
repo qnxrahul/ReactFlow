@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import * as Y from 'yjs'
 import type { YArrayEvent, YMapEvent } from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
+import { computePosition } from '../utils/workspaceLayout'
 
 export type WorkspaceLane = {
   id: string
@@ -45,55 +46,8 @@ const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
 
 const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
 
-const INITIAL_BOARD_BLUEPRINTS: Array<Pick<WorkspaceBoard, 'id' | 'title' | 'meta' | 'color'>> = [
-  {
-    id: 'space-q1',
-    title: 'Q1 FY25',
-    meta: '5 boards, 2 cards, 10 files',
-    color: '#5f79c6',
-  },
-  {
-    id: 'space-q2',
-    title: 'Q2 FY25',
-    meta: '5 boards, 2 cards, 10 files',
-    color: '#60a5fa',
-  },
-  {
-    id: 'space-q3',
-    title: 'Q3 FY25',
-    meta: '5 boards, 2 cards, 10 files',
-    color: '#22d3ee',
-  },
-  {
-    id: 'space-q4',
-    title: 'Q4 FY25',
-    meta: '5 boards, 2 cards, 10 files',
-    color: '#f97316',
-  },
-]
-
-function computePosition(index: number): { x: number; y: number } {
-  const columnWidth = 200
-  const rowHeight = 140
-  const baseX = 260
-  const baseY = 90
-  const columns = 4
-  const col = index % columns
-  const row = Math.floor(index / columns)
-  return {
-    x: baseX + col * columnWidth,
-    y: baseY + row * rowHeight,
-  }
-}
-
 function createInitialBoards(): WorkspaceBoard[] {
-  const timestamp = new Date().toISOString()
-  return INITIAL_BOARD_BLUEPRINTS.map((board, index) => ({
-    ...board,
-    position: computePosition(index),
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  }))
+  return []
 }
 
 function deserializeBoards(): WorkspaceBoard[] {
@@ -249,7 +203,16 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
 
       const index = order.length
-      const title = input.title?.trim().length ? input.title.trim() : generateDefaultTitle(boardMap, input.template)
+      const baseTitle = input.title?.trim().length ? input.title.trim() : generateDefaultTitle(boardMap, input.template)
+      let title = baseTitle
+      let suffix = 2
+      const existingTitles = new Set<string>()
+      boardMap.forEach((board) => existingTitles.add(board.title))
+      while (existingTitles.has(title)) {
+        title = `${baseTitle} ${suffix}`
+        suffix += 1
+      }
+
       const newBoard: WorkspaceBoard = {
         id: generateBoardId(),
         title,

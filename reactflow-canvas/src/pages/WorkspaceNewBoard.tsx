@@ -198,7 +198,7 @@ export default function WorkspaceNewBoard() {
   )
 
   const activeTemplateLabel = selectedTemplate ?? activeBoard?.template ?? null
-  const boardVisible = activeTemplateLabel !== null
+  const boardVisible = isEditing || activeTemplateLabel !== null
 
   useEffect(() => {
     if (isEditing || hasAutoCreatedRef.current) return

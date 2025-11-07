@@ -13,6 +13,7 @@ import { FiCompass, FiGrid, FiLayers, FiSettings, FiPlus, FiZoomIn, FiZoomOut, F
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
 import { useBoards } from '../state/BoardsProvider'
+import { computePosition } from '../utils/workspaceLayout'
 import agentImage from '../assets/agent.png'
 
 type WorkspaceNodeType = Node<WorkspaceNodeData>
@@ -49,10 +50,10 @@ export default function WorkspaceCanvas() {
   const [zoom, setZoom] = useState(1)
   const nodes = useMemo(
     () =>
-      boards.map<WorkspaceNodeType>((board) => ({
+      boards.map<WorkspaceNodeType>((board, index) => ({
         id: board.id,
         type: 'workspace',
-        position: board.position,
+        position: board.position ?? computePosition(index),
         data: {
           title: board.title,
           meta: board.meta,
