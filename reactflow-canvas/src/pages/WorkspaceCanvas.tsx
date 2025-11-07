@@ -41,7 +41,7 @@ const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { boards, updateBoard } = useBoards()
+  const { boards, updateBoard, promptNewBoard } = useBoards()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
@@ -125,15 +125,15 @@ export default function WorkspaceCanvas() {
     (item: string) => {
       closeMenu()
       if (item === 'Create board') {
-        navigate('/workspace/new')
+        promptNewBoard()
       }
     },
-    [closeMenu, navigate],
+    [closeMenu, promptNewBoard],
   )
 
   const handlePlusClick = useCallback(() => {
-    navigate('/workspace/new')
-  }, [navigate])
+    promptNewBoard()
+  }, [promptNewBoard])
 
   const handleZoomIn = useCallback(() => {
     if (!flowRef.current) return
