@@ -79,11 +79,14 @@ export default function WorkspaceNewBoard() {
   const [activeBoardId, setActiveBoardId] = useState<string | null>(null)
   const hasAutoCreatedRef = useRef(false)
   const autoCreatedBoardIdRef = useRef<string | null>(null)
+  const initializedFromBoardRef = useRef<string | null>(null)
+  const hydratingRef = useRef(false)
 
   useEffect(() => {
     if (isEditing) return
     hasAutoCreatedRef.current = false
     autoCreatedBoardIdRef.current = null
+    initializedFromBoardRef.current = null
     setActiveBoardId(null)
     setSelectedTemplate(null)
     setNodes(
@@ -153,8 +156,11 @@ export default function WorkspaceNewBoard() {
 
   useEffect(() => {
     if (!editingBoard) return
+    if (initializedFromBoardRef.current === editingBoard.id) return
+    initializedFromBoardRef.current = editingBoard.id
     hasAutoCreatedRef.current = true
     autoCreatedBoardIdRef.current = editingBoard.id
+    hydratingRef.current = true
     setActiveBoardId(editingBoard.id)
     setSelectedTemplate(editingBoard.template ?? null)
 
@@ -179,6 +185,7 @@ export default function WorkspaceNewBoard() {
         draggable: false,
       })),
     )
+    hydratingRef.current = false
 
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, editingBoard.id)
@@ -245,6 +252,7 @@ export default function WorkspaceNewBoard() {
 
   useEffect(() => {
     if (!activeBoardId) return
+    if (hydratingRef.current) return
     const filesCount = laneData.reduce((total, lane) => total + lane.files.length, 0)
     const metaParts: string[] = []
     if (laneData.length) metaParts.push(`${laneData.length} lanes`)
