@@ -143,16 +143,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   const orderRef = useRef<Y.Array<string>>(doc.getArray<string>('workspace:order'))
   const [boards, setBoards] = useState<WorkspaceBoard[]>(() => deserializeBoards())
   const storageDisabledRef = useRef(false)
-  const promptNewBoard = useCallback(() => {
-    const defaultName = `Workspace ${(boards.length + 1).toString().padStart(2, '0')}`
-    const name = typeof window !== 'undefined' ? window.prompt('Name for the new board:', defaultName) : defaultName
-    if (name === null) return
-    const board = createBoard({ title: name || defaultName, template: null })
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, board.id)
-    }
-  }, [boards.length, createBoard])
-
+  const createBoardRef = useRef<(input: NewBoardInput) => WorkspaceBoard>()
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -277,6 +268,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
     },
     [doc],
   )
+  createBoardRef.current = createBoard
 
   const updateBoard = useCallback(
     (id: string, updater: (prev: WorkspaceBoard) => WorkspaceBoard) => {
@@ -326,8 +318,23 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   }, [doc])
 
   const value = useMemo<BoardsContextValue>(
-    () => ({ boards, createBoard, updateBoard, resetBoards, promptNewBoard }),
-    [boards, createBoard, updateBoard, resetBoards, promptNewBoard],
+    () => ({
+      boards,
+      createBoard,
+      updateBoard,
+      resetBoards,
+      promptNewBoard: () => {
+        if (!createBoardRef.current) return
+        const defaultName = `Workspace ${(boards.length + 1).toString().padStart(2, '0')}`
+        const name = typeof window !== 'undefined' ? window.prompt('Name for the new board:', defaultName) : defaultName
+        if (name === null) return
+        const board = createBoardRef.current({ title: name || defaultName, template: null })
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, board.id)
+        }
+      },
+    }),
+    [boards, createBoard, updateBoard, resetBoards],
   )
 
   return <BoardsContext.Provider value={value}>{children}</BoardsContext.Provider>
