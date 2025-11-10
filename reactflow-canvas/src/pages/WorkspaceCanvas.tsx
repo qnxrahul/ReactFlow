@@ -1,65 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Background,
   BackgroundVariant,
   ReactFlow,
+  type ReactFlowInstance,
   type Edge,
   type Node,
   SelectionMode,
 } from '@xyflow/react'
-import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
+import { FiCompass, FiGrid, FiLayers, FiSettings, FiPlus, FiZoomIn, FiZoomOut, FiRotateCw, FiGrid as FiGridToggle, FiMessageCircle } from 'react-icons/fi'
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
+import { useBoards } from '../state/BoardsProvider'
+import { computePosition } from '../utils/workspaceLayout'
+import agentImage from '../assets/agent.png'
 
 type WorkspaceNodeType = Node<WorkspaceNodeData>
-
-const initialNodes: WorkspaceNodeType[] = [
-  {
-    id: 'space-q1',
-    type: 'workspace',
-    position: { x: 320, y: 110 },
-    data: {
-      title: 'Q1 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q2',
-    type: 'workspace',
-    position: { x: 540, y: 60 },
-    data: {
-      title: 'Q2 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q3',
-    type: 'workspace',
-    position: { x: 320, y: 260 },
-    data: {
-      title: 'Q3 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-  {
-    id: 'space-q4',
-    type: 'workspace',
-    position: { x: 760, y: 140 },
-    data: {
-      title: 'Q4 FY25',
-      meta: '5 boards, 2 cards, 10 files',
-      color: '#5f79c6',
-    } satisfies WorkspaceNodeData,
-    draggable: false,
-  },
-]
 
 const edges: Edge[] = []
 
@@ -79,19 +36,67 @@ const menuItems = [
 
 const nodeTypes = { workspace: WorkspaceNode }
 
+const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
+
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
-  const [selectedId, setSelectedId] = useState<string>('space-q2')
+  const location = useLocation()
+  const { boards, updateBoard, promptNewBoard } = useBoards()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
+  const flowRef = useRef<ReactFlowInstance | null>(null)
+  const [showGrid, setShowGrid] = useState(true)
+  const [zoom, setZoom] = useState(1)
   const nodes = useMemo(
     () =>
-      initialNodes.map((n) => ({
-        ...n,
-        selected: n.id === selectedId,
+      boards.map<WorkspaceNodeType>((board, index) => ({
+        id: board.id,
+        type: 'workspace',
+        position: board.position ?? computePosition(index),
+        data: {
+          title: board.title,
+          meta: board.meta,
+          color: board.color,
+        } satisfies WorkspaceNodeData,
+        draggable: true,
+        selected: board.id === selectedId,
       })),
-    [selectedId],
+    [boards, selectedId],
   )
+
+  useEffect(() => {
+    if (boards.length === 0) {
+      setSelectedId(null)
+      return
+    }
+
+    const state = location.state as { createdBoardId?: string } | null
+    if (state?.createdBoardId) {
+      const exists = boards.some((board) => board.id === state.createdBoardId)
+      if (exists) {
+        setSelectedId(state.createdBoardId)
+        navigate(location.pathname, { replace: true, state: {} })
+        return
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      const storedId = window.sessionStorage.getItem(LAST_CREATED_STORAGE_KEY)
+      if (storedId) {
+        const exists = boards.some((board) => board.id === storedId)
+        if (exists) {
+          setSelectedId(storedId)
+          window.sessionStorage.removeItem(LAST_CREATED_STORAGE_KEY)
+          return
+        }
+      }
+    }
+
+    if (!selectedId || !boards.some((board) => board.id === selectedId)) {
+      setSelectedId(boards[0].id)
+    }
+  }, [boards, location, navigate, selectedId])
 
   const closeMenu = useCallback(() => setMenuPosition(null), [])
 
@@ -120,11 +125,46 @@ export default function WorkspaceCanvas() {
     (item: string) => {
       closeMenu()
       if (item === 'Create board') {
-        navigate('/workspace/new')
+        promptNewBoard()
       }
     },
-    [closeMenu, navigate],
+    [closeMenu, promptNewBoard],
   )
+
+  const handlePlusClick = useCallback(() => {
+    promptNewBoard()
+  }, [promptNewBoard])
+
+  const handleZoomIn = useCallback(() => {
+    if (!flowRef.current) return
+    flowRef.current.zoomIn?.({ duration: 200 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    if (!flowRef.current) return
+    flowRef.current.zoomOut?.({ duration: 200 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
+  }, [])
+
+  const handleResetView = useCallback(() => {
+    if (!flowRef.current) return
+    flowRef.current.fitView?.({ padding: 0.2, includeHiddenNodes: true, duration: 300 })
+    setZoom(flowRef.current.getZoom?.() ?? 1)
+  }, [])
+
+  const handleToggleGrid = useCallback(() => {
+    setShowGrid((prev) => !prev)
+  }, [])
+
+  const handleComment = useCallback(() => {
+    // Placeholder: integrate with agent/chat panel.
+    if (canvasRef.current) {
+      canvasRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [])
+
+  const zoomPercent = Math.round(zoom * 100)
 
   return (
     <div className="workspace-page">
@@ -157,81 +197,109 @@ export default function WorkspaceCanvas() {
           </div>
         </aside>
 
-        <div
-          className="workspace-canvas"
-          ref={canvasRef}
-          onClick={() => closeMenu()}
-        >
-          <div className="workspace-board-top">
-            <div>Engagement  Spaces</div>
-            <span>Frame 2110704767</span>
-          </div>
-          <div className="workspace-flow">
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              nodeTypes={nodeTypes}
-              proOptions={{ hideAttribution: true }}
-              defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-              style={{ width: '100%', height: '100%' }}
-              zoomOnScroll={false}
-              zoomOnPinch={false}
-              zoomOnDoubleClick={false}
-              panOnScroll
-              panOnDrag={false}
-              elementsSelectable
-              nodesDraggable={false}
-              edgesUpdatable={false}
-              translateExtent={[[-200, -200], [1600, 900]]}
-              selectionMode={SelectionMode.Partial}
-              onNodeClick={(_, node) => {
-                setSelectedId(node.id)
-                closeMenu()
-              }}
-              onNodeContextMenu={(evt) => {
-                evt.preventDefault()
-                closeMenu()
-              }}
-              onPaneClick={() => {
-                closeMenu()
-              }}
-              onPaneContextMenu={handlePaneContextMenu}
-              fitView
-              fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
-            >
-              <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />
-            </ReactFlow>
-          </div>
+          <div className="workspace-canvas" ref={canvasRef} onClick={() => closeMenu()}>
+            <div className="workspace-flow">
+              <div className="workspace-flow__overlay">
+                <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
+                  <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
+                    <FiPlus />
+                  </button>
+                  <span className="workspace-toolbar__divider" />
+                  <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+                    <FiZoomOut />
+                  </button>
+                  <span className="workspace-toolbar__label">{zoomPercent}%</span>
+                  <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+                    <FiZoomIn />
+                  </button>
+                  <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
+                    <FiRotateCw />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleGrid}
+                    className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
+                    title="Toggle grid"
+                    aria-pressed={showGrid}
+                    aria-label="Toggle grid"
+                  >
+                    <FiGridToggle />
+                  </button>
+                  <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
+                    <FiMessageCircle />
+                  </button>
+                </div>
+              </div>
 
-          <div className="workspace-action-bar">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <span key={idx} className="workspace-action-dot">+</span>
-            ))}
-            <span className="workspace-action-label">[Action bar]</span>
-          </div>
-
-          <div className="workspace-chat">
-            <label htmlFor="workspace-chat-input">Chat about the next step in the process</label>
-            <textarea id="workspace-chat-input" placeholder="Ask me anything..." />
-            <button type="button">Send</button>
-          </div>
-
-          {menuPosition && (
-            <div
-              className="workspace-context-menu"
-              style={{ left: menuPosition.x, top: menuPosition.y }}
-              onClick={(evt) => evt.stopPropagation()}
-            >
-              <header>{initialNodes.find((n) => n.id === selectedId)?.data.title ?? 'Workspace actions'}</header>
-              <ul>
-                {menuItems.map((item, idx) => (
-                  <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
-                ))}
-              </ul>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                proOptions={{ hideAttribution: true }}
+                defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+                style={{ width: '100%', height: '100%' }}
+                zoomOnScroll={false}
+                zoomOnPinch={false}
+                zoomOnDoubleClick={false}
+                panOnScroll
+                panOnDrag={false}
+                elementsSelectable
+                nodesDraggable
+                edgesUpdatable={false}
+                translateExtent={[[-200, -200], [1600, 900]]}
+                selectionMode={SelectionMode.Partial}
+                onInit={(instance) => {
+                  flowRef.current = instance
+                }}
+                onNodeClick={(_, node) => {
+                  setSelectedId(node.id)
+                  closeMenu()
+                }}
+                onNodeContextMenu={(evt) => {
+                  evt.preventDefault()
+                  closeMenu()
+                }}
+                onPaneClick={() => {
+                  closeMenu()
+                }}
+                onPaneContextMenu={handlePaneContextMenu}
+                onNodeDoubleClick={(_, node) => {
+                  if (typeof window !== 'undefined') {
+                    window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
+                  }
+                  navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
+                }}
+                onNodeDragStop={(_, node) => {
+                  updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
+                }}
+                fitView
+                fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
+                onMoveEnd={(_, state) => setZoom(state.zoom)}
+              >
+                {showGrid && <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />}
+              </ReactFlow>
             </div>
-          )}
+
+            <button type="button" className="workspace-agent" onClick={() => navigate('/workspace/new')} aria-label="Open agent workspace">
+              <img src={agentImage} alt="Ask me anything" />
+            </button>
+
+            {menuPosition && (
+              <div
+                className="workspace-context-menu"
+                style={{ left: menuPosition.x, top: menuPosition.y }}
+                onClick={(evt) => evt.stopPropagation()}
+              >
+                <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
+                <ul>
+                  {menuItems.map((item, idx) => (
+                    <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
