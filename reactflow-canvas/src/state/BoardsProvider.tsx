@@ -277,12 +277,8 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const promptNewBoard = useCallback(async () => {
-    const index = boardsRef.current.length
-    const defaultName = `Workspace ${(index + 1).toString().padStart(2, '0')}`
-    const name =
-      typeof window !== 'undefined' ? window.prompt('Name for the new board:', defaultName) ?? defaultName : defaultName
     try {
-      const board = await createBoard({ title: name, template: null })
+      const board = await createBoard({ template: null })
       if (typeof window !== 'undefined') {
         window.sessionStorage.setItem('workspace:lastCreatedBoardId', board.id)
       }
