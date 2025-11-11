@@ -486,6 +486,10 @@
   opacity: 1;
 }
 
+.workspace-node--editing .workspace-node__square {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.6), 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
 .workspace-node__square {
   width: 84px;
   height: 84px;
@@ -498,6 +502,28 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.workspace-node__input {
+  width: 160px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.04);
+  font-size: 13px;
+  text-align: center;
+  color: #0f172a;
+  outline: none;
+}
+
+.workspace-node__input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.workspace-node__input::placeholder {
+  color: rgba(100, 116, 139, 0.6);
 }
 
 .workspace-node__title {

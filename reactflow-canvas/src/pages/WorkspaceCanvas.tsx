@@ -41,13 +41,38 @@ const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { boards, updateBoard, promptNewBoard } = useBoards()
+  const { boards, createBoard, updateBoard } = useBoards()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const flowRef = useRef<ReactFlowInstance | null>(null)
   const [showGrid, setShowGrid] = useState(true)
   const [zoom, setZoom] = useState(1)
+  const [editingBoardId, setEditingBoardId] = useState<string | null>(null)
+
+  const handleRename = useCallback(
+    async (boardId: string, nextTitle: string) => {
+      const board = boards.find((item) => item.id === boardId)
+      setEditingBoardId(null)
+      if (!board) return
+      const trimmed = nextTitle.trim()
+      if (!trimmed || trimmed === board.title) {
+        return
+      }
+      try {
+        await updateBoard(boardId, (prev) => ({
+          ...prev,
+          title: trimmed,
+        }))
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to rename workspace board', error)
+        }
+      }
+    },
+    [boards, updateBoard],
+  )
+
   const nodes = useMemo(
     () =>
       boards.map<WorkspaceNodeType>((board, index) => ({
@@ -58,16 +83,24 @@ export default function WorkspaceCanvas() {
           title: board.title,
           meta: board.meta,
           color: board.color,
+          isEditing: editingBoardId === board.id,
+          onRename: (nextTitle: string) => {
+            void handleRename(board.id, nextTitle)
+          },
+          onRenameCancel: () => {
+            setEditingBoardId(null)
+          },
         } satisfies WorkspaceNodeData,
         draggable: true,
         selected: board.id === selectedId,
       })),
-    [boards, selectedId],
+    [boards, selectedId, editingBoardId, handleRename],
   )
 
   useEffect(() => {
     if (boards.length === 0) {
       setSelectedId(null)
+      setEditingBoardId(null)
       return
     }
 
@@ -76,6 +109,7 @@ export default function WorkspaceCanvas() {
       const exists = boards.some((board) => board.id === state.createdBoardId)
       if (exists) {
         setSelectedId(state.createdBoardId)
+        setEditingBoardId(null)
         navigate(location.pathname, { replace: true, state: {} })
         return
       }
@@ -87,6 +121,7 @@ export default function WorkspaceCanvas() {
         const exists = boards.some((board) => board.id === storedId)
         if (exists) {
           setSelectedId(storedId)
+          setEditingBoardId(null)
           window.sessionStorage.removeItem(LAST_CREATED_STORAGE_KEY)
           return
         }
@@ -99,6 +134,22 @@ export default function WorkspaceCanvas() {
   }, [boards, location, navigate, selectedId])
 
   const closeMenu = useCallback(() => setMenuPosition(null), [])
+
+  const startBoardCreation = useCallback(async () => {
+    closeMenu()
+    try {
+      const created = await createBoard({ template: null })
+      setSelectedId(created.id)
+      setEditingBoardId(created.id)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Failed to create workspace board', error)
+      }
+    }
+  }, [closeMenu, createBoard])
 
   useEffect(() => {
     const handler = (evt: KeyboardEvent) => {
@@ -125,15 +176,15 @@ export default function WorkspaceCanvas() {
     (item: string) => {
       closeMenu()
       if (item === 'Create board') {
-        promptNewBoard()
+        void startBoardCreation()
       }
     },
-    [closeMenu, promptNewBoard],
+    [closeMenu, startBoardCreation],
   )
 
   const handlePlusClick = useCallback(() => {
-    promptNewBoard()
-  }, [promptNewBoard])
+    void startBoardCreation()
+  }, [startBoardCreation])
 
   const handleZoomIn = useCallback(() => {
     if (!flowRef.current) return
@@ -172,32 +223,39 @@ export default function WorkspaceCanvas() {
         <h1>Start from scratch in a new workspace</h1>
       </header>
 
-      <div className="workspace-body">
-        <nav className="workspace-rail" aria-label="Primary">
-          {[FiGrid, FiCompass, FiLayers, FiSettings].map((Icon, idx) => (
-            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
-              <Icon />
-            </button>
-          ))}
-        </nav>
-
-        <aside className="workspace-sidebar">
-          <h2>To do list</h2>
-          <ul className="workspace-tasks">
-            {['Task label', 'Task label', 'Task label'].map((label, idx) => (
-              <li key={idx} className="workspace-task">
-                <input type="checkbox" aria-label={label} />
-                <span>{label}</span>
-              </li>
+        <div className="workspace-body">
+          <nav className="workspace-rail" aria-label="Primary">
+            {[FiGrid, FiCompass, FiLayers, FiSettings].map((Icon, idx) => (
+              <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
+                <Icon />
+              </button>
             ))}
-          </ul>
-          <div className="workspace-sidebar-links">
-            <button type="button">Send for digital signature</button>
-            <button type="button">Updates</button>
-          </div>
-        </aside>
+          </nav>
 
-          <div className="workspace-canvas" ref={canvasRef} onClick={() => closeMenu()}>
+          <aside className="workspace-sidebar">
+            <h2>To do list</h2>
+            <ul className="workspace-tasks">
+              {['Task label', 'Task label', 'Task label'].map((label, idx) => (
+                <li key={idx} className="workspace-task">
+                  <input type="checkbox" aria-label={label} />
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="workspace-sidebar-links">
+              <button type="button">Send for digital signature</button>
+              <button type="button">Updates</button>
+            </div>
+          </aside>
+
+          <div
+            className="workspace-canvas"
+            ref={canvasRef}
+            onClick={() => {
+              setEditingBoardId(null)
+              closeMenu()
+            }}
+          >
             <div className="workspace-flow">
               <div className="workspace-flow__overlay">
                 <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
@@ -248,30 +306,36 @@ export default function WorkspaceCanvas() {
                 edgesUpdatable={false}
                 translateExtent={[[-200, -200], [1600, 900]]}
                 selectionMode={SelectionMode.Partial}
-                onInit={(instance) => {
-                  flowRef.current = instance
-                }}
-                onNodeClick={(_, node) => {
-                  setSelectedId(node.id)
-                  closeMenu()
-                }}
-                onNodeContextMenu={(evt) => {
-                  evt.preventDefault()
-                  closeMenu()
-                }}
-                onPaneClick={() => {
-                  closeMenu()
-                }}
-                onPaneContextMenu={handlePaneContextMenu}
-                onNodeDoubleClick={(_, node) => {
-                  if (typeof window !== 'undefined') {
-                    window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
-                  }
-                  navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
-                }}
-                onNodeDragStop={(_, node) => {
-                  updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
-                }}
+                  onInit={(instance) => {
+                    flowRef.current = instance
+                  }}
+                  onNodeClick={(_, node) => {
+                    setSelectedId(node.id)
+                    setEditingBoardId(null)
+                    closeMenu()
+                  }}
+                  onNodeContextMenu={(evt) => {
+                    evt.preventDefault()
+                    setEditingBoardId(null)
+                    closeMenu()
+                  }}
+                  onPaneClick={() => {
+                    setEditingBoardId(null)
+                    closeMenu()
+                  }}
+                  onPaneContextMenu={handlePaneContextMenu}
+                  onNodeDoubleClick={(_, node) => {
+                    if (editingBoardId === node.id) {
+                      return
+                    }
+                    if (typeof window !== 'undefined') {
+                      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
+                    }
+                    navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
+                  }}
+                  onNodeDragStop={(_, node) => {
+                    updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
+                  }}
                 fitView
                 fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
                 onMoveEnd={(_, state) => setZoom(state.zoom)}
