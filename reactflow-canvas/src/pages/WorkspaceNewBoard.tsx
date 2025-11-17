@@ -68,7 +68,7 @@ export default function WorkspaceNewBoard() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const { createBoard, updateBoard, boards } = useBoards()
+  const { createBoard, updateBoard, boards, uploadFile } = useBoards()
   const [searchParams] = useSearchParams()
   const boardIdParam = searchParams.get('boardId')
   const editingBoard = useMemo(
@@ -100,45 +100,6 @@ export default function WorkspaceNewBoard() {
     )
   }, [isEditing, setNodes])
 
-  const handleFilesChange = useCallback(
-    (laneId: string, files: string[]) => {
-      setNodes((prev) =>
-        prev.map((node) =>
-          node.id === laneId
-            ? {
-                ...node,
-                data: {
-                  ...(node.data as UploadLaneData),
-                  files: Array.from(new Set([...(node.data as UploadLaneData).files, ...files])),
-                } as UploadLaneData,
-              }
-            : node,
-        ),
-      )
-    },
-    [setNodes],
-  )
-
-  const nodesWithHandlers = useMemo(
-    () =>
-      nodes.map((node) =>
-        node.type === 'uploadLane'
-          ? {
-              ...node,
-              data: {
-                ...(node.data as UploadLaneData),
-                onFilesChange: (fileList: FileList | null) => {
-                  if (!fileList) return
-                  const names = Array.from(fileList).map((f) => f.name)
-                  handleFilesChange(node.id, names)
-                },
-              },
-            }
-          : node,
-      ),
-    [nodes, handleFilesChange],
-  )
-
   const laneData = useMemo(
     () =>
       nodes
@@ -152,6 +113,81 @@ export default function WorkspaceNewBoard() {
           }
         }),
     [nodes],
+  )
+
+  const handleLaneFilesSelected = useCallback(
+    async (laneId: string, fileList: FileList | null) => {
+      if (!fileList || fileList.length === 0) return
+      const filesArray = Array.from(fileList)
+      const fileNames = filesArray.map((file) => file.name)
+
+      setNodes((prev) =>
+        prev.map((node) =>
+          node.id === laneId
+            ? {
+                ...node,
+                data: {
+                  ...(node.data as UploadLaneData),
+                  files: Array.from(
+                    new Set([...(node.data as UploadLaneData).files ?? [], ...fileNames]),
+                  ),
+                } as UploadLaneData,
+              }
+            : node,
+        ),
+      )
+
+      if (!activeBoardId) return
+
+      try {
+        await Promise.all(filesArray.map((file) => uploadFile(activeBoardId, file)))
+        const nextLaneData = laneData.map((lane) =>
+          lane.id === laneId ? { ...lane, files: Array.from(new Set([...lane.files, ...fileNames])) } : lane,
+        )
+        const filesCount = nextLaneData.reduce((total, lane) => total + lane.files.length, 0)
+        await updateBoard(activeBoardId, (prev) => ({
+          ...prev,
+          lanes: nextLaneData,
+          filesCount,
+        }))
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to upload files for lane', error)
+        }
+        setNodes((prev) =>
+          prev.map((node) =>
+            node.id === laneId
+              ? {
+                  ...node,
+                  data: {
+                    ...(node.data as UploadLaneData),
+                    files: ((node.data as UploadLaneData).files ?? []).filter((name) => !fileNames.includes(name)),
+                  } as UploadLaneData,
+                }
+              : node,
+          ),
+        )
+      }
+    },
+    [activeBoardId, laneData, setNodes, updateBoard, uploadFile],
+  )
+
+  const nodesWithHandlers = useMemo(
+    () =>
+      nodes.map((node) =>
+        node.type === 'uploadLane'
+          ? {
+              ...node,
+              data: {
+                ...(node.data as UploadLaneData),
+                onFilesChange: (fileList: FileList | null) => {
+                  void handleLaneFilesSelected(node.id, fileList)
+                },
+              },
+            }
+          : node,
+      ),
+    [nodes, handleLaneFilesSelected],
   )
 
   useEffect(() => {
@@ -202,56 +238,73 @@ export default function WorkspaceNewBoard() {
 
   useEffect(() => {
     if (isEditing || hasAutoCreatedRef.current) return
-    hasAutoCreatedRef.current = true
-    const created = createBoard({
-      template: null,
-      lanes: laneData,
-      tasksCount: todoItems.length,
-    })
-    autoCreatedBoardIdRef.current = created.id
-    setActiveBoardId(created.id)
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+    let cancelled = false
+
+    const bootstrap = async () => {
+      hasAutoCreatedRef.current = true
+      try {
+        const created = await createBoard({
+          template: null,
+          lanes: laneData,
+          tasksCount: todoItems.length,
+        })
+        if (cancelled) return
+        autoCreatedBoardIdRef.current = created.id
+        setActiveBoardId(created.id)
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+        }
+      } catch (error) {
+        hasAutoCreatedRef.current = false
+        if (import.meta.env.DEV) {
+          console.error('Failed to bootstrap workspace board', error)
+        }
+      }
+    }
+
+    void bootstrap()
+
+    return () => {
+      cancelled = true
     }
   }, [createBoard, isEditing, laneData])
 
   const handleTemplateSelect = useCallback(
-    (templateLabel: string) => {
+    async (templateLabel: string) => {
       setSelectedTemplate(templateLabel)
-      setActiveBoardId((current) => {
-        if (!current) {
-          const existingId = autoCreatedBoardIdRef.current
-          if (existingId) {
-            updateBoard(existingId, (prev) => ({
-              ...prev,
-              template: templateLabel,
-              title: templateLabel,
-            }))
-            if (typeof window !== 'undefined') {
-              window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, existingId)
-            }
-            return existingId
-          }
-          const created = createBoard({
+      let targetId = activeBoardId ?? autoCreatedBoardIdRef.current ?? null
+
+      if (!targetId) {
+        try {
+          const created = await createBoard({
             template: templateLabel,
             lanes: laneData,
             tasksCount: todoItems.length,
             title: templateLabel,
           })
+          targetId = created.id
           autoCreatedBoardIdRef.current = created.id
-          if (typeof window !== 'undefined') {
-            window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+          setActiveBoardId(created.id)
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Failed to create workspace for template', error)
           }
-          return created.id
+          return
         }
-        updateBoard(current, (prev) => ({
+      } else {
+        await updateBoard(targetId, (prev) => ({
           ...prev,
           template: templateLabel,
           title: templateLabel,
         }))
-        return current
-      })
-      const idToStore = autoCreatedBoardIdRef.current ?? activeBoardId
+        setActiveBoardId(targetId)
+      }
+
+      if (!targetId) return
+
+      autoCreatedBoardIdRef.current = targetId
+
+      const idToStore = autoCreatedBoardIdRef.current ?? targetId
       if (idToStore && typeof window !== 'undefined') {
         window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, idToStore)
       }
@@ -269,7 +322,7 @@ export default function WorkspaceNewBoard() {
     if (filesCount) metaParts.push(`${filesCount} files`)
     const meta = metaParts.length > 0 ? metaParts.join(', ') : 'Workspace board'
 
-    updateBoard(activeBoardId, (prev) => ({
+      void updateBoard(activeBoardId, (prev) => ({
       ...prev,
       lanes: laneData,
       filesCount,
