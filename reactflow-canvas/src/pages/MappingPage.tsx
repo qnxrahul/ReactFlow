@@ -1,174 +1,220 @@
 import { useNavigate } from 'react-router-dom'
-import FlowStepper from '../components/FlowStepper'
-import '../mapping-flow.css'
+import { Background, BackgroundVariant, ReactFlow, useEdgesState, useNodesState, type Edge, type Node } from '@xyflow/react'
+import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
+import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
+import '../workspace-board.css'
 
-const mappingChecklist = [
-  'Normalize document names and sources across ERP, billing, and manual uploads',
-  'Surface AI extracted tags so reviewers can pair evidence faster',
-  'Confirm the mapping ties back to the testing matrix & control IDs',
-  'Flag any duplicates or missing support before proceeding',
+type UploadLaneNodeType = Node<UploadLaneData>
+
+const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
+
+const todoItems = [
+  'Complete mapping checklist',
+  'Review AI extracted tags',
+  'Confirm control IDs',
+  'Flag missing evidence',
+  'Hand off to Workpaper',
 ]
 
-const mappingStats = [
-  { label: 'documents mapped', value: '18' },
-  { label: 'systems reconciled', value: '4' },
-  { label: 'open questions', value: '2' },
-  { label: 'AI confidence', value: '92%' },
+const mappingColumns = [
+  {
+    title: 'Items to be tested',
+    files: ['Invoice batch 1483', 'Revenue rec schedule', 'Billing summary export', 'Support ticket export'],
+  },
+  {
+    title: 'Sample documentation',
+    files: ['Contract set B', 'Variance memo', 'Sampling worksheet'],
+  },
+  {
+    title: 'Document mapping',
+    files: ['WP-REV-12', 'WP-REV-18', 'WP-REV-22', 'Pending pairing'],
+  },
+]
+
+const mappingHighlights = [
+  { label: 'Owner', value: 'Priya Shah' },
+  { label: 'Approver', value: 'Marcus Le' },
+  { label: 'AI status', value: 'Extraction finished · 2m ago' },
 ]
 
 const mappingTags = ['Revenue', 'Q4 FY25', 'SOX 302', 'Sampling', 'AI summary', 'Pending approver']
 
-const mappingColumns = [
-  { title: 'Source documents', items: ['Invoice batch 1483', 'Rev rec schedule', 'Billing summary', 'Support ticket export'] },
-  { title: 'AI tags', items: ['Customer', 'Contract #', 'Amount', 'Period', 'Control ref'] },
-  { title: 'Workpaper pairing', items: ['WP-REV-12', 'WP-REV-18', 'WP-REV-22', 'WP-REV-26'] },
+const initialUploadNodes: UploadLaneNodeType[] = [
+  {
+    id: 'todo-lane',
+    type: 'uploadLane',
+    position: { x: 0, y: 0 },
+    data: { title: 'Items to be tested', files: ['theprojektis-design-tokens.zip'] } satisfies UploadLaneData,
+    draggable: false,
+  },
+  {
+    id: 'sample-lane',
+    type: 'uploadLane',
+    position: { x: 320, y: 0 },
+    data: { title: 'Sample Documentation', files: [] } satisfies UploadLaneData,
+    draggable: false,
+  },
+  {
+    id: 'mapping-lane',
+    type: 'uploadLane',
+    position: { x: 640, y: 0 },
+    data: { title: 'Document Mapping', files: [] } satisfies UploadLaneData,
+    draggable: false,
+  },
 ]
 
-const mappingMatches = [
-  { source: 'Invoice batch 1483 · $2.4M', target: 'WP-REV-12 · Sampling', status: 'Paired', tone: 'success' as const },
-  { source: 'Rev rec schedule · Q4', target: 'WP-REV-18 · Analytics', status: 'Needs review', tone: 'warn' as const },
-  { source: 'Support ticket export', target: 'Pending', status: 'Awaiting tag', tone: 'pending' as const },
-]
+const nodeTypes = { uploadLane: UploadLaneNode }
+const initialEdges: Edge[] = []
 
 export default function MappingPage() {
   const navigate = useNavigate()
+  const [nodes, , onNodesChange] = useNodesState(initialUploadNodes)
+  const [edges, , onEdgesChange] = useEdgesState(initialEdges)
+
+  const mappingMeta = mappingColumns.reduce((acc, column) => acc + column.files.length, 0)
 
   return (
-    <div className="flow-page flow-page--mapping">
-      <header className="flow-header">
+    <div className="workspace-page workspace-page--new mapping-page">
+      <header className="workspace-hero workspace-hero--new mapping-hero">
         <div>
-          <div className="flow-header__meta">Engagement workspace · Step 01</div>
-          <h1>Map source documents before workpaper build-out.</h1>
-          <p>
-            Everything uploaded by the audit team and AI agent is normalized here. Once the mapping is signed off we pipe the curated
-            evidence directly into the workpaper canvas.
-          </p>
+          <h1>Document mapping before workpaper build-out.</h1>
+          <p>Normalize ERP, billing, and manual uploads, then lock the pairings that will feed the workpaper canvas.</p>
         </div>
-        <div className="flow-header__actions">
-          <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper')}>
+        <div className="mapping-hero__actions">
+          <button type="button" className="mapping-hero__btn mapping-hero__btn--primary" onClick={() => navigate('/workpaper')}>
             Start workpaper build
           </button>
-          <button type="button" className="flow-btn--secondary" onClick={() => navigate('/workspace/new')}>
-            Adjust upload lanes
-          </button>
+          <button type="button" className="mapping-hero__btn mapping-hero__btn--secondary">Share mapping</button>
         </div>
       </header>
 
-      <FlowStepper activeStep="mapping" />
-
-      <div className="flow-body">
-        <section className="flow-card">
-          <h2>Mapping checklist</h2>
-          <p className="flow-card__summary">
-            Review the automatically generated pairings or override them manually. A short checklist keeps everyone aligned before any
-            downstream analysis begins.
-          </p>
-          <ul className="flow-list">
-            {mappingChecklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-
-          <div className="flow-card__stats">
-            {mappingStats.map((stat) => (
-              <div key={stat.label} className="flow-card__stat">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flow-card__actions">
-            <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper')}>
-              Confirm & continue
+      <div className="workspace-body workspace-body--single">
+        <nav className="workspace-rail" aria-label="Primary">
+          {navIcons.map((Icon, idx) => (
+            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
+              <Icon />
             </button>
-            <button type="button">Export mapping</button>
-            <button type="button">Share summary</button>
-          </div>
-        </section>
+          ))}
+        </nav>
 
-        <section className="flow-preview">
-          <span className="flow-preview__label">Mapping workspace</span>
-          <div className="mapping-frame">
-            <div className="mapping-frame__top">
-              <div>
-                <strong>Document mapping board</strong>
-                <span>3 lanes · synced 2 mins ago</span>
+        <div className="workspace-new-canvas mapping-canvas">
+          <div className="workspace-board-top mapping-board-top">
+            <div>Engagement &gt; Spaces &gt; Mapping</div>
+            <span>Frame 2110704769</span>
+          </div>
+
+          <div className="workspace-todo-card">
+            <div className="workspace-todo-header">
+              <strong>To Do List</strong>
+              <span>{todoItems.length} cards</span>
+            </div>
+            <ul className="workspace-todo-items">
+              {todoItems.map((item) => (
+                <li key={item} className="workspace-todo-item">
+                  <label>
+                    <input type="checkbox" />
+                    <span>{item}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="workspace-todo-update">
+              Update
+            </button>
+          </div>
+
+          <div className="workspace-board-region mapping-board-region">
+            <div className="workspace-board-actions">
+              <div className="workspace-board-status">
+                <span className="workspace-board-status__label">Mapping stage</span>
+                <strong>Document pairing ready</strong>
+                <button type="button" className="workspace-board-status__action" onClick={() => navigate('/workpaper')}>
+                  Start workpaper build
+                </button>
               </div>
-              <button type="button">Auto match</button>
             </div>
 
-            <div className="mapping-columns">
+            <div className="mapping-columns-grid">
               {mappingColumns.map((column) => (
-                <div key={column.title} className="mapping-column">
-                  <div className="mapping-column__title">{column.title}</div>
+                <div key={column.title} className="mapping-column-card">
+                  <header>
+                    <span>{column.title}</span>
+                    <strong>{column.files.length}</strong>
+                  </header>
                   <ul>
-                    {column.items.map((item) => (
-                      <li key={item}>{item}</li>
+                    {column.files.map((file) => (
+                      <li key={file}>{file}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
 
-            <div className="mapping-matchlist">
-              {mappingMatches.map((match) => (
-                <div key={match.source} className="mapping-match">
-                  <span>{match.source}</span>
-                  <span>{match.target}</span>
-                  <span
-                    className={
-                      match.tone === 'success'
-                        ? 'mapping-match__pill mapping-match__pill--success'
-                        : match.tone === 'warn'
-                          ? 'mapping-match__pill mapping-match__pill--warn'
-                          : 'mapping-match__pill mapping-match__pill--pending'
-                    }
-                  >
-                    {match.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+            <div className="mapping-flow-preview">
+              <div className="mapping-flow-preview__canvas">
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  nodeTypes={nodeTypes}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  nodesDraggable={false}
+                  zoomOnScroll={false}
+                  zoomOnPinch={false}
+                  panOnDrag
+                  panOnScroll
+                  fitView
+                  fitViewOptions={{ padding: 0.4 }}
+                  proOptions={{ hideAttribution: true }}
+                >
+                  <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
+                </ReactFlow>
+              </div>
 
-        <aside className="flow-sidebar">
-          <span className="flow-badge">Live sync enabled</span>
-          <div className="flow-sidebar__item">
-            <strong>Owner</strong>
-            Priya Shah · Engagement senior
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Approver</strong>
-            Marcus Le (Manager)
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Agent status</strong>
-            AI agent finished entity extraction · 2 mins ago
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Highlights</strong>
-            No exceptions detected · 3 support items flagged for clarification
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Tags</strong>
-            <div className="flow-tag-list">
-              {mappingTags.map((tag) => (
-                <span key={tag} className="flow-tag">
-                  {tag}
+              <aside className="mapping-flow-sidebar">
+                {mappingHighlights.map((item) => (
+                  <div key={item.label} className="mapping-flow-sidebar__item">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </div>
+                ))}
+                <div className="mapping-flow-sidebar__item">
+                  <span>Documents</span>
+                  <strong>{mappingMeta}</strong>
+                </div>
+                <div className="mapping-flow-sidebar__tags">
+                  {mappingTags.map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+              </aside>
+            </div>
+
+            <div className="workspace-action-bar">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <span key={idx} className="workspace-action-dot">
+                  +
                 </span>
               ))}
+              <button type="button" className="workspace-action-label" onClick={() => navigate('/workpaper')}>
+                [Action bar]
+              </button>
+            </div>
+
+            <div className="workspace-chat workspace-chat--new">
+              <label htmlFor="mapping-chat-input">Ask me anything...</label>
+              <textarea id="mapping-chat-input" placeholder="Request automations, templates, or help." />
+              <button type="button">Send</button>
             </div>
           </div>
-        </aside>
+        </div>
       </div>
 
-      <div className="flow-nav-buttons">
+      <div className="mapping-flow-nav">
         <button type="button" onClick={() => navigate('/workspace')}>
           Back to workspace
         </button>
-        <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper')}>
+        <button type="button" onClick={() => navigate('/workpaper')}>
           Next · Workpaper
         </button>
       </div>
