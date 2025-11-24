@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import FlowStepper from '../components/FlowStepper'
 import '../mapping-flow.css'
-import workpaperImage from '../assets/workpaper.jpg'
 
 const workpaperTasks = [
   'Summarize the mapped evidence into testing steps',
@@ -18,6 +17,32 @@ const workpaperStats = [
 ]
 
 const workpaperTags = ['Control 12.9', 'Assertions', 'Population tie-out', 'AI summary', 'Awaiting reviewer']
+
+const workpaperSteps = [
+  { label: '00 Overview', status: 'Pinned' },
+  { label: '01 Planning', status: 'Ready' },
+  { label: '02 Testing', status: 'In progress' },
+  { label: '03 Results', status: 'Review' },
+]
+
+const workpaperCards = [
+  {
+    title: 'Testing step · Revenue cutoff',
+    meta: 'Linked to WP-REV-18 · Assertions A/R/C',
+    footer: ['Owner · Alex', 'Last edit · 2m ago'],
+  },
+  {
+    title: 'AI summary',
+    meta: 'Variance noted on sample 11 · flagged for review',
+    footer: ['Confidence 0.92', 'Auto note'],
+  },
+]
+
+const workpaperStream = [
+  { actor: 'Marcus', detail: 'Add reasoning for sampling expansion' },
+  { actor: 'AI agent', detail: 'Drafted summary for attachment set B' },
+  { actor: 'Dana', detail: 'Ready to review once notes addressed' },
+]
 
 export default function WorkpaperPage() {
   const navigate = useNavigate()
@@ -77,8 +102,56 @@ export default function WorkpaperPage() {
         </section>
 
         <section className="flow-preview">
-          <span className="flow-preview__label">Frame · Workpaper</span>
-          <img src={workpaperImage} alt="Workpaper canvas mock" />
+          <span className="flow-preview__label">Workpaper canvas</span>
+          <div className="workpaper-frame">
+            <div className="workpaper-frame__top">
+              <div>
+                <strong>Workpaper · REV-23</strong>
+                <span>Autosaving · syncing with workspace</span>
+              </div>
+              <button type="button">Show history</button>
+            </div>
+
+            <div className="workpaper-grid">
+              <div className="workpaper-panel">
+                <div className="workpaper-panel__title">Sections</div>
+                <ul>
+                  {workpaperSteps.map((step) => (
+                    <li key={step.label}>
+                      <span>{step.label}</span>
+                      <span className="workpaper-chip">{step.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="workpaper-canvas">
+                {workpaperCards.map((card) => (
+                  <div key={card.title} className="workpaper-card">
+                    <div className="workpaper-card__title">{card.title}</div>
+                    <div className="workpaper-card__meta">{card.meta}</div>
+                    <div className="workpaper-card__footer">
+                      {card.footer.map((item) => (
+                        <span key={item}>{item}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="workpaper-stream">
+                <div className="workpaper-stream__title">Activity</div>
+                <ul>
+                  {workpaperStream.map((event) => (
+                    <li key={event.detail}>
+                      <span>{event.actor}</span>
+                      <span className="workpaper-chip">{event.detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
         </section>
 
         <aside className="flow-sidebar">

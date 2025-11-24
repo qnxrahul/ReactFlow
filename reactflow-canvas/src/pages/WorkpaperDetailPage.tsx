@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import FlowStepper from '../components/FlowStepper'
 import '../mapping-flow.css'
-import workpaperDetailImage from '../assets/workpaper-detail.jpg'
 
 const detailChecklist = [
   'Review open comments from manager and QA reviewer',
@@ -18,6 +17,25 @@ const detailStats = [
 ]
 
 const detailTags = ['Sign-off', 'Ready to publish', 'No exceptions', 'AI validated']
+
+const detailTimeline = [
+  { label: 'Draft updated', when: 'Yesterday · 3:12 PM', actor: 'Alex' },
+  { label: 'Manager review', when: 'Today · 9:04 AM', actor: 'Marcus' },
+  { label: 'QA review', when: 'Today · 10:33 AM', actor: 'Dana' },
+  { label: 'Ready to publish', when: 'Today · 10:45 AM', actor: 'System' },
+]
+
+const detailApprovals = [
+  { role: 'Manager', actor: 'Marcus Le', time: '10:35 AM' },
+  { role: 'QA', actor: 'Dana Ellis', time: '10:42 AM' },
+]
+
+const detailAnnotations = [
+  'Comment 12 resolved · evidence attached',
+  'Assertion coverage complete',
+  'AI validated tie-out for contract set B',
+  'Change log locked for this cycle',
+]
 
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
@@ -76,8 +94,52 @@ export default function WorkpaperDetailPage() {
         </section>
 
         <section className="flow-preview">
-          <span className="flow-preview__label">Frame · Workpaper detail</span>
-          <img src={workpaperDetailImage} alt="Workpaper detail mock" />
+          <span className="flow-preview__label">Workpaper detail</span>
+          <div className="detail-frame">
+            <div className="detail-frame__top">
+              <div>
+                <strong>Detail · REV-23</strong>
+                <span>All comments resolved · no open exceptions</span>
+              </div>
+              <button type="button">View audit trail</button>
+            </div>
+
+            <div className="detail-grid">
+              <div className="detail-timeline">
+                {detailTimeline.map((item) => (
+                  <div key={item.label} className="detail-timeline__item">
+                    <div>
+                      <strong>{item.label}</strong>
+                      <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.7)' }}>{item.actor}</div>
+                    </div>
+                    <span style={{ fontSize: 12, color: 'rgba(226,232,240,0.6)' }}>{item.when}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="detail-panel">
+                <div className="detail-panel__title">Approvals</div>
+                <div className="detail-approvals">
+                  {detailApprovals.map((approval) => (
+                    <div key={approval.actor} className="detail-approval">
+                      <span>{approval.role}</span>
+                      <span>
+                        {approval.actor} · {approval.time}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="detail-panel__title">Annotations</div>
+                <div className="detail-annotations">
+                  {detailAnnotations.map((note) => (
+                    <div key={note} className="detail-annotation">
+                      {note}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <aside className="flow-sidebar">

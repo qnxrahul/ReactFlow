@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import FlowStepper from '../components/FlowStepper'
 import '../mapping-flow.css'
-import mappingImage from '../assets/mapping.jpg'
 
 const mappingChecklist = [
   'Normalize document names and sources across ERP, billing, and manual uploads',
@@ -18,6 +17,18 @@ const mappingStats = [
 ]
 
 const mappingTags = ['Revenue', 'Q4 FY25', 'SOX 302', 'Sampling', 'AI summary', 'Pending approver']
+
+const mappingColumns = [
+  { title: 'Source documents', items: ['Invoice batch 1483', 'Rev rec schedule', 'Billing summary', 'Support ticket export'] },
+  { title: 'AI tags', items: ['Customer', 'Contract #', 'Amount', 'Period', 'Control ref'] },
+  { title: 'Workpaper pairing', items: ['WP-REV-12', 'WP-REV-18', 'WP-REV-22', 'WP-REV-26'] },
+]
+
+const mappingMatches = [
+  { source: 'Invoice batch 1483 · $2.4M', target: 'WP-REV-12 · Sampling', status: 'Paired', tone: 'success' as const },
+  { source: 'Rev rec schedule · Q4', target: 'WP-REV-18 · Analytics', status: 'Needs review', tone: 'warn' as const },
+  { source: 'Support ticket export', target: 'Pending', status: 'Awaiting tag', tone: 'pending' as const },
+]
 
 export default function MappingPage() {
   const navigate = useNavigate()
@@ -77,8 +88,49 @@ export default function MappingPage() {
         </section>
 
         <section className="flow-preview">
-          <span className="flow-preview__label">Frame · Mapping</span>
-          <img src={mappingImage} alt="Document mapping mock" />
+          <span className="flow-preview__label">Mapping workspace</span>
+          <div className="mapping-frame">
+            <div className="mapping-frame__top">
+              <div>
+                <strong>Document mapping board</strong>
+                <span>3 lanes · synced 2 mins ago</span>
+              </div>
+              <button type="button">Auto match</button>
+            </div>
+
+            <div className="mapping-columns">
+              {mappingColumns.map((column) => (
+                <div key={column.title} className="mapping-column">
+                  <div className="mapping-column__title">{column.title}</div>
+                  <ul>
+                    {column.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            <div className="mapping-matchlist">
+              {mappingMatches.map((match) => (
+                <div key={match.source} className="mapping-match">
+                  <span>{match.source}</span>
+                  <span>{match.target}</span>
+                  <span
+                    className={
+                      match.tone === 'success'
+                        ? 'mapping-match__pill mapping-match__pill--success'
+                        : match.tone === 'warn'
+                          ? 'mapping-match__pill mapping-match__pill--warn'
+                          : 'mapping-match__pill mapping-match__pill--pending'
+                    }
+                  >
+                    {match.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <aside className="flow-sidebar">
