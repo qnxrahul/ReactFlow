@@ -110,9 +110,9 @@ export default function WorkpaperDetailPage() {
                   <div key={item.label} className="detail-timeline__item">
                     <div>
                       <strong>{item.label}</strong>
-                      <div style={{ fontSize: 12, color: 'rgba(226,232,240,0.7)' }}>{item.actor}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(11,35,59,0.6)' }}>{item.actor}</div>
                     </div>
-                    <span style={{ fontSize: 12, color: 'rgba(226,232,240,0.6)' }}>{item.when}</span>
+                    <span style={{ fontSize: 12, color: 'rgba(11,35,59,0.55)' }}>{item.when}</span>
                   </div>
                 ))}
               </div>
