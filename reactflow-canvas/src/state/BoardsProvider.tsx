@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { computePosition } from '../utils/workspaceLayout'
 import { createWorkspace, listWorkspaces, updateWorkspace, uploadWorkspaceFile } from '../services/workspaceApi'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
 export type WorkspaceLane = {
   id: string
@@ -17,6 +18,14 @@ export type WorkspaceFile = {
   uploadedAt: string
 }
 
+export type WorkspaceWorkflowState = {
+  currentStep: string
+  lastFileName: string | null
+  mappingSavedAt: string | null
+  workpaperSavedAt: string | null
+  detailSavedAt: string | null
+}
+
 export type WorkspaceBoard = {
   id: string
   title: string
@@ -30,6 +39,7 @@ export type WorkspaceBoard = {
   files: WorkspaceFile[]
   createdAt: string
   updatedAt: string
+  workflow: WorkspaceWorkflowState
 }
 
 type NewBoardInput = {
@@ -57,6 +67,14 @@ type BoardsContextValue = {
 const BoardsContext = createContext<BoardsContextValue | undefined>(undefined)
 
 const palette = ['#5f79c6', '#60a5fa', '#22d3ee', '#f97316', '#facc15', '#a855f7']
+
+const defaultWorkflowState = (): WorkspaceWorkflowState => ({
+  currentStep: 'workspace',
+  lastFileName: null,
+  mappingSavedAt: null,
+  workpaperSavedAt: null,
+  detailSavedAt: null,
+})
 
 function computeMeta(lanes?: WorkspaceLane[], tasksCount?: number | null, filesCount?: number | null) {
   const metaParts: string[] = []
@@ -102,6 +120,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
     const tasksCount = board.tasksCount ?? 0
     const meta = board.meta && board.meta.trim().length > 0 ? board.meta : computeMeta(lanes, tasksCount, filesCount)
     const color = board.color ?? palette[index % palette.length]
+    const workflow = board.workflow ?? defaultWorkflowState()
     return {
       ...board,
       position,
@@ -111,6 +130,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
       meta,
       color,
       files: board.files ?? [],
+      workflow,
     }
   }, [])
 
@@ -280,7 +300,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
     try {
       const board = await createBoard({ template: null })
       if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem('workspace:lastCreatedBoardId', board.id)
+        window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, board.id)
       }
     } catch {
       // errors already handled in createBoard

@@ -30,6 +30,7 @@ type WorkspaceBoardDTO = {
   files: WorkspaceFileDTO[]
   createdAt: string
   updatedAt: string
+  workflow?: WorkflowStateDTO | null
 }
 
 type WorkspaceFileDTO = {
@@ -42,10 +43,20 @@ type WorkspaceFileDTO = {
   uploadedAt: string
 }
 
+type WorkflowStateDTO = {
+  currentStep?: string | null
+  lastFileName?: string | null
+  mappingSavedAt?: string | null
+  workpaperSavedAt?: string | null
+  detailSavedAt?: string | null
+}
+
 type FileUploadResponse = {
   workspaceId: string
   file: WorkspaceFileDTO
 }
+
+export type WorkflowStep = 'mapping' | 'workpaper' | 'workpaper-detail'
 
 function normalizeFile(dto: WorkspaceFileDTO): WorkspaceFile {
   return {
@@ -55,6 +66,16 @@ function normalizeFile(dto: WorkspaceFileDTO): WorkspaceFile {
     size: dto.size,
     contentType: dto.contentType ?? dto.content_type ?? null,
     uploadedAt: dto.uploadedAt,
+  }
+}
+
+function normalizeWorkflow(dto?: WorkflowStateDTO | null): WorkspaceBoard['workflow'] {
+  return {
+    currentStep: dto?.currentStep ?? 'workspace',
+    lastFileName: dto?.lastFileName ?? null,
+    mappingSavedAt: dto?.mappingSavedAt ?? null,
+    workpaperSavedAt: dto?.workpaperSavedAt ?? null,
+    detailSavedAt: dto?.detailSavedAt ?? null,
   }
 }
 
@@ -72,6 +93,7 @@ function normalizeWorkspace(dto: WorkspaceBoardDTO): WorkspaceBoard {
     files: (dto.files ?? []).map(normalizeFile),
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
+    workflow: normalizeWorkflow(dto.workflow),
   }
 }
 
@@ -118,4 +140,17 @@ export async function uploadWorkspaceFile(workspaceId: string, file: File): Prom
   })
   const data = await handle<FileUploadResponse>(response)
   return normalizeFile(data.file)
+}
+
+export async function recordWorkflowStep(
+  workspaceId: string,
+  payload: { step: WorkflowStep; fileName?: string },
+): Promise<WorkspaceBoard> {
+  const response = await fetch(`${API_BASE}/workspaces/${workspaceId}/workflow`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await handle<WorkspaceBoardDTO>(response)
+  return normalizeWorkspace(data)
 }

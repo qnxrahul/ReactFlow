@@ -10,7 +10,7 @@ from azure.cosmos import CosmosClient, PartitionKey
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from ..config import Settings
-from ..models import Workspace, WorkspaceCreateRequest, WorkspaceFile, WorkspaceUpdateRequest
+from ..models import Workspace, WorkspaceCreateRequest, WorkspaceFile, WorkspaceUpdateRequest, WorkflowState, WorkflowStepRequest
 
 
 class WorkspaceRepository:
@@ -27,6 +27,9 @@ class WorkspaceRepository:
         raise NotImplementedError
 
     def append_file(self, workspace_id: str, file: WorkspaceFile) -> Workspace:
+        raise NotImplementedError
+
+    def record_workflow_step(self, workspace_id: str, payload: WorkflowStepRequest) -> Workspace:
         raise NotImplementedError
 
 
@@ -76,6 +79,7 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
             tasksCount=payload.tasks_count,
             filesCount=payload.files_count,
             files=[],
+            workflow=payload.workflow or WorkflowState(),
             createdAt=now,
             updatedAt=now,
         )
@@ -102,6 +106,8 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
             data["tasksCount"] = payload.tasks_count
         if payload.files_count is not None:
             data["filesCount"] = payload.files_count
+        if payload.workflow is not None:
+            data["workflow"] = payload.workflow.model_dump(by_alias=True, mode="json")
 
         data["updatedAt"] = datetime.utcnow()
 
@@ -124,6 +130,32 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
         payload = updated.model_dump(by_alias=True, mode="json")
 
         self._container.replace_item(item=workspace_id, body=payload)
+        return updated
+
+    def record_workflow_step(self, workspace_id: str, payload: WorkflowStepRequest) -> Workspace:
+        workspace = self.get_workspace(workspace_id)
+        data = workspace.model_dump(by_alias=True)
+        workflow_data = data.get("workflow") or WorkflowState().model_dump(by_alias=True, mode="json")
+        workflow = WorkflowState.model_validate(workflow_data)
+
+        updates: Dict[str, object] = {"current_step": payload.step}
+        now = datetime.utcnow()
+        if payload.step == "mapping":
+            updates["mapping_saved_at"] = now
+            if payload.file_name:
+                updates["last_file_name"] = payload.file_name
+        elif payload.step == "workpaper":
+            updates["workpaper_saved_at"] = now
+        elif payload.step == "workpaper-detail":
+            updates["detail_saved_at"] = now
+
+        workflow = workflow.model_copy(update=updates)
+        data["workflow"] = workflow.model_dump(by_alias=True, mode="json")
+        data["updatedAt"] = datetime.utcnow()
+
+        updated = Workspace.model_validate(data)
+        payload_json = updated.model_dump(by_alias=True, mode="json")
+        self._container.replace_item(item=workspace_id, body=payload_json)
         return updated
 
 
@@ -169,6 +201,7 @@ class FileBackedWorkspaceRepository(WorkspaceRepository):
             tasksCount=payload.tasks_count,
             filesCount=payload.files_count,
             files=[],
+            workflow=payload.workflow or WorkflowState(),
             createdAt=now,
             updatedAt=now,
         )
@@ -198,6 +231,8 @@ class FileBackedWorkspaceRepository(WorkspaceRepository):
                 item["tasksCount"] = payload.tasks_count
             if payload.files_count is not None:
                 item["filesCount"] = payload.files_count
+            if payload.workflow is not None:
+                item["workflow"] = payload.workflow.model_dump(by_alias=True, mode="json")
             item["updatedAt"] = datetime.utcnow().isoformat()
             items[idx] = item
             self._dump(items)
@@ -214,6 +249,34 @@ class FileBackedWorkspaceRepository(WorkspaceRepository):
             item["files"] = files
             item["filesCount"] = (item.get("filesCount") or 0) + 1
             item["updatedAt"] = datetime.utcnow().isoformat()
+            items[idx] = item
+            self._dump(items)
+            return Workspace.model_validate(item)
+        raise KeyError(workspace_id)
+
+    def record_workflow_step(self, workspace_id: str, payload: WorkflowStepRequest) -> Workspace:
+        items = self._load()
+        for idx, item in enumerate(items):
+            if item["id"] != workspace_id:
+                continue
+            workflow_data = item.get("workflow") or WorkflowState().model_dump(by_alias=True, mode="json")
+            workflow = WorkflowState.model_validate(workflow_data)
+
+            updates: Dict[str, object] = {"current_step": payload.step}
+            now = datetime.utcnow()
+            if payload.step == "mapping":
+                updates["mapping_saved_at"] = now
+                if payload.file_name:
+                    updates["last_file_name"] = payload.file_name
+            elif payload.step == "workpaper":
+                updates["workpaper_saved_at"] = now
+            elif payload.step == "workpaper-detail":
+                updates["detail_saved_at"] = now
+
+            workflow = workflow.model_copy(update=updates)
+            item["workflow"] = workflow.model_dump(by_alias=True, mode="json")
+            item["updatedAt"] = now.isoformat()
+
             items[idx] = item
             self._dump(items)
             return Workspace.model_validate(item)

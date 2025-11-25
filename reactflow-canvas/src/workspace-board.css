@@ -772,6 +772,10 @@
   font-size: 12px;
   font-weight: 500;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .upload-lane__file-icon {

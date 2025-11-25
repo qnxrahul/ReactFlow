@@ -13,6 +13,7 @@ import { FiCompass, FiGrid, FiLayers, FiSettings, FiPlus, FiZoomIn, FiZoomOut, F
 import '../workspace-board.css'
 import { WorkspaceNode, type WorkspaceNodeData } from '../components/WorkspaceNode'
 import { useBoards } from '../state/BoardsProvider'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 import { computePosition } from '../utils/workspaceLayout'
 import agentImage from '../assets/agent.png'
 
@@ -35,8 +36,6 @@ const menuItems = [
 ]
 
 const nodeTypes = { workspace: WorkspaceNode }
-
-const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
 
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
@@ -121,13 +120,13 @@ export default function WorkspaceCanvas() {
     }
 
     if (typeof window !== 'undefined') {
-      const storedId = window.sessionStorage.getItem(LAST_CREATED_STORAGE_KEY)
+      const storedId = window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
       if (storedId) {
         const exists = boards.some((board) => board.id === storedId)
         if (exists) {
           setSelectedId(storedId)
           setEditingBoardId(null)
-          window.sessionStorage.removeItem(LAST_CREATED_STORAGE_KEY)
+          window.sessionStorage.removeItem(LAST_CREATED_WORKSPACE_KEY)
           return
         }
       }
@@ -191,7 +190,7 @@ export default function WorkspaceCanvas() {
         setNamingDraft('')
         setNamingError(null)
         if (typeof window !== 'undefined') {
-          window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+          window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, created.id)
         }
         navigate(`/workspace/new?boardId=${encodeURIComponent(created.id)}`)
       } catch (error) {
@@ -392,7 +391,7 @@ export default function WorkspaceCanvas() {
                   return
                 }
                 if (typeof window !== 'undefined') {
-                  window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
+                  window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, node.id)
                 }
                 navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
               }}

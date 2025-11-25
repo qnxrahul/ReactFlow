@@ -1,6 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
+import { recordWorkflowStep } from '../services/workspaceApi'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
 const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
 
@@ -41,6 +44,29 @@ const detailNotes = [
 
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const workspaceId = useMemo(() => {
+    const state = location.state as { workspaceId?: string } | null
+    if (state?.workspaceId) return state.workspaceId
+    if (typeof window !== 'undefined') {
+      return window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
+    }
+    return null
+  }, [location.state])
+  const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
+
+  useEffect(() => {
+    if (!workspaceId) return
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+    }
+    void recordWorkflowStep(workspaceId, { step: 'workpaper-detail' }).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('Failed to record workpaper detail workflow step', error)
+      }
+    })
+  }, [workspaceId])
 
   return (
     <div className="workspace-page workspace-page--new detail-page">
@@ -66,10 +92,14 @@ export default function WorkpaperDetailPage() {
               <p>Verify approvals, capture annotations, and publish the finalized workpaper back to the workspace.</p>
             </div>
             <div className="detail-header-card__actions">
-              <button type="button" className="detail-header-card__btn detail-header-card__btn--primary" onClick={() => navigate('/workspace')}>
+              <button
+                type="button"
+                className="detail-header-card__btn detail-header-card__btn--primary"
+                onClick={() => navigate('/workspace', workflowNavState)}
+              >
                 Publish to workspace
               </button>
-              <button type="button" className="detail-header-card__btn" onClick={() => navigate('/workpaper')}>
+              <button type="button" className="detail-header-card__btn" onClick={() => navigate('/workpaper', workflowNavState)}>
                 Reopen draft
               </button>
             </div>
@@ -168,7 +198,11 @@ export default function WorkpaperDetailPage() {
                       <span key={tag}>{tag}</span>
                     ))}
                   </div>
-                  <button type="button" className="detail-approvals-panel__cta" onClick={() => navigate('/workspace')}>
+                  <button
+                    type="button"
+                    className="detail-approvals-panel__cta"
+                    onClick={() => navigate('/workspace', workflowNavState)}
+                  >
                     Publish & notify
                   </button>
                 </div>
@@ -179,10 +213,10 @@ export default function WorkpaperDetailPage() {
       </div>
 
       <div className="detail-nav">
-        <button type="button" onClick={() => navigate('/workpaper')}>
+        <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
           Back to workpaper
         </button>
-        <button type="button" onClick={() => navigate('/workspace')}>
+        <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
           Finish & publish
         </button>
       </div>

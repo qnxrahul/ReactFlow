@@ -5,6 +5,7 @@ export type UploadLaneData = {
   title: string
   files: string[]
   onFilesChange?: (files: FileList | null) => void
+  onFileClick?: (fileName: string) => void
 }
 
 export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
@@ -16,10 +17,18 @@ export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
       </div>
       <div className="upload-lane__body">
         {data.files.map((file) => (
-          <div key={file} className="upload-lane__file">
+          <button
+            key={file}
+            type="button"
+            className="upload-lane__file"
+            onClick={(event) => {
+              event.stopPropagation()
+              data.onFileClick?.(file)
+            }}
+          >
             <FiFileText className="upload-lane__file-icon" aria-hidden />
             <span className="upload-lane__file-name">{file}</span>
-          </div>
+          </button>
         ))}
         {data.files.length === 0 && <div className="upload-lane__empty">Drop files or click to upload</div>}
         <label

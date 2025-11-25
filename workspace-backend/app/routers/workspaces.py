@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from ..dependencies import get_blob_service, get_workspace_repository
-from ..models import FileUploadResponse, Workspace, WorkspaceCreateRequest, WorkspaceListResponse, WorkspaceUpdateRequest, WorkspaceFile
+from ..models import FileUploadResponse, Workspace, WorkspaceCreateRequest, WorkspaceListResponse, WorkspaceUpdateRequest, WorkspaceFile, WorkflowStepRequest
 from ..services.blob_storage import BlobStorageService
 from ..services.workspace_repository import WorkspaceRepository
 
@@ -67,3 +67,15 @@ async def upload_workspace_file(
 
     updated = repo.append_file(workspace_id, workspace_file)
     return FileUploadResponse(workspaceId=workspace_id, file=workspace_file)
+
+
+@router.post("/{workspace_id}/workflow", response_model=Workspace)
+def record_workflow_step(
+    workspace_id: str,
+    payload: WorkflowStepRequest,
+    repo: WorkspaceRepository = Depends(get_workspace_repository),
+) -> Workspace:
+    try:
+        return repo.record_workflow_step(workspace_id, payload)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workspace not found")

@@ -1,8 +1,11 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Background, BackgroundVariant, ReactFlow, useEdgesState, useNodesState, type Edge, type Node } from '@xyflow/react'
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
 import '../workspace-board.css'
+import { recordWorkflowStep } from '../services/workspaceApi'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
 type UploadLaneNodeType = Node<UploadLaneData>
 
@@ -68,8 +71,31 @@ const initialEdges: Edge[] = []
 
 export default function MappingPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [nodes, , onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, , onEdgesChange] = useEdgesState(initialEdges)
+
+  const workspaceId = useMemo(() => {
+    const state = location.state as { workspaceId?: string } | null
+    if (state?.workspaceId) return state.workspaceId
+    if (typeof window !== 'undefined') {
+      return window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
+    }
+    return null
+  }, [location.state])
+  const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
+
+  useEffect(() => {
+    if (!workspaceId) return
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+    }
+    void recordWorkflowStep(workspaceId, { step: 'mapping' }).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('Failed to record mapping workflow step', error)
+      }
+    })
+  }, [workspaceId])
 
   const mappingMeta = mappingColumns.reduce((acc, column) => acc + column.files.length, 0)
 
@@ -81,7 +107,11 @@ export default function MappingPage() {
           <p>Normalize ERP, billing, and manual uploads, then lock the pairings that will feed the workpaper canvas.</p>
         </div>
         <div className="mapping-hero__actions">
-          <button type="button" className="mapping-hero__btn mapping-hero__btn--primary" onClick={() => navigate('/workpaper')}>
+          <button
+            type="button"
+            className="mapping-hero__btn mapping-hero__btn--primary"
+            onClick={() => navigate('/workpaper', workflowNavState)}
+          >
             Start workpaper build
           </button>
           <button type="button" className="mapping-hero__btn mapping-hero__btn--secondary">Share mapping</button>
@@ -128,7 +158,11 @@ export default function MappingPage() {
               <div className="workspace-board-status">
                 <span className="workspace-board-status__label">Mapping stage</span>
                 <strong>Document pairing ready</strong>
-                <button type="button" className="workspace-board-status__action" onClick={() => navigate('/workpaper')}>
+                <button
+                  type="button"
+                  className="workspace-board-status__action"
+                  onClick={() => navigate('/workpaper', workflowNavState)}
+                >
                   Start workpaper build
                 </button>
               </div>
@@ -196,7 +230,11 @@ export default function MappingPage() {
                   +
                 </span>
               ))}
-              <button type="button" className="workspace-action-label" onClick={() => navigate('/workpaper')}>
+              <button
+                type="button"
+                className="workspace-action-label"
+                onClick={() => navigate('/workpaper', workflowNavState)}
+              >
                 [Action bar]
               </button>
             </div>
@@ -211,10 +249,10 @@ export default function MappingPage() {
       </div>
 
       <div className="mapping-flow-nav">
-        <button type="button" onClick={() => navigate('/workspace')}>
+        <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
           Back to workspace
         </button>
-        <button type="button" onClick={() => navigate('/workpaper')}>
+        <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
           Next · Workpaper
         </button>
       </div>

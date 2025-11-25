@@ -1,6 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
+import { recordWorkflowStep } from '../services/workspaceApi'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
 const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
 
@@ -50,6 +53,29 @@ const todoItems = ['Confirm mapping', 'Add variance note', 'Attach sampling set'
 
 export default function WorkpaperPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const workspaceId = useMemo(() => {
+    const state = location.state as { workspaceId?: string } | null
+    if (state?.workspaceId) return state.workspaceId
+    if (typeof window !== 'undefined') {
+      return window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
+    }
+    return null
+  }, [location.state])
+  const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
+
+  useEffect(() => {
+    if (!workspaceId) return
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+    }
+    void recordWorkflowStep(workspaceId, { step: 'workpaper' }).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('Failed to record workpaper workflow step', error)
+      }
+    })
+  }, [workspaceId])
 
   return (
     <div className="workspace-page workspace-page--new workpaper-page">
@@ -69,10 +95,14 @@ export default function WorkpaperPage() {
           </div>
 
           <div className="workpaper-cta">
-            <button type="button" className="workpaper-cta__btn workpaper-cta__btn--primary" onClick={() => navigate('/workpaper-detail')}>
+            <button
+              type="button"
+              className="workpaper-cta__btn workpaper-cta__btn--primary"
+              onClick={() => navigate('/workpaper-detail', workflowNavState)}
+            >
               Send for review
             </button>
-            <button type="button" className="workpaper-cta__btn" onClick={() => navigate('/mapping')}>
+            <button type="button" className="workpaper-cta__btn" onClick={() => navigate('/mapping', workflowNavState)}>
               Revisit mapping
             </button>
           </div>
@@ -93,7 +123,7 @@ export default function WorkpaperPage() {
                 <strong>REV-23 · Revenue cut-off</strong>
                 <div className="workpaper-board-status__actions">
                   <button type="button">Attach file</button>
-                  <button type="button" onClick={() => navigate('/workpaper-detail')}>
+                  <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>
                     View detail
                   </button>
                 </div>
@@ -193,7 +223,11 @@ export default function WorkpaperPage() {
                   +
                 </span>
               ))}
-              <button type="button" className="workspace-action-label" onClick={() => navigate('/workpaper-detail')}>
+              <button
+                type="button"
+                className="workspace-action-label"
+                onClick={() => navigate('/workpaper-detail', workflowNavState)}
+              >
                 [Action bar]
               </button>
             </div>
@@ -208,10 +242,10 @@ export default function WorkpaperPage() {
       </div>
 
       <div className="workpaper-nav">
-        <button type="button" onClick={() => navigate('/mapping')}>
+        <button type="button" onClick={() => navigate('/mapping', workflowNavState)}>
           Back to mapping
         </button>
-        <button type="button" onClick={() => navigate('/workpaper-detail')}>
+        <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>
           Next · Workpaper detail
         </button>
       </div>
