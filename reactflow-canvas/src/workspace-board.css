@@ -39,6 +39,7 @@
   display: grid;
   grid-template-columns: 72px 280px 1fr;
   min-height: calc(100vh - 84px);
+  overflow: hidden;
 }
 
 .workspace-body--single {

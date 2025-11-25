@@ -4,4 +4,4 @@ html, body, #root {
   width: 100vw;
 }
 html, body { margin: 0; }
-body { display: block; overflow: hidden; }
+body { display: block; overflow: auto; }
