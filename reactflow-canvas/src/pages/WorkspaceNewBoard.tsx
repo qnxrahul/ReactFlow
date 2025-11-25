@@ -191,6 +191,21 @@ export default function WorkspaceNewBoard() {
     [activeBoardId, navigate],
   )
 
+  const handleTodoUpdateClick = useCallback(async () => {
+    if (!activeBoardId) return
+    try {
+      await recordWorkflowStep(activeBoardId, { step: 'mapping' })
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, activeBoardId)
+      }
+      navigate('/mapping', { state: { workspaceId: activeBoardId } })
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Failed to advance workflow from todo update', error)
+      }
+    }
+  }, [activeBoardId, navigate])
+
   const nodesWithHandlers = useMemo(
     () =>
       nodes.map((node) =>
@@ -424,7 +439,9 @@ export default function WorkspaceNewBoard() {
                       </li>
                     ))}
                   </ul>
-                  <button type="button" className="workspace-todo-update">Update</button>
+                  <button type="button" className="workspace-todo-update" onClick={handleTodoUpdateClick}>
+                    Update
+                  </button>
                 </div>
 
                 <div className="workspace-board-region">
