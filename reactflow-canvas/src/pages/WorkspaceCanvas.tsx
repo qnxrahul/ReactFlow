@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Background,
@@ -49,6 +49,11 @@ export default function WorkspaceCanvas() {
   const [showGrid, setShowGrid] = useState(true)
   const [zoom, setZoom] = useState(1)
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null)
+  const [isNamingDialogOpen, setIsNamingDialogOpen] = useState(false)
+  const [namingDraft, setNamingDraft] = useState('')
+  const [namingError, setNamingError] = useState<string | null>(null)
+  const [isCreatingBoard, setIsCreatingBoard] = useState(false)
+  const namingInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleRename = useCallback(
     async (boardId: string, nextTitle: string) => {
@@ -135,21 +140,71 @@ export default function WorkspaceCanvas() {
 
   const closeMenu = useCallback(() => setMenuPosition(null), [])
 
-  const startBoardCreation = useCallback(async () => {
+  const openNamingDialog = useCallback(() => {
     closeMenu()
-    try {
-      const created = await createBoard({ template: null })
-      setSelectedId(created.id)
-      setEditingBoardId(created.id)
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to create workspace board', error)
+    const defaultName = `Workspace ${(boards.length + 1).toString().padStart(2, '0')}`
+    setNamingDraft(defaultName)
+    setNamingError(null)
+    setIsNamingDialogOpen(true)
+  }, [boards.length, closeMenu])
+
+  useEffect(() => {
+    if (!isNamingDialogOpen) return
+    const id = requestAnimationFrame(() => namingInputRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [isNamingDialogOpen])
+
+  const handleDialogClose = useCallback(() => {
+    if (isCreatingBoard) return
+    setIsNamingDialogOpen(false)
+    setNamingDraft('')
+    setNamingError(null)
+  }, [isCreatingBoard])
+
+  useEffect(() => {
+    if (!isNamingDialogOpen) return
+    const handler = (evt: KeyboardEvent) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault()
+        handleDialogClose()
       }
     }
-  }, [closeMenu, createBoard])
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [handleDialogClose, isNamingDialogOpen])
+
+  const handleNameSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (isCreatingBoard) return
+      const trimmed = namingDraft.trim()
+      if (!trimmed) {
+        setNamingError('Please enter a workspace name.')
+        return
+      }
+      setIsCreatingBoard(true)
+      try {
+        const created = await createBoard({ template: null, title: trimmed })
+        setSelectedId(created.id)
+        setEditingBoardId(null)
+        setIsNamingDialogOpen(false)
+        setNamingDraft('')
+        setNamingError(null)
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+        }
+        navigate(`/workspace/new?boardId=${encodeURIComponent(created.id)}`)
+      } catch (error) {
+        setNamingError('Failed to create workspace. Please try again.')
+        if (import.meta.env.DEV) {
+          console.error('Failed to create workspace board', error)
+        }
+      } finally {
+        setIsCreatingBoard(false)
+      }
+    },
+    [createBoard, isCreatingBoard, namingDraft, navigate],
+  )
 
   useEffect(() => {
     const handler = (evt: KeyboardEvent) => {
@@ -176,15 +231,15 @@ export default function WorkspaceCanvas() {
     (item: string) => {
       closeMenu()
       if (item === 'Create board') {
-        void startBoardCreation()
+        openNamingDialog()
       }
     },
-    [closeMenu, startBoardCreation],
+    [closeMenu, openNamingDialog],
   )
 
   const handlePlusClick = useCallback(() => {
-    void startBoardCreation()
-  }, [startBoardCreation])
+    openNamingDialog()
+  }, [openNamingDialog])
 
   const handleZoomIn = useCallback(() => {
     if (!flowRef.current) return
@@ -215,6 +270,14 @@ export default function WorkspaceCanvas() {
     }
   }, [])
 
+  const handleAgentClick = useCallback(() => {
+    if (selectedId) {
+      navigate(`/workspace/new?boardId=${encodeURIComponent(selectedId)}`)
+      return
+    }
+    navigate('/workspace/new')
+  }, [navigate, selectedId])
+
   const zoomPercent = Math.round(zoom * 100)
 
   return (
@@ -223,147 +286,180 @@ export default function WorkspaceCanvas() {
         <h1>Start from scratch in a new workspace</h1>
       </header>
 
-        <div className="workspace-body">
-          <nav className="workspace-rail" aria-label="Primary">
-            {[FiGrid, FiCompass, FiLayers, FiSettings].map((Icon, idx) => (
-              <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
-                <Icon />
-              </button>
-            ))}
-          </nav>
-
-          <aside className="workspace-sidebar">
-            <h2>To do list</h2>
-            <ul className="workspace-tasks">
-              {['Task label', 'Task label', 'Task label'].map((label, idx) => (
-                <li key={idx} className="workspace-task">
-                  <input type="checkbox" aria-label={label} />
-                  <span>{label}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="workspace-sidebar-links">
-              <button type="button">Send for digital signature</button>
-              <button type="button">Updates</button>
-            </div>
-          </aside>
-
-          <div
-            className="workspace-canvas"
-            ref={canvasRef}
-            onClick={() => {
-              setEditingBoardId(null)
-              closeMenu()
-            }}
-          >
-            <div className="workspace-flow">
-              <div className="workspace-flow__overlay">
-                <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
-                  <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
-                    <FiPlus />
-                  </button>
-                  <span className="workspace-toolbar__divider" />
-                  <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
-                    <FiZoomOut />
-                  </button>
-                  <span className="workspace-toolbar__label">{zoomPercent}%</span>
-                  <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
-                    <FiZoomIn />
-                  </button>
-                  <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
-                    <FiRotateCw />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleToggleGrid}
-                    className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
-                    title="Toggle grid"
-                    aria-pressed={showGrid}
-                    aria-label="Toggle grid"
-                  >
-                    <FiGridToggle />
-                  </button>
-                  <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
-                    <FiMessageCircle />
-                  </button>
-                </div>
-              </div>
-
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                nodeTypes={nodeTypes}
-                proOptions={{ hideAttribution: true }}
-                defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-                style={{ width: '100%', height: '100%' }}
-                zoomOnScroll={false}
-                zoomOnPinch={false}
-                zoomOnDoubleClick={false}
-                panOnScroll
-                panOnDrag={false}
-                elementsSelectable
-                nodesDraggable
-                edgesUpdatable={false}
-                translateExtent={[[-200, -200], [1600, 900]]}
-                selectionMode={SelectionMode.Partial}
-                  onInit={(instance) => {
-                    flowRef.current = instance
-                  }}
-                  onNodeClick={(_, node) => {
-                    setSelectedId(node.id)
-                    setEditingBoardId(null)
-                    closeMenu()
-                  }}
-                  onNodeContextMenu={(evt) => {
-                    evt.preventDefault()
-                    setEditingBoardId(null)
-                    closeMenu()
-                  }}
-                  onPaneClick={() => {
-                    setEditingBoardId(null)
-                    closeMenu()
-                  }}
-                  onPaneContextMenu={handlePaneContextMenu}
-                  onNodeDoubleClick={(_, node) => {
-                    if (editingBoardId === node.id) {
-                      return
-                    }
-                    if (typeof window !== 'undefined') {
-                      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
-                    }
-                    navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
-                  }}
-                  onNodeDragStop={(_, node) => {
-                    updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
-                  }}
-                fitView
-                fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
-                onMoveEnd={(_, state) => setZoom(state.zoom)}
-              >
-                {showGrid && <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />}
-              </ReactFlow>
-            </div>
-
-            <button type="button" className="workspace-agent" onClick={() => navigate('/workspace/new')} aria-label="Open agent workspace">
-              <img src={agentImage} alt="Ask me anything" />
+      <div className="workspace-body">
+        <nav className="workspace-rail" aria-label="Primary">
+          {[FiGrid, FiCompass, FiLayers, FiSettings].map((Icon, idx) => (
+            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
+              <Icon />
             </button>
+          ))}
+        </nav>
 
-            {menuPosition && (
-              <div
-                className="workspace-context-menu"
-                style={{ left: menuPosition.x, top: menuPosition.y }}
-                onClick={(evt) => evt.stopPropagation()}
-              >
-                <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
-                <ul>
-                  {menuItems.map((item, idx) => (
-                    <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+        <aside className="workspace-sidebar">
+          <h2>To do list</h2>
+          <ul className="workspace-tasks">
+            {['Task label', 'Task label', 'Task label'].map((label, idx) => (
+              <li key={idx} className="workspace-task">
+                <input type="checkbox" aria-label={label} />
+                <span>{label}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="workspace-sidebar-links">
+            <button type="button">Send for digital signature</button>
+            <button type="button">Updates</button>
           </div>
+        </aside>
+
+        <div
+          className="workspace-canvas"
+          ref={canvasRef}
+          onClick={() => {
+            setEditingBoardId(null)
+            closeMenu()
+          }}
+        >
+          <div className="workspace-flow">
+            <div className="workspace-flow__overlay">
+              <div className="workspace-toolbar" role="toolbar" aria-label="Workspace controls">
+                <button type="button" onClick={handlePlusClick} title="Create new board" aria-label="Create new board">
+                  <FiPlus />
+                </button>
+                <span className="workspace-toolbar__divider" />
+                <button type="button" onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+                  <FiZoomOut />
+                </button>
+                <span className="workspace-toolbar__label">{zoomPercent}%</span>
+                <button type="button" onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+                  <FiZoomIn />
+                </button>
+                <button type="button" onClick={handleResetView} title="Reset view" aria-label="Reset view">
+                  <FiRotateCw />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleGrid}
+                  className={showGrid ? 'workspace-toolbar__toggle workspace-toolbar__toggle--active' : 'workspace-toolbar__toggle'}
+                  title="Toggle grid"
+                  aria-pressed={showGrid}
+                  aria-label="Toggle grid"
+                >
+                  <FiGridToggle />
+                </button>
+                <button type="button" onClick={handleComment} title="Comment" aria-label="Comment">
+                  <FiMessageCircle />
+                </button>
+              </div>
+            </div>
+
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              proOptions={{ hideAttribution: true }}
+              defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+              style={{ width: '100%', height: '100%' }}
+              zoomOnScroll={false}
+              zoomOnPinch={false}
+              zoomOnDoubleClick={false}
+              panOnScroll
+              panOnDrag={false}
+              elementsSelectable
+              nodesDraggable
+              edgesUpdatable={false}
+              translateExtent={[[-200, -200], [1600, 900]]}
+              selectionMode={SelectionMode.Partial}
+              onInit={(instance) => {
+                flowRef.current = instance
+              }}
+              onNodeClick={(_, node) => {
+                setSelectedId(node.id)
+                setEditingBoardId(null)
+                closeMenu()
+              }}
+              onNodeContextMenu={(evt) => {
+                evt.preventDefault()
+                setEditingBoardId(null)
+                closeMenu()
+              }}
+              onPaneClick={() => {
+                setEditingBoardId(null)
+                closeMenu()
+              }}
+              onPaneContextMenu={handlePaneContextMenu}
+              onNodeDoubleClick={(_, node) => {
+                if (editingBoardId === node.id) {
+                  return
+                }
+                if (typeof window !== 'undefined') {
+                  window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, node.id)
+                }
+                navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
+              }}
+              onNodeDragStop={(_, node) => {
+                updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))
+              }}
+              fitView
+              fitViewOptions={{ padding: 0.2, includeHiddenNodes: true }}
+              onMoveEnd={(_, state) => setZoom(state.zoom)}
+            >
+              {showGrid && <Background variant={BackgroundVariant.Dots} gap={80} size={1} color="#d6dcec" />}
+            </ReactFlow>
+          </div>
+
+          <button type="button" className="workspace-agent" onClick={handleAgentClick} aria-label="Open agent workspace">
+            <img src={agentImage} alt="Ask me anything" />
+          </button>
+
+          {menuPosition && (
+            <div
+              className="workspace-context-menu"
+              style={{ left: menuPosition.x, top: menuPosition.y }}
+              onClick={(evt) => evt.stopPropagation()}
+            >
+              <header>{boards.find((n) => n.id === selectedId)?.title ?? 'Workspace actions'}</header>
+              <ul>
+                {menuItems.map((item, idx) => (
+                  <li key={`${item}-${idx}`} onClick={() => handleMenuSelect(item)}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
-    )
-  }
+
+      {isNamingDialogOpen && (
+        <div className="workspace-name-dialog-overlay" role="dialog" aria-modal="true" onClick={handleDialogClose}>
+          <form
+            className="workspace-name-dialog"
+            onSubmit={handleNameSubmit}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Name your workspace</h2>
+            <label htmlFor="workspace-name-input">Workspace name</label>
+            <input
+              id="workspace-name-input"
+              ref={namingInputRef}
+              value={namingDraft}
+              onChange={(event) => {
+                setNamingDraft(event.target.value)
+                if (namingError) setNamingError(null)
+              }}
+              placeholder="e.g., Q4 Testing Plan"
+              aria-invalid={Boolean(namingError)}
+            />
+            {namingError && <p className="workspace-name-dialog__error">{namingError}</p>}
+            <div className="workspace-name-dialog__actions">
+              <button type="button" onClick={handleDialogClose} disabled={isCreatingBoard}>
+                Cancel
+              </button>
+              <button type="submit" disabled={isCreatingBoard}>
+                {isCreatingBoard ? 'Creating...' : 'Create workspace'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  )
+}
