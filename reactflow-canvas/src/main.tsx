@@ -15,13 +15,6 @@ import { BoardsProvider } from './state/BoardsProvider'
 function Layout() {
   return (
     <>
-      <div className="app-nav">
-        <Link to="/">Classic</Link>
-        <Link to="/fluent">Fluent UI</Link>
-        <Link to="/workspace">Workspace UX</Link>
-        <Link to="/workspace/new">Workspace New</Link>
-        <Link to="/mapping">Mapping Flow</Link>
-      </div>
       <Outlet />
     </>
   )
