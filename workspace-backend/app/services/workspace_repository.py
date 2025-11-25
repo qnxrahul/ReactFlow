@@ -103,10 +103,13 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
         if payload.files_count is not None:
             data["filesCount"] = payload.files_count
 
-        data["updatedAt"] = datetime.utcnow().isoformat()
+        data["updatedAt"] = datetime.utcnow()
 
-        self._container.replace_item(item=workspace_id, body=data)
-        return self.get_workspace(workspace_id)
+        updated = Workspace.model_validate(data)
+        payload = updated.model_dump(by_alias=True, mode="json")
+
+        self._container.replace_item(item=workspace_id, body=payload)
+        return updated
 
     def append_file(self, workspace_id: str, file: WorkspaceFile) -> Workspace:
         workspace = self.get_workspace(workspace_id)
@@ -115,9 +118,13 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
         files.append(file.model_dump(by_alias=True))
         data["files"] = files
         data["filesCount"] = (data.get("filesCount") or 0) + 1
-        data["updatedAt"] = datetime.utcnow().isoformat()
-        self._container.replace_item(item=workspace_id, body=data)
-        return self.get_workspace(workspace_id)
+        data["updatedAt"] = datetime.utcnow()
+
+        updated = Workspace.model_validate(data)
+        payload = updated.model_dump(by_alias=True, mode="json")
+
+        self._container.replace_item(item=workspace_id, body=payload)
+        return updated
 
 
 class FileBackedWorkspaceRepository(WorkspaceRepository):
