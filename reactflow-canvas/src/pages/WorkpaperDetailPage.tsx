@@ -44,21 +44,6 @@ export default function WorkpaperDetailPage() {
 
   return (
     <div className="workspace-page workspace-page--new detail-page">
-      <header className="workspace-hero workspace-hero--new detail-hero">
-        <div>
-          <h1>Review & sign-off</h1>
-          <p>All comments are closed. Verify the approvals, capture annotations, and publish the finalized workpaper.</p>
-        </div>
-        <div className="detail-hero__actions">
-          <button type="button" className="detail-hero__btn detail-hero__btn--primary" onClick={() => navigate('/workspace')}>
-            Publish to workspace
-          </button>
-          <button type="button" className="detail-hero__btn detail-hero__btn--secondary" onClick={() => navigate('/workpaper')}>
-            Reopen draft
-          </button>
-        </div>
-      </header>
-
       <div className="workspace-body workspace-body--single">
         <nav className="workspace-rail" aria-label="Primary">
           {navIcons.map((Icon, idx) => (
@@ -72,6 +57,15 @@ export default function WorkpaperDetailPage() {
           <div className="workspace-board-top detail-board-top">
             <div>Engagement &gt; Spaces &gt; Detail</div>
             <span>Frame 2110704771</span>
+          </div>
+
+          <div className="detail-cta">
+            <button type="button" className="detail-cta__btn detail-cta__btn--primary" onClick={() => navigate('/workspace')}>
+              Publish to workspace
+            </button>
+            <button type="button" className="detail-cta__btn" onClick={() => navigate('/workpaper')}>
+              Reopen draft
+            </button>
           </div>
 
           <div className="detail-summary">
