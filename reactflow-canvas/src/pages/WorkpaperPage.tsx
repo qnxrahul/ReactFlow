@@ -68,6 +68,15 @@ export default function WorkpaperPage() {
             <span>Frame 2110704770</span>
           </div>
 
+          <div className="workpaper-cta">
+            <button type="button" className="workpaper-cta__btn workpaper-cta__btn--primary" onClick={() => navigate('/workpaper-detail')}>
+              Send for review
+            </button>
+            <button type="button" className="workpaper-cta__btn" onClick={() => navigate('/mapping')}>
+              Revisit mapping
+            </button>
+          </div>
+
           <div className="workpaper-summary">
             {workpaperStats.map((stat) => (
               <div key={stat.label} className="workpaper-summary__card">

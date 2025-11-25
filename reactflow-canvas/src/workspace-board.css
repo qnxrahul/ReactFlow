@@ -1116,6 +1116,32 @@
   color: #0b233b;
 }
 
+.workpaper-cta {
+  margin: 16px 0 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.workpaper-cta__btn {
+  border-radius: 14px;
+  border: 1px solid rgba(9, 25, 71, 0.12);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0b1737;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(11, 23, 55, 0.08);
+}
+
+.workpaper-cta__btn--primary {
+  background: #0b233b;
+  border-color: #0b233b;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(11, 35, 59, 0.2);
+}
+
 .workpaper-summary {
   margin: 0 0 24px;
   display: grid;
