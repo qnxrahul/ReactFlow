@@ -79,7 +79,7 @@ class CosmosWorkspaceRepository(WorkspaceRepository):
             createdAt=now,
             updatedAt=now,
         )
-        self._container.create_item(workspace.model_dump(by_alias=True))
+        self._container.create_item(workspace.model_dump(by_alias=True, mode="json"))
         return workspace
 
     def update_workspace(self, workspace_id: str, payload: WorkspaceUpdateRequest) -> Workspace:
