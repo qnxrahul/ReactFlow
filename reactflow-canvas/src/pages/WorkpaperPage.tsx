@@ -53,21 +53,6 @@ export default function WorkpaperPage() {
 
   return (
     <div className="workspace-page workspace-page--new workpaper-page">
-      <header className="workspace-hero workspace-hero--new workpaper-hero">
-        <div>
-          <h1>Workpaper build</h1>
-          <p>Use the mapped evidence to assemble the testing story, capture AI summaries, and prep the handoff to reviewers.</p>
-        </div>
-        <div className="workpaper-hero__actions">
-          <button type="button" className="workpaper-hero__btn workpaper-hero__btn--primary" onClick={() => navigate('/workpaper-detail')}>
-            Send for review
-          </button>
-          <button type="button" className="workpaper-hero__btn workpaper-hero__btn--secondary" onClick={() => navigate('/mapping')}>
-            Revisit mapping
-          </button>
-        </div>
-      </header>
-
       <div className="workspace-body workspace-body--single">
         <nav className="workspace-rail" aria-label="Primary">
           {navIcons.map((Icon, idx) => (
