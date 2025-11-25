@@ -1,6 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import FlowStepper from '../components/FlowStepper'
-import '../mapping-flow.css'
+import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
+import '../workspace-board.css'
+
+const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
+
+const detailStats = [
+  { label: 'Comments resolved', value: '24 / 24' },
+  { label: 'Sign-offs', value: '2 of 2' },
+  { label: 'Exceptions', value: '0' },
+  { label: 'Evidence links', value: '32' },
+]
 
 const detailChecklist = [
   'Review open comments from manager and QA reviewer',
@@ -9,14 +18,7 @@ const detailChecklist = [
   'Publish the finalized workpaper back to the workspace hub',
 ]
 
-const detailStats = [
-  { label: 'comments resolved', value: '24 / 24' },
-  { label: 'sign-offs', value: '2 of 2' },
-  { label: 'exceptions', value: '0' },
-  { label: 'evidence links', value: '32' },
-]
-
-const detailTags = ['Sign-off', 'Ready to publish', 'No exceptions', 'AI validated']
+const detailTags = ['Sign-off', 'Ready to publish', 'No exceptions', 'AI validated', 'Audit trail']
 
 const detailTimeline = [
   { label: 'Draft updated', when: 'Yesterday · 3:12 PM', actor: 'Alex' },
@@ -30,7 +32,7 @@ const detailApprovals = [
   { role: 'QA', actor: 'Dana Ellis', time: '10:42 AM' },
 ]
 
-const detailAnnotations = [
+const detailNotes = [
   'Comment 12 resolved · evidence attached',
   'Assertion coverage complete',
   'AI validated tie-out for contract set B',
@@ -41,139 +43,136 @@ export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="flow-page flow-page--detail">
-      <header className="flow-header">
+    <div className="workspace-page workspace-page--new detail-page">
+      <header className="workspace-hero workspace-hero--new detail-hero">
         <div>
-          <div className="flow-header__meta">Engagement workspace · Step 03</div>
-          <h1>Finalize workpaper details and capture approvals.</h1>
-          <p>
-            The detail view mirrors the reference image in the repo—complete with layered annotations, approval panels, and tie backs
-            to the audit trail.
-          </p>
+          <h1>Review & sign-off</h1>
+          <p>All comments are closed. Verify the approvals, capture annotations, and publish the finalized workpaper.</p>
         </div>
-        <div className="flow-header__actions">
-          <button type="button" className="flow-btn--primary" onClick={() => navigate('/workspace')}>
+        <div className="detail-hero__actions">
+          <button type="button" className="detail-hero__btn detail-hero__btn--primary" onClick={() => navigate('/workspace')}>
             Publish to workspace
           </button>
-          <button type="button" className="flow-btn--secondary" onClick={() => navigate('/workpaper')}>
+          <button type="button" className="detail-hero__btn detail-hero__btn--secondary" onClick={() => navigate('/workpaper')}>
             Reopen draft
           </button>
         </div>
       </header>
 
-      <FlowStepper activeStep="detail" />
-
-      <div className="flow-body">
-        <section className="flow-card">
-          <h2>Review trail</h2>
-          <p className="flow-card__summary">
-            Capture the final confirmation steps. Everything here reflects the structure from the workpaper detail mock.
-          </p>
-          <ul className="flow-list">
-            {detailChecklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-
-          <div className="flow-card__stats">
-            {detailStats.map((stat) => (
-              <div key={stat.label} className="flow-card__stat">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flow-card__actions">
-            <button type="button" className="flow-btn--primary" onClick={() => navigate('/workspace')}>
-              Publish & notify
+      <div className="workspace-body workspace-body--single">
+        <nav className="workspace-rail" aria-label="Primary">
+          {navIcons.map((Icon, idx) => (
+            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
+              <Icon />
             </button>
-            <button type="button">Download packet</button>
-            <button type="button">Share link</button>
-          </div>
-        </section>
+          ))}
+        </nav>
 
-        <section className="flow-preview">
-          <span className="flow-preview__label">Workpaper detail</span>
-          <div className="detail-frame">
-            <div className="detail-frame__top">
-              <div>
-                <strong>Detail · REV-23</strong>
-                <span>All comments resolved · no open exceptions</span>
+        <div className="workspace-new-canvas detail-canvas">
+          <div className="workspace-board-top detail-board-top">
+            <div>Engagement &gt; Spaces &gt; Detail</div>
+            <span>Frame 2110704771</span>
+          </div>
+
+          <div className="detail-summary">
+            {detailStats.map((stat) => (
+              <div key={stat.label} className="detail-summary__card">
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
               </div>
-              <button type="button">View audit trail</button>
+            ))}
+          </div>
+
+          <div className="workspace-board-region detail-board-region">
+            <div className="detail-board-status">
+              <div>
+                <span className="detail-board-status__label">Detail</span>
+                <strong>REV-23 · Final approvals</strong>
+              </div>
+              <div className="detail-board-status__actions">
+                <button type="button">Download packet</button>
+                <button type="button">Share link</button>
+              </div>
             </div>
 
             <div className="detail-grid">
-              <div className="detail-timeline">
-                {detailTimeline.map((item) => (
-                  <div key={item.label} className="detail-timeline__item">
-                    <div>
-                      <strong>{item.label}</strong>
-                      <div style={{ fontSize: 12, color: 'rgba(11,35,59,0.6)' }}>{item.actor}</div>
-                    </div>
-                    <span style={{ fontSize: 12, color: 'rgba(11,35,59,0.55)' }}>{item.when}</span>
+              <section className="detail-main">
+                <div className="detail-main__header">
+                  <div>
+                    <span>Sign-off checklist</span>
+                    <strong>Review trail</strong>
                   </div>
-                ))}
-              </div>
+                  <button type="button">View audit trail</button>
+                </div>
 
-              <div className="detail-panel">
-                <div className="detail-panel__title">Approvals</div>
+                <ul className="detail-main__checklist">
+                  {detailChecklist.map((item) => (
+                    <li key={item}>
+                      <span />
+                      <div>
+                        <strong>{item}</strong>
+                        <small>Completed</small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="detail-main__notes">
+                  {detailNotes.map((note) => (
+                    <article key={note}>
+                      <span />
+                      <p>{note}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="detail-timeline-panel">
+                <header>Timeline</header>
+                <ul>
+                  {detailTimeline.map((item) => (
+                    <li key={item.label}>
+                      <div>
+                        <strong>{item.label}</strong>
+                        <span>{item.actor}</span>
+                      </div>
+                      <time>{item.when}</time>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+
+              <aside className="detail-approvals-panel">
+                <header>Approvals</header>
                 <div className="detail-approvals">
                   {detailApprovals.map((approval) => (
-                    <div key={approval.actor} className="detail-approval">
+                    <div key={approval.actor}>
                       <span>{approval.role}</span>
-                      <span>
+                      <strong>
                         {approval.actor} · {approval.time}
-                      </span>
+                      </strong>
                     </div>
                   ))}
                 </div>
-                <div className="detail-panel__title">Annotations</div>
-                <div className="detail-annotations">
-                  {detailAnnotations.map((note) => (
-                    <div key={note} className="detail-annotation">
-                      {note}
-                    </div>
+                <div className="detail-tags">
+                  {detailTags.map((tag) => (
+                    <span key={tag}>{tag}</span>
                   ))}
                 </div>
-              </div>
+                <button type="button" className="detail-approvals-panel__cta" onClick={() => navigate('/workspace')}>
+                  Publish & notify
+                </button>
+              </aside>
             </div>
           </div>
-        </section>
-
-        <aside className="flow-sidebar">
-          <span className="flow-badge">Ready for sign-off</span>
-          <div className="flow-sidebar__item">
-            <strong>Approvers</strong>
-            Marcus Le (Manager) · Dana Ellis (QA)
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Timeline</strong>
-            Drafted 1d ago · Reviewed 2h ago · Ready now
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Controls linked</strong>
-            RC-12 · RC-19 · RC-25
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Tags</strong>
-            <div className="flow-tag-list">
-              {detailTags.map((tag) => (
-                <span key={tag} className="flow-tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </aside>
+        </div>
       </div>
 
-      <div className="flow-nav-buttons">
+      <div className="detail-nav">
         <button type="button" onClick={() => navigate('/workpaper')}>
           Back to workpaper
         </button>
-        <button type="button" className="flow-btn--primary" onClick={() => navigate('/workspace')}>
+        <button type="button" onClick={() => navigate('/workspace')}>
           Finish & publish
         </button>
       </div>
