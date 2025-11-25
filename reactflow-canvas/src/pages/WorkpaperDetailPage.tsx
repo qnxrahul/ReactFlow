@@ -33,10 +33,10 @@ const detailApprovals = [
 ]
 
 const detailNotes = [
-  'Comment 12 resolved · evidence attached',
-  'Assertion coverage complete',
-  'AI validated tie-out for contract set B',
-  'Change log locked for this cycle',
+  { title: 'Comment 12', body: 'Resolved · evidence attached · aligns with control RC-19' },
+  { title: 'Assertion coverage', body: 'All key assertions signed by reviewer' },
+  { title: 'AI validation', body: 'Tie-out completed for contract set B · confidence 0.94' },
+  { title: 'Change log', body: 'Locked for this cycle · no open edits' },
 ]
 
 export default function WorkpaperDetailPage() {
@@ -59,13 +59,20 @@ export default function WorkpaperDetailPage() {
             <span>Frame 2110704771</span>
           </div>
 
-          <div className="detail-cta">
-            <button type="button" className="detail-cta__btn detail-cta__btn--primary" onClick={() => navigate('/workspace')}>
-              Publish to workspace
-            </button>
-            <button type="button" className="detail-cta__btn" onClick={() => navigate('/workpaper')}>
-              Reopen draft
-            </button>
+          <div className="detail-header-card">
+            <div>
+              <span>Review &amp; sign-off</span>
+              <h1>All comments are closed.</h1>
+              <p>Verify approvals, capture annotations, and publish the finalized workpaper back to the workspace.</p>
+            </div>
+            <div className="detail-header-card__actions">
+              <button type="button" className="detail-header-card__btn detail-header-card__btn--primary" onClick={() => navigate('/workspace')}>
+                Publish to workspace
+              </button>
+              <button type="button" className="detail-header-card__btn" onClick={() => navigate('/workpaper')}>
+                Reopen draft
+              </button>
+            </div>
           </div>
 
           <div className="detail-summary">
@@ -89,73 +96,82 @@ export default function WorkpaperDetailPage() {
               </div>
             </div>
 
-            <div className="detail-grid">
+            <div className="detail-content">
               <section className="detail-main">
-                <div className="detail-main__header">
-                  <div>
+                <div className="detail-card detail-card--checklist">
+                  <div className="detail-card__header">
                     <span>Sign-off checklist</span>
-                    <strong>Review trail</strong>
+                    <button type="button">View audit trail</button>
                   </div>
-                  <button type="button">View audit trail</button>
+                  <ul className="detail-main__checklist">
+                    {detailChecklist.map((item) => (
+                      <li key={item}>
+                        <span />
+                        <div>
+                          <strong>{item}</strong>
+                          <small>Completed</small>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <ul className="detail-main__checklist">
-                  {detailChecklist.map((item) => (
-                    <li key={item}>
-                      <span />
-                      <div>
-                        <strong>{item}</strong>
-                        <small>Completed</small>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="detail-main__notes">
-                  {detailNotes.map((note) => (
-                    <article key={note}>
-                      <span />
-                      <p>{note}</p>
-                    </article>
-                  ))}
+                <div className="detail-card detail-card--notes">
+                  <div className="detail-card__header">
+                    <span>Annotations</span>
+                    <strong>Highlights</strong>
+                  </div>
+                  <div className="detail-main__notes">
+                    {detailNotes.map((note) => (
+                      <article key={note.title}>
+                        <span />
+                        <div>
+                          <strong>{note.title}</strong>
+                          <p>{note.body}</p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               </section>
 
-              <aside className="detail-timeline-panel">
-                <header>Timeline</header>
-                <ul>
-                  {detailTimeline.map((item) => (
-                    <li key={item.label}>
-                      <div>
-                        <strong>{item.label}</strong>
-                        <span>{item.actor}</span>
-                      </div>
-                      <time>{item.when}</time>
-                    </li>
-                  ))}
-                </ul>
-              </aside>
+              <aside className="detail-side">
+                <div className="detail-timeline-panel">
+                  <header>Timeline</header>
+                  <ul>
+                    {detailTimeline.map((item) => (
+                      <li key={item.label}>
+                        <div>
+                          <strong>{item.label}</strong>
+                          <span>{item.actor}</span>
+                        </div>
+                        <time>{item.when}</time>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-              <aside className="detail-approvals-panel">
-                <header>Approvals</header>
-                <div className="detail-approvals">
-                  {detailApprovals.map((approval) => (
-                    <div key={approval.actor}>
-                      <span>{approval.role}</span>
-                      <strong>
-                        {approval.actor} · {approval.time}
-                      </strong>
-                    </div>
-                  ))}
+                <div className="detail-approvals-panel">
+                  <header>Approvals</header>
+                  <div className="detail-approvals">
+                    {detailApprovals.map((approval) => (
+                      <div key={approval.actor}>
+                        <span>{approval.role}</span>
+                        <strong>
+                          {approval.actor} · {approval.time}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="detail-tags">
+                    {detailTags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                  <button type="button" className="detail-approvals-panel__cta" onClick={() => navigate('/workspace')}>
+                    Publish & notify
+                  </button>
                 </div>
-                <div className="detail-tags">
-                  {detailTags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-                <button type="button" className="detail-approvals-panel__cta" onClick={() => navigate('/workspace')}>
-                  Publish & notify
-                </button>
               </aside>
             </div>
           </div>
