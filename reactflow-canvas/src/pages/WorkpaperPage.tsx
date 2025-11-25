@@ -1,22 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import FlowStepper from '../components/FlowStepper'
-import '../mapping-flow.css'
+import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
+import '../workspace-board.css'
 
-const workpaperTasks = [
-  'Summarize the mapped evidence into testing steps',
-  'Attach sampling tables and variance explanations',
-  'Capture reviewer notes directly on the canvas',
-  'Queue the draft for manager review with AI highlights',
-]
+const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
 
 const workpaperStats = [
-  { label: 'tests in scope', value: '5' },
-  { label: 'attachments', value: '32' },
-  { label: 'AI generated notes', value: '7' },
-  { label: 'review cycle', value: '1 of 2' },
+  { label: 'Tests in scope', value: '05' },
+  { label: 'Attachments', value: '32' },
+  { label: 'AI notes', value: '07' },
+  { label: 'Review cycle', value: '1 of 2' },
 ]
-
-const workpaperTags = ['Control 12.9', 'Assertions', 'Population tie-out', 'AI summary', 'Awaiting reviewer']
 
 const workpaperSteps = [
   { label: '00 Overview', status: 'Pinned' },
@@ -27,7 +20,7 @@ const workpaperSteps = [
 
 const workpaperCards = [
   {
-    title: 'Testing step · Revenue cutoff',
+    title: 'Testing step · Revenue cut-off',
     meta: 'Linked to WP-REV-18 · Assertions A/R/C',
     footer: ['Owner · Alex', 'Last edit · 2m ago'],
   },
@@ -44,77 +37,82 @@ const workpaperStream = [
   { actor: 'Dana', detail: 'Ready to review once notes addressed' },
 ]
 
+const workpaperChecklist = [
+  'Summarize the mapped evidence into testing steps',
+  'Attach sampling tables and variance explanations',
+  'Capture reviewer notes directly on the canvas',
+  'Queue the draft for manager review with AI highlights',
+]
+
+const workpaperTags = ['Control 12.9', 'Assertions', 'Population tie-out', 'AI summary', 'Awaiting reviewer']
+
+const todoItems = ['Confirm mapping', 'Add variance note', 'Attach sampling set', 'Ping Marcus for review']
+
 export default function WorkpaperPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="flow-page flow-page--workpaper">
-      <header className="flow-header">
+    <div className="workspace-page workspace-page--new workpaper-page">
+      <header className="workspace-hero workspace-hero--new workpaper-hero">
         <div>
-          <div className="flow-header__meta">Engagement workspace · Step 02</div>
-          <h1>Build the workpaper with structured, mapped evidence.</h1>
-          <p>
-            The curated mapping flows directly into this canvas. Drag evidence snippets, leverage AI callouts, and keep testing steps
-            tied to the engagement methodology.
-          </p>
+          <h1>Workpaper build</h1>
+          <p>Use the mapped evidence to assemble the testing story, capture AI summaries, and prep the handoff to reviewers.</p>
         </div>
-        <div className="flow-header__actions">
-          <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper-detail')}>
-            Review details
+        <div className="workpaper-hero__actions">
+          <button type="button" className="workpaper-hero__btn workpaper-hero__btn--primary" onClick={() => navigate('/workpaper-detail')}>
+            Send for review
           </button>
-          <button type="button" className="flow-btn--secondary" onClick={() => navigate('/mapping')}>
+          <button type="button" className="workpaper-hero__btn workpaper-hero__btn--secondary" onClick={() => navigate('/mapping')}>
             Revisit mapping
           </button>
         </div>
       </header>
 
-      <FlowStepper activeStep="workpaper" />
-
-      <div className="flow-body">
-        <section className="flow-card">
-          <h2>Evidence assembly</h2>
-          <p className="flow-card__summary">
-            Every module stays linked to the mapped sources so reviewers can trace back instantly. Use these guardrails before sending
-            the draft forward.
-          </p>
-          <ul className="flow-list">
-            {workpaperTasks.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-
-          <div className="flow-card__stats">
-            {workpaperStats.map((stat) => (
-              <div key={stat.label} className="flow-card__stat">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flow-card__actions">
-            <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper-detail')}>
-              Send for review
+      <div className="workspace-body workspace-body--single">
+        <nav className="workspace-rail" aria-label="Primary">
+          {navIcons.map((Icon, idx) => (
+            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
+              <Icon />
             </button>
-            <button type="button">Add reviewer</button>
-            <button type="button">Download PDF</button>
-          </div>
-        </section>
+          ))}
+        </nav>
 
-        <section className="flow-preview">
-          <span className="flow-preview__label">Workpaper canvas</span>
-          <div className="workpaper-frame">
-            <div className="workpaper-frame__top">
-              <div>
-                <strong>Workpaper · REV-23</strong>
-                <span>Autosaving · syncing with workspace</span>
+        <div className="workspace-new-canvas workpaper-canvas">
+          <div className="workspace-board-top workpaper-board-top">
+            <div>Engagement &gt; Spaces &gt; Workpaper</div>
+            <span>Frame 2110704770</span>
+          </div>
+
+          <div className="workpaper-summary">
+            {workpaperStats.map((stat) => (
+              <div key={stat.label} className="workpaper-summary__card">
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
               </div>
-              <button type="button">Show history</button>
+            ))}
+          </div>
+
+          <div className="workspace-board-region workpaper-board-region">
+            <div className="workpaper-board-actions">
+              <div className="workpaper-board-status">
+                <span className="workpaper-board-status__label">Workpaper</span>
+                <strong>REV-23 · Revenue cut-off</strong>
+                <div className="workpaper-board-status__actions">
+                  <button type="button">Attach file</button>
+                  <button type="button" onClick={() => navigate('/workpaper-detail')}>
+                    View detail
+                  </button>
+                </div>
+              </div>
+              <div className="workpaper-board-meta">Draft owner · Alex Chen · Last update 14m ago</div>
             </div>
 
             <div className="workpaper-grid">
-              <div className="workpaper-panel">
-                <div className="workpaper-panel__title">Sections</div>
+              <aside className="workpaper-panel">
+                <header>
+                  <span>Sections</span>
+                  <button type="button">Reorder</button>
+                </header>
                 <ul>
                   {workpaperSteps.map((step) => (
                     <li key={step.label}>
@@ -123,73 +121,103 @@ export default function WorkpaperPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </aside>
 
-              <div className="workpaper-canvas">
-                {workpaperCards.map((card) => (
-                  <div key={card.title} className="workpaper-card">
-                    <div className="workpaper-card__title">{card.title}</div>
-                    <div className="workpaper-card__meta">{card.meta}</div>
-                    <div className="workpaper-card__footer">
-                      {card.footer.map((item) => (
-                        <span key={item}>{item}</span>
-                      ))}
-                    </div>
+              <section className="workpaper-main">
+                <div className="workpaper-main__header">
+                  <div>
+                    <span>Testing canvas</span>
+                    <strong>Evidence assembly</strong>
                   </div>
-                ))}
-              </div>
+                  <div className="workpaper-main__actions">
+                    <button type="button">AI summary</button>
+                    <button type="button">Add step</button>
+                  </div>
+                </div>
 
-              <div className="workpaper-stream">
-                <div className="workpaper-stream__title">Activity</div>
+                <div className="workpaper-main__cards">
+                  {workpaperCards.map((card) => (
+                    <article key={card.title} className="workpaper-main-card">
+                      <header>
+                        <strong>{card.title}</strong>
+                        <span className="workpaper-chip">Linked</span>
+                      </header>
+                      <p>{card.meta}</p>
+                      <footer>
+                        {card.footer.map((item) => (
+                          <span key={item}>{item}</span>
+                        ))}
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="workpaper-checklist">
+                  <header>Checklist</header>
+                  <ul>
+                    {workpaperChecklist.map((item) => (
+                      <li key={item}>
+                        <span />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+
+              <aside className="workpaper-activity">
+                <header>Activity</header>
                 <ul>
-                  {workpaperStream.map((event) => (
-                    <li key={event.detail}>
-                      <span>{event.actor}</span>
-                      <span className="workpaper-chip">{event.detail}</span>
+                  {workpaperStream.map((entry) => (
+                    <li key={entry.detail}>
+                      <strong>{entry.actor}</strong>
+                      <span>{entry.detail}</span>
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <aside className="flow-sidebar">
-          <span className="flow-badge">Draft in progress</span>
-          <div className="flow-sidebar__item">
-            <strong>Owner</strong>
-            Alex Chen · Senior associate
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Last update</strong>
-            14 minutes ago by AI assistant
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Reviewer queue</strong>
-            Manager · Technical reviewer
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>AI guidance</strong>
-            Suggested two additional assertions for Revenue Cut-off
-          </div>
-          <div className="flow-sidebar__item">
-            <strong>Tags</strong>
-            <div className="flow-tag-list">
-              {workpaperTags.map((tag) => (
-                <span key={tag} className="flow-tag">
-                  {tag}
+                <div className="workpaper-tags">
+                  {workpaperTags.map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+
+                <div className="workpaper-todo">
+                  <header>Quick actions</header>
+                  <ul>
+                    {todoItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </aside>
+            </div>
+
+            <div className="workspace-action-bar">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <span key={idx} className="workspace-action-dot">
+                  +
                 </span>
               ))}
+              <button type="button" className="workspace-action-label" onClick={() => navigate('/workpaper-detail')}>
+                [Action bar]
+              </button>
+            </div>
+
+            <div className="workspace-chat workspace-chat--new workpaper-chat">
+              <label htmlFor="workpaper-chat-input">Ask me anything...</label>
+              <textarea id="workpaper-chat-input" placeholder="Request automations, templates, or help." />
+              <button type="button">Send</button>
             </div>
           </div>
-        </aside>
+        </div>
       </div>
 
-      <div className="flow-nav-buttons">
+      <div className="workpaper-nav">
         <button type="button" onClick={() => navigate('/mapping')}>
           Back to mapping
         </button>
-        <button type="button" className="flow-btn--primary" onClick={() => navigate('/workpaper-detail')}>
+        <button type="button" onClick={() => navigate('/workpaper-detail')}>
           Next · Workpaper detail
         </button>
       </div>
