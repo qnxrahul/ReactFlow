@@ -22,6 +22,7 @@ interface SectionConfig {
 
 type Section = SectionConfig & {
   files: string[]
+  persistedFiles: string[]
 }
 
 interface UploadedFile {
@@ -41,6 +42,7 @@ const baseLaneTemplate: WorkspaceLane[] = boardConfig.sections
 const createSectionState = (section: SectionConfig): Section => ({
   ...section,
   files: [],
+  persistedFiles: [],
 })
 
 const sectionsToLanes = (sections: Section[]): WorkspaceLane[] =>
@@ -130,10 +132,12 @@ export default function NewBoard() {
           (item) => item.id === section.id || item.title === section.title,
         )
         if (!lane) return section
+        const laneFiles = [...(lane.files ?? [])]
         return {
           ...section,
-          files: [...lane.files],
-          fileCount: lane.files.length,
+          files: laneFiles,
+          persistedFiles: laneFiles,
+          fileCount: laneFiles.length,
         }
       }),
     )
@@ -207,14 +211,42 @@ export default function NewBoard() {
       setSections((prev) => {
         const prevSection = prev.find((section) => section.id === sectionId)
         const previousNames = prevSection?.files ?? []
-        const fileNames = files.map((file) => file.name)
+        const persistedNames = prevSection?.persistedFiles ?? []
+        const pendingNames = files.map((file) => file.name)
+        const mergedNames = Array.from(new Set([...persistedNames, ...pendingNames]))
         const nextSections = prev.map((section) =>
           section.id === sectionId
-            ? { ...section, fileCount: fileNames.length, files: fileNames }
+            ? { ...section, fileCount: mergedNames.length, files: mergedNames }
             : section,
         )
         const uploadsToSave = files.filter((file) => !previousNames.includes(file.name))
         void persistLaneState(nextSections, uploadsToSave)
+        return nextSections
+      })
+    },
+    [persistLaneState],
+  )
+
+  const handleRemovePersistedFile = useCallback(
+    (sectionId: string, fileName: string) => {
+      setSections((prev) => {
+        let didChange = false
+        const nextSections = prev.map((section) => {
+          if (section.id !== sectionId) return section
+          if (!section.persistedFiles.includes(fileName)) return section
+          didChange = true
+          const nextPersisted = section.persistedFiles.filter((name) => name !== fileName)
+          const nextFiles = section.files.filter((name) => name !== fileName)
+          return {
+            ...section,
+            persistedFiles: nextPersisted,
+            files: nextFiles,
+            fileCount: nextFiles.length,
+          }
+        })
+        if (didChange) {
+          void persistLaneState(nextSections, [])
+        }
         return nextSections
       })
     },
@@ -288,12 +320,29 @@ export default function NewBoard() {
               {/* Section Body - Conditional Content */}
               <div className="new-board__section-body">
                 {section.hasUpload ? (
-                  /* Show file upload component for Items to Test and Sample Documentation */
-                  <FileUpload
-                    sectionId={section.id}
-                    onFilesChange={(files) => handleFilesChange(section.id, files)}
-                    maxFiles={20}
-                  />
+                  <>
+                    {section.persistedFiles.length > 0 && (
+                      <ul className="new-board__persisted-files">
+                        {section.persistedFiles.map((file) => (
+                          <li key={`${section.id}-${file}`}>
+                            <span>{file}</span>
+                            <button
+                              type="button"
+                              aria-label={`Remove ${file}`}
+                              onClick={() => handleRemovePersistedFile(section.id, file)}
+                            >
+                              ×
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <FileUpload
+                      sectionId={section.id}
+                      onFilesChange={(files) => handleFilesChange(section.id, files)}
+                      maxFiles={20}
+                    />
+                  </>
                 ) : (
                   /* Show placeholder text for auto-generated sections */
                   <div className="new-board__empty-section">
