@@ -65,29 +65,25 @@ export default function WorkpaperDetailPage() {
   }
 
   return (
-    <div className="workpaper-detail-inline">
-      <header>
-        <button type="button" onClick={handleFinish}>
-          Finish &amp; publish
-        </button>
-      </header>
+    <div className="workpaper-fullsurface">
+      {loading ? (
+        <div className="workpaper-fullsurface__loading">Preparing workpaper preview…</div>
+      ) : pdfUrl ? (
+        <iframe title="Workpaper detail" src={pdfUrl} />
+      ) : (
+        <div className="workpaper-fullsurface__loading">Unable to render preview.</div>
+      )}
 
-      <div className="workpaper-detail-inline__viewer">
-        {loading ? (
-          <div className="workpaper-detail-inline__loading">Preparing workpaper preview…</div>
-        ) : pdfUrl ? (
-          <iframe title="Workpaper detail" src={pdfUrl} />
-        ) : (
-          <div className="workpaper-detail-inline__loading">Unable to render preview.</div>
-        )}
-      </div>
+      <button className="workpaper-fullsurface__finish" type="button" onClick={handleFinish}>
+        Finish &amp; publish
+      </button>
 
-      <button className="workpaper-detail-inline__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
+      <button className="workpaper-fullsurface__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
         {agentOpen ? 'Close agent' : 'Ask agent'}
       </button>
 
       {agentOpen && (
-        <div className="workpaper-detail-inline__agent">
+        <div className="workpaper-fullsurface__agent">
           <header>Agent Cloud</header>
           <p>Summarize comments, flag missing evidence, or ask for recommendations.</p>
           <textarea placeholder="Ask me anything about this workpaper…" />
