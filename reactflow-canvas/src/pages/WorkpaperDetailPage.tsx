@@ -48,6 +48,12 @@ export default function WorkpaperDetailPage() {
     }
   }, [])
 
+  useEffect(() => () => {
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl)
+    }
+  }, [pdfUrl])
+
   useEffect(() => {
     if (!workspaceId) return
     if (typeof window !== 'undefined') {
@@ -64,12 +70,14 @@ export default function WorkpaperDetailPage() {
     navigate('/workspace', workspaceId ? { state: { workspaceId } } : undefined)
   }
 
+  const viewerSrc = useMemo(() => (pdfUrl ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0` : null), [pdfUrl])
+
   return (
     <div className="workpaper-fullsurface">
       {loading ? (
         <div className="workpaper-fullsurface__loading">Preparing workpaper preview…</div>
-      ) : pdfUrl ? (
-        <iframe title="Workpaper detail" src={pdfUrl} />
+      ) : viewerSrc ? (
+        <iframe title="Workpaper detail" src={viewerSrc} />
       ) : (
         <div className="workpaper-fullsurface__loading">Unable to render preview.</div>
       )}
