@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Background,
   BackgroundVariant,
@@ -12,6 +12,8 @@ import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
 import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
 import { useBoards } from '../state/BoardsProvider'
+import { recordWorkflowStep } from '../services/workspaceApi'
+import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
 const initialUploadNodes = [
   {
@@ -62,9 +64,8 @@ const todoItems = [
 
 const nodeTypes = { uploadLane: UploadLaneNode }
 
-const LAST_CREATED_STORAGE_KEY = 'workspace:lastCreatedBoardId'
-
 export default function WorkspaceNewBoard() {
+  const navigate = useNavigate()
   const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
@@ -172,6 +173,39 @@ export default function WorkspaceNewBoard() {
     [activeBoardId, laneData, setNodes, updateBoard, uploadFile],
   )
 
+  const handleLaneFileClick = useCallback(
+    async (fileName: string) => {
+      if (!activeBoardId) return
+      try {
+        await recordWorkflowStep(activeBoardId, { step: 'mapping', fileName })
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, activeBoardId)
+        }
+        navigate('/mapping', { state: { workspaceId: activeBoardId } })
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to advance workflow to mapping', error)
+        }
+      }
+    },
+    [activeBoardId, navigate],
+  )
+
+  const handleTodoUpdateClick = useCallback(async () => {
+    if (!activeBoardId) return
+    try {
+      await recordWorkflowStep(activeBoardId, { step: 'mapping' })
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, activeBoardId)
+      }
+      navigate('/mapping', { state: { workspaceId: activeBoardId } })
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Failed to advance workflow from todo update', error)
+      }
+    }
+  }, [activeBoardId, navigate])
+
   const nodesWithHandlers = useMemo(
     () =>
       nodes.map((node) =>
@@ -183,11 +217,14 @@ export default function WorkspaceNewBoard() {
                 onFilesChange: (fileList: FileList | null) => {
                   void handleLaneFilesSelected(node.id, fileList)
                 },
+                onFileClick: (fileName: string) => {
+                  void handleLaneFileClick(fileName)
+                },
               },
             }
           : node,
       ),
-    [nodes, handleLaneFilesSelected],
+    [nodes, handleLaneFileClick, handleLaneFilesSelected],
   )
 
   useEffect(() => {
@@ -224,7 +261,7 @@ export default function WorkspaceNewBoard() {
     hydratingRef.current = false
 
     if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, editingBoard.id)
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, editingBoard.id)
     }
   }, [editingBoard, setNodes])
 
@@ -252,7 +289,7 @@ export default function WorkspaceNewBoard() {
         autoCreatedBoardIdRef.current = created.id
         setActiveBoardId(created.id)
         if (typeof window !== 'undefined') {
-          window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, created.id)
+          window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, created.id)
         }
       } catch (error) {
         hasAutoCreatedRef.current = false
@@ -306,7 +343,7 @@ export default function WorkspaceNewBoard() {
 
       const idToStore = autoCreatedBoardIdRef.current ?? targetId
       if (idToStore && typeof window !== 'undefined') {
-        window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, idToStore)
+        window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, idToStore)
       }
     },
     [activeBoardId, createBoard, laneData, updateBoard],
@@ -330,7 +367,7 @@ export default function WorkspaceNewBoard() {
       meta,
     }))
     if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(LAST_CREATED_STORAGE_KEY, activeBoardId)
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, activeBoardId)
     }
   }, [activeBoardId, laneData, updateBoard])
 
@@ -402,7 +439,9 @@ export default function WorkspaceNewBoard() {
                       </li>
                     ))}
                   </ul>
-                  <button type="button" className="workspace-todo-update">Update</button>
+                  <button type="button" className="workspace-todo-update" onClick={handleTodoUpdateClick}>
+                    Update
+                  </button>
                 </div>
 
                 <div className="workspace-board-region">
