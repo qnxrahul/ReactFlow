@@ -4,32 +4,20 @@ import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 import './WorkpaperDetailPage.css'
 
-const sections = [
-  {
-    id: 'overview',
-    title: 'Overview',
-    content:
-      'This workpaper summarizes the revenue cut-off testing performed for REV-23. All assertions have been tested and supporting evidence has been linked to the respective samples.',
-  },
-  {
-    id: 'testing',
-    title: 'Testing steps',
-    content:
-      '1. Selected 25 samples across Q4 shipments. 2. Reconciled invoice dates to shipping documents. 3. Verified posting dates and ensured recognition within the correct period. 4. Documented exceptions and prepared tie-out notes.',
-  },
-  {
-    id: 'results',
-    title: 'Results & conclusions',
-    content:
-      'No material exceptions identified. Minor delays were noted on Sample 18 and 22; both resolved with management explanations. Control conclusion: Operating effectively.',
-  },
+const workpaperTable = [
+  { control: 'Sample 1', date: 'Mar 30 2025', ref: '183278', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
+  { control: 'Sample 2', date: 'Apr 02 2025', ref: 'E29-06777', description: 'Porem ipsum dolor sit', record: 'Record.pdf' },
+  { control: 'Sample 3', date: 'Dec 06 2024', ref: '108722', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
+  { control: 'Sample 4', date: 'Apr 09 2025', ref: 'WX-18Z452', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
+  { control: 'Sample 5', date: 'Apr 09 2025', ref: 'WX-18Z459', description: 'Porem ipsum dolor sit', record: 'Record.pdf' },
+  { control: 'Sample 6', date: 'Apr 30 2025', ref: 'INV007509', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
+  { control: 'Sample 7', date: 'Mar 31 2025', ref: '10547952', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
 ]
 
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isChatOpen, setIsChatOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState(sections[0])
 
   const workspaceId = useMemo(() => {
     const state = location.state as { workspaceId?: string } | null
@@ -55,89 +43,80 @@ export default function WorkpaperDetailPage() {
   }, [workspaceId])
 
   return (
-    <div className="workpaper-detail-page">
-      <header className="workpaper-detail-page__header">
-        <div>
-          <p>Engagement &gt; Spaces &gt; Workpaper detail</p>
-          <h1>Editable workpaper</h1>
-          <span>Review annotations, edit inline, and finalize the draft before publishing.</span>
-        </div>
-        <div className="workpaper-detail-page__actions">
-          <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
-            Publish to workspace
-          </button>
-          <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
-            Reopen draft
-          </button>
-        </div>
-      </header>
+    <div className="workpaper-detail-ux">
+      <div className="workpaper-detail-ux__header">
+        <span>Engagement &gt; Spaces &gt; New Board</span>
+        <strong>WORK PAPER NAME</strong>
+        <em>1 board</em>
+      </div>
 
-      <section className="workpaper-detail-editor">
-        <aside className="workpaper-detail-sidebar">
-          <h2>Sections</h2>
-          <ul>
-            {sections.map((section) => (
-              <li key={section.id}>
-                <button
-                  type="button"
-                  className={activeSection.id === section.id ? 'active' : ''}
-                  onClick={() => setActiveSection(section)}
-                >
-                  {section.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
-
-        <div className="workpaper-detail-content">
+      <div className="workpaper-detail-ux__canvas">
+        <section className="workpaper-detail-ux__table-card">
           <header>
-            <h3 contentEditable suppressContentEditableWarning>
-              {activeSection.title}
-            </h3>
-            <span>Last edited 5 minutes ago · Auto-saved</span>
+            <div>
+              <span>Expense</span>
+              <span>Currency</span>
+              <span>Find sample in</span>
+            </div>
           </header>
-          <article contentEditable suppressContentEditableWarning>
-            {activeSection.content}
-          </article>
-          <div className="workpaper-detail-controls">
-            <button type="button">Add annotation</button>
-            <button type="button">Attach evidence</button>
+          <div className="workpaper-detail-ux__table">
+            {workpaperTable.map((row) => (
+              <div key={row.control} className="workpaper-detail-ux__row">
+                <div className="workpaper-detail-ux__col">
+                  <strong>$975.00</strong>
+                  <span>{row.control}</span>
+                </div>
+                <div className="workpaper-detail-ux__col">USD</div>
+                <div className="workpaper-detail-ux__col workpaper-detail-ux__tags">
+                  <button type="button">Invoice 1.xlsx</button>
+                  <button type="button">Invoice 2.xlsx</button>
+                  <button type="button">Shipping Doc.pdf</button>
+                </div>
+                <div className="workpaper-detail-ux__col workpaper-detail-ux__menu">⋯</div>
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className={isChatOpen ? 'workpaper-chat workpaper-chat--open' : 'workpaper-chat'}>
+        <aside className="workpaper-detail-ux__preview">
+          <div className="workpaper-detail-ux__preview-header">[WORK PAPER NAME]</div>
+          <div className="workpaper-detail-ux__preview-body">
+            <div className="workpaper-detail-ux__preview-box">Editable workpaper content</div>
+          </div>
+          <div className="workpaper-detail-ux__preview-actions">
+            <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>Review work paper</button>
+            <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>Send for review</button>
+            <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>Move to workflow</button>
+          </div>
+        </aside>
+      </div>
+
+      <div className={isChatOpen ? 'workpaper-detail-ux__agent workpaper-detail-ux__agent--open' : 'workpaper-detail-ux__agent'}>
         {isChatOpen ? (
-          <div className="workpaper-chat__panel">
+          <div className="workpaper-detail-ux__agent-panel">
             <header>
-              <strong>Review assistant</strong>
+              <strong>Ask me anything</strong>
               <button type="button" onClick={() => setIsChatOpen(false)}>
                 Close
               </button>
             </header>
-            <div className="workpaper-chat__body">
-              <p>Ask the agent to summarize comments, draft responses, or highlight missing evidence.</p>
-              <div className="workpaper-chat__input">
-                <textarea placeholder="e.g., summarize changes in this section" />
-                <button type="button">Send</button>
-              </div>
+            <div className="workpaper-detail-ux__agent-body">
+              <textarea placeholder="e.g., summarize this workpaper or flag missing steps" />
+              <button type="button">Send</button>
             </div>
           </div>
         ) : (
-          <button type="button" className="workpaper-chat__toggle" onClick={() => setIsChatOpen(true)}>
-            Ask agent
+          <button type="button" className="workpaper-detail-ux__agent-toggle" onClick={() => setIsChatOpen(true)}>
+            Ask me anything...
           </button>
         )}
       </div>
 
-      <div className="workpaper-detail-nav">
-        <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
-          Back to workpaper
-        </button>
-        <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
-          Finish & publish
-        </button>
+      <div className="workpaper-detail-ux__action-bar">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <span key={idx}>+</span>
+        ))}
+        <span>[Action bar]</span>
       </div>
     </div>
   )
