@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FiMoreHorizontal } from 'react-icons/fi'
 import { recordWorkflowStep } from '../services/workspaceApi'
@@ -23,6 +23,7 @@ export default function WorkpaperPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { boards } = useBoards()
+  const [localTags, setLocalTags] = useState<string[][]>(() => expenseRows.map(() => []))
 
   const workspaceId = useMemo(() => {
     const state = location.state as { workspaceId?: string } | null
@@ -45,6 +46,18 @@ export default function WorkpaperPage() {
   }, [activeBoard])
 
   useEffect(() => {
+    setLocalTags(prev => {
+      if (sampleFiles.length === 0) {
+        return expenseRows.map(() => [])
+      }
+      if (prev.every((row) => row.length)) {
+        return prev
+      }
+      return expenseRows.map(() => [...sampleFiles])
+    })
+  }, [sampleFiles])
+
+  useEffect(() => {
     if (!workspaceId) return
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
@@ -56,16 +69,16 @@ export default function WorkpaperPage() {
     })
   }, [workspaceId])
 
-  const handleReview = () => {
-    navigate('/workpaper-detail', workflowNavState)
-  }
+  const handleReview = () => navigate('/workpaper-detail', workflowNavState)
+  const handleSendForReview = () => navigate('/workpaper-detail', workflowNavState)
+  const handleMoveToWorkflow = () => navigate('/workspace', workflowNavState)
 
-  const handleSendForReview = () => {
-    navigate('/workpaper-detail', workflowNavState)
-  }
-
-  const handleMoveToWorkflow = () => {
-    navigate('/workspace', workflowNavState)
+  const handleRemoveTag = (rowIndex: number, fileName: string) => {
+    setLocalTags((prev) =>
+      prev.map((rowTags, idx) =>
+        idx === rowIndex ? rowTags.filter((tag) => tag !== fileName) : rowTags,
+      ),
+    )
   }
 
   return (
@@ -105,15 +118,20 @@ export default function WorkpaperPage() {
               </tr>
             </thead>
             <tbody>
-              {expenseRows.map((row) => (
+              {expenseRows.map((row, index) => (
                 <tr key={row.id}>
                   <td>${row.expense.toFixed(2)}</td>
                   <td>{row.currency}</td>
                   <td>
                     <div className="workpaper-tags">
-                      {sampleFiles.length > 0 ? (
-                        sampleFiles.map((file) => (
-                          <span key={`${row.id}-${file}`}>{file}</span>
+                      {localTags[index]?.length ? (
+                        localTags[index].map((file) => (
+                          <span key={`${row.id}-${file}`}>
+                            {file}
+                            <button type="button" aria-label={`Remove ${file}`} onClick={() => handleRemoveTag(index, file)}>
+                              ×
+                            </button>
+                          </span>
                         ))
                       ) : (
                         <span className="workpaper-tags__empty">No samples linked</span>
