@@ -1,0 +1,167 @@
+.document-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 8px 8px 0;
+  gap: 10px;
+  width: 100%;
+  height: 58px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+  background: transparent;
+}
+ 
+/* Individual Tab - Inactive State (Gray Background) */
+.document-tabs__tab {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  min-width: 200px;
+  max-width: 361px;
+  width: 361px;
+  height: 50px;
+  background: #F5F6FA;
+  border: 1px solid #C9D3F8;
+  border-radius: 4px 4px 0 0;
+  flex: none;
+  flex-grow: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+ 
+/* Active Tab State (White with bottom border removed) */
+.document-tabs__tab--active {
+  background: #FFFFFF;
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #C9D3F8;
+}
+ 
+/* Tab Header Container */
+.document-tabs__tab-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 24px;
+  width: 100%;
+  height: 50px;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+  box-sizing: border-box;
+}
+ 
+/* Title Container */
+.document-tabs__title-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 8px;
+  flex: 1;
+  order: 0;
+  min-width: 0;
+  overflow: hidden;
+  max-width: calc(100% - 48px);
+}
+ 
+/* Tab Label */
+.document-tabs__label {
+  height: 26px;
+  font-family: 'Open Sans', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 160%;
+  color: #0C233C;
+  flex: 1;
+  order: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+ 
+/* Approval Checkmark Icon Button */
+.document-tabs__check-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  gap: 8px;
+  width: 24px;
+  height: 24px;
+  background: #F5F6FA;
+  border-radius: 4px;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+ 
+.document-tabs__check {
+  width: 16px;
+  height: 16px;
+  color: #00338D;
+  flex-shrink: 0;
+}
+ 
+/* Close Button */
+.document-tabs__close {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  gap: 8px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  flex: none;
+  order: 2;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+ 
+.document-tabs__close:hover {
+  background: rgba(30, 73, 226, 0.08);
+}
+ 
+.document-tabs__close svg {
+  width: 16px;
+  height: 16px;
+  color: #1E49E2;
+}
+ 
+/* Scrollbar Styling */
+.document-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+ 
+.document-tabs::-webkit-scrollbar-track {
+  background: #F5F6FA;
+}
+ 
+.document-tabs::-webkit-scrollbar-thumb {
+  background: #C9D3F8;
+  border-radius: 2px;
+}
+ 
+.document-tabs::-webkit-scrollbar-thumb:hover {
+  background: #1E49E2;
+}
