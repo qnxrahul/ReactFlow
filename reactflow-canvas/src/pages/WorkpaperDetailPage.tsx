@@ -1,23 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
+import workpaperPreview from '../assets/workpaper-detail.jpg'
 import './WorkpaperDetailPage.css'
 
-const workpaperTable = [
-  { control: 'Sample 1', date: 'Mar 30 2025', ref: '183278', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
-  { control: 'Sample 2', date: 'Apr 02 2025', ref: 'E29-06777', description: 'Porem ipsum dolor sit', record: 'Record.pdf' },
-  { control: 'Sample 3', date: 'Dec 06 2024', ref: '108722', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
-  { control: 'Sample 4', date: 'Apr 09 2025', ref: 'WX-18Z452', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
-  { control: 'Sample 5', date: 'Apr 09 2025', ref: 'WX-18Z459', description: 'Porem ipsum dolor sit', record: 'Record.pdf' },
-  { control: 'Sample 6', date: 'Apr 30 2025', ref: 'INV007509', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
-  { control: 'Sample 7', date: 'Mar 31 2025', ref: '10547952', description: 'Lorem ipsum dolor sit amet', record: 'Record.pdf' },
+const expenseRows = [
+  { amount: '$975.00', currency: 'USD', tags: ['Invoice 1.xlsx', 'Invoice 2.xlsx', 'Shipping Doc.pdf'] },
+  { amount: '$579.60', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
+  { amount: '$909.17', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb'] },
+  { amount: '$381.10', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
+  { amount: '$122.27', currency: 'USD', tags: ['Invoice 3.xlsb', 'Shipping Doc.pdf'] },
+  { amount: '$565.75', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
 ]
+
+const agentSuggestions = ['Adjust any cards', 'Recommend next steps', 'Create a new Flow chart', 'Add more options']
 
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [isChatOpen, setIsChatOpen] = useState(false)
 
   const workspaceId = useMemo(() => {
     const state = location.state as { workspaceId?: string } | null
@@ -43,76 +44,75 @@ export default function WorkpaperDetailPage() {
   }, [workspaceId])
 
   return (
-    <div className="workpaper-detail-ux">
-      <div className="workpaper-detail-ux__header">
-        <span>Engagement &gt; Spaces &gt; New Board</span>
-        <strong>WORK PAPER NAME</strong>
-        <em>1 board</em>
-      </div>
+    <div className="workpaper-detail-screen">
+      <header className="workpaper-detail-screen__banner">
+        <div>
+          <span>Engagement &gt; Spaces &gt; New Board</span>
+          <h1>Work Paper Name</h1>
+          <p>Confirm samples are mapped to their source evidence before moving the workpaper into review.</p>
+        </div>
+        <div className="workpaper-detail-screen__banner-actions">
+          <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
+            Review work paper
+          </button>
+          <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>
+            Send for review
+          </button>
+          <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
+            Move to workflow
+          </button>
+        </div>
+      </header>
 
-      <div className="workpaper-detail-ux__canvas">
-        <section className="workpaper-detail-ux__table-card">
+      <main className="workpaper-detail-screen__board">
+        <section className="workpaper-detail-screen__table">
           <header>
-            <div>
-              <span>Expense</span>
-              <span>Currency</span>
-              <span>Find sample in</span>
-            </div>
+            <span>Expense</span>
+            <span>Currency</span>
+            <span>Find sample in</span>
           </header>
-          <div className="workpaper-detail-ux__table">
-            {workpaperTable.map((row) => (
-              <div key={row.control} className="workpaper-detail-ux__row">
-                <div className="workpaper-detail-ux__col">
-                  <strong>$975.00</strong>
-                  <span>{row.control}</span>
+          <div className="workpaper-detail-screen__rows">
+            {expenseRows.map((row, idx) => (
+              <div key={idx} className="workpaper-detail-screen__row">
+                <div className="workpaper-detail-screen__cell">
+                  <strong>{row.amount}</strong>
+                  <em>Expense</em>
                 </div>
-                <div className="workpaper-detail-ux__col">USD</div>
-                <div className="workpaper-detail-ux__col workpaper-detail-ux__tags">
-                  <button type="button">Invoice 1.xlsx</button>
-                  <button type="button">Invoice 2.xlsx</button>
-                  <button type="button">Shipping Doc.pdf</button>
+                <div className="workpaper-detail-screen__cell">{row.currency}</div>
+                <div className="workpaper-detail-screen__cell workpaper-detail-screen__tags">
+                  {row.tags.map((tag) => (
+                    <span key={`${idx}-${tag}`}>{tag}</span>
+                  ))}
                 </div>
-                <div className="workpaper-detail-ux__col workpaper-detail-ux__menu">⋯</div>
+                <div className="workpaper-detail-screen__cell workpaper-detail-screen__menu">⋯</div>
               </div>
             ))}
           </div>
         </section>
 
-        <aside className="workpaper-detail-ux__preview">
-          <div className="workpaper-detail-ux__preview-header">[WORK PAPER NAME]</div>
-          <div className="workpaper-detail-ux__preview-body">
-            <div className="workpaper-detail-ux__preview-box">Editable workpaper content</div>
-          </div>
-          <div className="workpaper-detail-ux__preview-actions">
-            <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>Review work paper</button>
-            <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>Send for review</button>
-            <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>Move to workflow</button>
+        <aside className="workpaper-detail-screen__preview">
+          <div className="workpaper-detail-screen__preview-title">[WORK PAPER NAME]</div>
+          <div className="workpaper-detail-screen__preview-body">
+            <img src={workpaperPreview} alt="Workpaper preview" />
           </div>
         </aside>
+      </main>
+
+      <div className="workpaper-detail-screen__agent">
+        <div className="workpaper-detail-screen__agent-card">
+          <header>What's next?</header>
+          <ul>
+            {agentSuggestions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <label htmlFor="agent-input">Ask me anything...</label>
+          <textarea id="agent-input" placeholder="e.g., summarize mappings, flag gaps" />
+          <button type="button">Send</button>
+        </div>
       </div>
 
-      <div className={isChatOpen ? 'workpaper-detail-ux__agent workpaper-detail-ux__agent--open' : 'workpaper-detail-ux__agent'}>
-        {isChatOpen ? (
-          <div className="workpaper-detail-ux__agent-panel">
-            <header>
-              <strong>Ask me anything</strong>
-              <button type="button" onClick={() => setIsChatOpen(false)}>
-                Close
-              </button>
-            </header>
-            <div className="workpaper-detail-ux__agent-body">
-              <textarea placeholder="e.g., summarize this workpaper or flag missing steps" />
-              <button type="button">Send</button>
-            </div>
-          </div>
-        ) : (
-          <button type="button" className="workpaper-detail-ux__agent-toggle" onClick={() => setIsChatOpen(true)}>
-            Ask me anything...
-          </button>
-        )}
-      </div>
-
-      <div className="workpaper-detail-ux__action-bar">
+      <div className="workpaper-detail-screen__action-bar">
         {Array.from({ length: 6 }).map((_, idx) => (
           <span key={idx}>+</span>
         ))}

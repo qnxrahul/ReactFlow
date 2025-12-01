@@ -1,226 +1,215 @@
-.workpaper-detail-ux {
+.workpaper-detail-screen {
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f3f6ff;
   font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  padding: 32px 40px 80px 40px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 32px 40px 80px 40px;
 }
 
-.workpaper-detail-ux__header {
+.workpaper-detail-screen__banner {
+  background: linear-gradient(135deg, #132c5a, #0a1a35);
+  border-radius: 12px;
+  padding: 24px 32px;
+  color: #fff;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.workpaper-detail-screen__banner span {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.workpaper-detail-screen__banner h1 {
+  margin: 6px 0;
+  font-size: 28px;
+}
+
+.workpaper-detail-screen__banner p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.workpaper-detail-screen__banner-actions {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.workpaper-detail-screen__banner-actions button {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.workpaper-detail-screen__banner-actions button:nth-of-type(1) {
+  background: #ffffff;
   color: #0f172a;
 }
 
-.workpaper-detail-ux__header span {
-  font-size: 13px;
-  color: #64748b;
+.workpaper-detail-screen__banner-actions button:nth-of-type(2) {
+  background: #cbd5ff;
+  color: #14235a;
 }
 
-.workpaper-detail-ux__header strong {
-  font-size: 18px;
+.workpaper-detail-screen__banner-actions button:nth-of-type(3) {
+  background: #1e49e2;
+  color: #fff;
 }
 
-.workpaper-detail-ux__header em {
-  font-size: 13px;
-  color: #94a3b8;
-}
-
-.workpaper-detail-ux__canvas {
+.workpaper-detail-screen__board {
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: 24px;
 }
 
-.workpaper-detail-ux__table-card {
+.workpaper-detail-screen__table {
   background: #fff;
+  border-radius: 10px;
   border: 1px solid #dbe3f3;
-  border-radius: 8px;
   overflow: hidden;
 }
 
-.workpaper-detail-ux__table-card header {
-  background: #f6f8ff;
-  padding: 12px 20px;
+.workpaper-detail-screen__table header {
+  padding: 14px 24px;
+  background: #eef2ff;
   font-weight: 600;
   color: #475569;
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 1.8fr;
 }
 
-.workpaper-detail-ux__table {
+.workpaper-detail-screen__rows {
   display: flex;
   flex-direction: column;
 }
 
-.workpaper-detail-ux__row {
+.workpaper-detail-screen__row {
   display: grid;
-  grid-template-columns: 1.2fr 0.6fr 2.2fr 40px;
+  grid-template-columns: 1fr 0.7fr 1.8fr 40px;
   align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
   border-bottom: 1px solid #edf1f7;
-  padding: 12px 20px;
   font-size: 14px;
 }
 
-.workpaper-detail-ux__col strong {
+.workpaper-detail-screen__cell strong {
   display: block;
   color: #0f172a;
+  font-size: 16px;
 }
 
-.workpaper-detail-ux__tags {
+.workpaper-detail-screen__cell em {
+  font-style: normal;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.workpaper-detail-screen__tags {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
-.workpaper-detail-ux__tags button {
+.workpaper-detail-screen__tags span {
   border: 1px solid #d0d7ef;
   background: #eef2ff;
   color: #1e40af;
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   font-size: 12px;
-  cursor: pointer;
 }
 
-.workpaper-detail-ux__menu {
+.workpaper-detail-screen__menu {
   text-align: center;
-  font-size: 18px;
   color: #94a3b8;
+  font-size: 18px;
 }
 
-.workpaper-detail-ux__preview {
+.workpaper-detail-screen__preview {
   background: #fff;
+  border-radius: 10px;
   border: 1px solid #dbe3f3;
-  border-radius: 8px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.workpaper-detail-ux__preview-header {
+.workpaper-detail-screen__preview-title {
   font-weight: 700;
   color: #0f172a;
 }
 
-.workpaper-detail-ux__preview-body {
-  border: 1px solid #e0e7ff;
-  border-radius: 6px;
-  padding: 20px;
-  background: #f6f8ff;
-  min-height: 220px;
+.workpaper-detail-screen__preview-body {
+  border: 1px solid #dfe6f7;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9fbff;
 }
 
-.workpaper-detail-ux__preview-box {
+.workpaper-detail-screen__preview-body img {
   width: 100%;
-  height: 100%;
-  border: 1px dashed #c3d0ff;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  font-size: 14px;
+  display: block;
 }
 
-.workpaper-detail-ux__preview-actions {
+.workpaper-detail-screen__agent {
+  align-self: flex-start;
+}
+
+.workpaper-detail-screen__agent-card {
+  width: 360px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #dbe3f3;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.workpaper-detail-ux__preview-actions button {
-  border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.workpaper-detail-ux__preview-actions button:nth-of-type(1) {
-  background: #1e49e2;
-  color: #fff;
-}
-
-.workpaper-detail-ux__preview-actions button:nth-of-type(2) {
-  background: #f5f3ff;
-  color: #5b21b6;
-}
-
-.workpaper-detail-ux__preview-actions button:nth-of-type(3) {
-  background: #e2e8f0;
+.workpaper-detail-screen__agent-card header {
+  font-weight: 700;
   color: #0f172a;
 }
 
-.workpaper-detail-ux__agent {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-}
-
-.workpaper-detail-ux__agent-toggle {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 20px;
-  background: #dae1ff;
-  color: #1e3a8a;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.workpaper-detail-ux__agent--open .workpaper-detail-ux__agent-panel {
-  background: #fff;
-  border: 1px solid #dbe3f3;
-  border-radius: 10px;
-  width: 320px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
-  overflow: hidden;
-}
-
-.workpaper-detail-ux__agent-panel header {
-  padding: 12px 16px;
-  background: #eef2ff;
+.workpaper-detail-screen__agent-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.workpaper-detail-ux__agent-panel header button {
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 6px;
   color: #475569;
 }
 
-.workpaper-detail-ux__agent-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.workpaper-detail-ux__agent-body textarea {
+.workpaper-detail-screen__agent-card textarea {
   border: 1px solid #d0d7ef;
   border-radius: 6px;
-  padding: 8px;
+  padding: 8px 10px;
   font-family: inherit;
-  resize: none;
   min-height: 80px;
 }
 
-.workpaper-detail-ux__agent-body button {
+.workpaper-detail-screen__agent-card button {
   align-self: flex-end;
   border: none;
   border-radius: 6px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   background: #1e49e2;
   color: #fff;
   cursor: pointer;
 }
 
-.workpaper-detail-ux__action-bar {
+.workpaper-detail-screen__action-bar {
   border: 1px dashed #d0d7ef;
   border-radius: 6px;
   padding: 12px;
@@ -231,27 +220,22 @@
   background: #fff;
 }
 
-.workpaper-detail-ux__action-bar span {
+.workpaper-detail-screen__action-bar span {
   font-size: 18px;
   color: #94a3b8;
 }
 
-.workpaper-detail-ux__action-bar span:last-of-type {
+.workpaper-detail-screen__action-bar span:last-of-type {
   color: #0f172a;
   font-weight: 600;
 }
 
-@media (max-width: 1024px) {
-  .workpaper-detail-ux__canvas {
+@media (max-width: 1100px) {
+  .workpaper-detail-screen__board {
     grid-template-columns: 1fr;
   }
 
-  .workpaper-detail-ux {
-    padding: 24px;
-  }
-
-  .workpaper-detail-ux__agent {
-    left: 16px;
-    bottom: 16px;
+  .workpaper-detail-screen__agent-card {
+    width: 100%;
   }
 }
