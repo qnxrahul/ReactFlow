@@ -21,11 +21,13 @@ const uploadableSections = boardConfig.sections.filter((section) =>
 )
 
 const mappingTodos = [
-  'Validate AI extracted tags',
-  'Pair samples to evidence',
-  'Confirm control IDs',
-  'Flag missing attachments',
-  'Prep for workpaper handoff',
+  'Upload items to be tested',
+  'Review data extraction',
+  'Approve data extraction',
+  'Confirm document mapping',
+  'Create workspace',
+  'Review workpaper',
+  'Approve workpaper',
 ]
 
 const createSectionState = (section: SectionConfig): MappingSection => ({
@@ -197,16 +199,39 @@ export default function MappingPage() {
   const sampleSection = sections.find((section) => section.id === 'sample-documentation')
 
   const mappingRows = useMemo(() => {
-    const left = itemsSection?.persistedFiles ?? []
-    const right = sampleSection?.persistedFiles ?? []
-    const max = Math.max(left.length, right.length, 1)
+    const controlFiles = itemsSection?.persistedFiles ?? []
+    const evidenceFiles = sampleSection?.persistedFiles ?? []
+    const max = Math.max(controlFiles.length, evidenceFiles.length, 5)
     return Array.from({ length: max }).map((_, idx) => {
-      const source = left[idx] ?? ''
-      const target = right[idx] ?? ''
-      const status = source && target ? 'Paired' : 'Pending'
-      return { id: idx + 1, source: source || '—', target: target || '—', status }
+      const control = controlFiles[idx]
+      const evidence = evidenceFiles[idx]
+      const date = new Date(Date.now() - idx * 86400000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+      const documentRef = evidence ? `DOC-${Math.abs(hashString(evidence)).toString().slice(0, 6).padStart(6, '0')}` : 'Pending'
+      const description = evidence ? evidence : 'Awaiting sample documentation'
+      return {
+        id: idx + 1,
+        sample: control ?? `Sample ${idx + 1}`,
+        date,
+        documentRef,
+        description,
+        record: evidence ? 'View record' : 'Assign file',
+        paired: Boolean(control && evidence),
+      }
     })
   }, [itemsSection?.persistedFiles, sampleSection?.persistedFiles])
+
+  function hashString(value: string): number {
+    let hash = 0
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(i)
+      hash |= 0
+    }
+    return Math.abs(hash)
+  }
 
   const handleProceedToWorkpaper = () => {
     if (!workspaceId) return
@@ -222,62 +247,54 @@ export default function MappingPage() {
   }
 
   return (
-    <div className="new-board mapping-page">
-      <aside className="new-board__sidebar">
-        <div className="workspace-todo-card">
-          <div className="workspace-todo-header">
-            <h2>Mapping checklist</h2>
-            <span>{mappingTodos.length} cards</span>
-          </div>
-          <ul className="workspace-todo-items">
-            {mappingTodos.map((item) => (
-              <li key={item} className="workspace-todo-item">
-                <label>
-                  <input type="checkbox" />
-                  <span>{item}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-          <button className="workspace-todo-update">Update</button>
+    <div className="mapping-page">
+      <header className="mapping-page__header">
+        <div>
+          <p>Engagement &gt; Spaces &gt; Mapping</p>
+          <h1>Document mapping</h1>
+          <span>Confirm samples are paired to the prior documentation before building the workpaper canvas.</span>
         </div>
-
-        <div className="mapping-agent-card">
-          <h3>Agent assistant</h3>
-          <p>Ask the agent to summarize mappings, flag gaps, or create next-step prompts.</p>
-          <button type="button" onClick={handleAgentAction}>
-            Open agent workspace
+        <div className="mapping-header__actions">
+          <button type="button" onClick={handleProceedToWorkpaper}>
+            Start workpaper build
+          </button>
+          <button type="button" className="secondary">
+            Share mapping
           </button>
         </div>
-      </aside>
+      </header>
 
-      <main className="new-board__content mapping-content">
-        <div className="mapping-header">
-          <div>
-            <p>Engagement &gt; Spaces &gt; Mapping</p>
-            <h1>Document mapping</h1>
-            <span>Review uploads from Items to be tested and Sample documentation, then lock the pairings.</span>
+      <main className="mapping-page__body">
+        <div className="mapping-grid">
+          <div className="mapping-card mapping-card--todo">
+            <div className="workspace-todo-header">
+              <h2>To Do List</h2>
+              <span>{mappingTodos.length} cards</span>
+            </div>
+            <ul className="workspace-todo-items">
+              {mappingTodos.map((item) => (
+                <li key={item} className="workspace-todo-item">
+                  <label>
+                    <input type="checkbox" />
+                    <span>{item}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <button className="workspace-todo-update">Update</button>
           </div>
-          <div className="mapping-header__actions">
-            <button type="button" onClick={handleProceedToWorkpaper}>
-              Start workpaper build
-            </button>
-            <button type="button" className="secondary">
-              Share mapping
-            </button>
-          </div>
-        </div>
 
-        <div className="mapping-sections-grid">
           {sections.map((section) => (
-            <div key={section.id} className="new-board__section mapping-section-card">
-              <div className="new-board__section-header">
-                <h3 className="new-board__section-title">{section.title}</h3>
-                <span className="new-board__file-count">{section.files.length} files</span>
+            <div key={section.id} className="mapping-card mapping-section-card">
+              <div className="mapping-card__header">
+                <div>
+                  <strong>{section.title}</strong>
+                  <span>{section.files.length} files</span>
+                </div>
               </div>
-              <div className="new-board__section-body">
-                {section.persistedFiles.length > 0 && (
-                  <ul className="new-board__persisted-files">
+              <div className="mapping-card__body">
+                {section.persistedFiles.length > 0 ? (
+                  <ul className="mapping-file-list">
                     {section.persistedFiles.map((file) => (
                       <li key={`${section.id}-${file}`}>
                         <span>{file}</span>
@@ -287,50 +304,82 @@ export default function MappingPage() {
                       </li>
                     ))}
                   </ul>
+                ) : (
+                  <div className="mapping-empty-state">Files uploaded in New Board will appear here.</div>
                 )}
                 <FileUpload sectionId={section.id} onFilesChange={(files) => handleFilesChange(section.id, files)} maxFiles={50} />
               </div>
             </div>
           ))}
+
+          <section className="mapping-card mapping-card--table">
+            <header>
+              <div>
+                <strong>Document mapping table</strong>
+                <span>Confirm samples are assigned to the prior document.</span>
+              </div>
+              <button type="button" onClick={handleProceedToWorkpaper}>
+                Continue to workpaper
+              </button>
+            </header>
+            <div className="mapping-table-wrapper">
+              <table className="mapping-table">
+                <thead>
+                  <tr>
+                    <th>Sample</th>
+                    <th>Date</th>
+                    <th>Document Ref #</th>
+                    <th>Description</th>
+                    <th>Record</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mappingRows.map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.sample}</td>
+                      <td>{row.date}</td>
+                      <td>{row.documentRef}</td>
+                      <td>{row.description}</td>
+                      <td>
+                        <button type="button" className="mapping-record-btn">
+                          {row.record}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
-        <section className="mapping-table-card">
-          <header>
-            <div>
-              <span>Document mapping table</span>
-              <strong>Pair and approve files</strong>
-            </div>
-            <button type="button" onClick={handleProceedToWorkpaper}>
-              Continue to workpaper
-            </button>
-          </header>
-          <div className="mapping-table-wrapper">
-            <table className="mapping-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Items to be tested</th>
-                  <th>Sample documentation</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mappingRows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.id}</td>
-                    <td>{row.source}</td>
-                    <td>{row.target}</td>
-                    <td>
-                      <span className={row.status === 'Paired' ? 'mapping-status mapping-status--success' : 'mapping-status mapping-status--pending'}>
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="mapping-agent-panel">
+          <div className="mapping-agent-panel__header">
+            <strong>What's next?</strong>
+            <ul>
+              <li>Adjust any cards</li>
+              <li>Recommend next steps</li>
+              <li>Create a new flow chart</li>
+              <li>Add more options</li>
+            </ul>
           </div>
-        </section>
+          <div className="mapping-agent-panel__input">
+            <label htmlFor="mapping-agent-input">Ask me anything...</label>
+            <div className="mapping-agent-panel__input-row">
+              <input id="mapping-agent-input" placeholder="e.g., summarize mappings" />
+              <button type="button" onClick={handleAgentAction}>
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mapping-action-bar">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <span key={idx}>+</span>
+          ))}
+          <span className="mapping-action-bar__label">[Action bar]</span>
+        </div>
       </main>
 
       <div className="mapping-flow-nav">
