@@ -5,7 +5,6 @@ import './index.css'
 import ClassicCanvas from './pages/ClassicCanvas'
 import FluentCanvas from './pages/FluentCanvas'
 import WorkspaceCanvas from './pages/WorkspaceCanvas'
-import WorkspaceNewBoard from './pages/WorkspaceNewBoard'
 import MappingPage from './pages/MappingPage'
 import WorkpaperPage from './pages/WorkpaperPage'
 import WorkpaperDetailPage from './pages/WorkpaperDetailPage'
@@ -29,8 +28,8 @@ const router = createBrowserRouter([
       { path: '/', element: <WorkspaceCanvas /> },
       { path: '/fluent', element: <FluentCanvas /> },
       { path: '/workspace', element: <WorkspaceCanvas /> },
-      { path: '/workspace/new', element: <WorkspaceNewBoard /> },
-        { path: '/new-board', element: <NewBoard /> },
+      { path: '/workspace/new', element: <NewBoard /> },
+      { path: '/new-board', element: <NewBoard /> },
       { path: '/sample-documentation/extract', element: <DataExtraction /> },
       { path: '/mapping', element: <MappingPage /> },
       { path: '/workpaper', element: <WorkpaperPage /> },

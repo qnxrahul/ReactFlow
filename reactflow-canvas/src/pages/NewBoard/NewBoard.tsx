@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import boardConfig from '../../config/boardConfig.json'
 import FileUpload from '../../components/FileUpload/FileUpload'
+import { useBoards, type WorkspaceLane } from '../../state/BoardsProvider'
+import { LAST_CREATED_WORKSPACE_KEY } from '../../constants/workspace'
 import './NewBoard.css'
 
 // Type definitions for component state
@@ -11,11 +13,15 @@ interface Step {
   completed: boolean
 }
 
-interface Section {
+interface SectionConfig {
   id: string
   title: string
   fileCount: number
   hasUpload: boolean  // Determines if section allows file uploads
+}
+
+type Section = SectionConfig & {
+  files: string[]
 }
 
 interface UploadedFile {
@@ -23,6 +29,28 @@ interface UploadedFile {
   file: File
   sectionId: string  // Links file to its section
 }
+
+const baseLaneTemplate: WorkspaceLane[] = boardConfig.sections
+  .filter((section) => section.hasUpload)
+  .map((section) => ({
+    id: section.id,
+    title: section.title,
+    files: [],
+  }))
+
+const createSectionState = (section: SectionConfig): Section => ({
+  ...section,
+  files: [],
+})
+
+const sectionsToLanes = (sections: Section[]): WorkspaceLane[] =>
+  sections
+    .filter((section) => section.hasUpload)
+    .map((section) => ({
+      id: section.id,
+      title: section.title,
+      files: [...section.files],
+    }))
 
 /**
  * NewBoard Component
@@ -35,11 +63,116 @@ interface UploadedFile {
  */
 export default function NewBoard() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { createBoard, updateBoard, boards, uploadFile } = useBoards()
+  const hasAutoCreatedRef = useRef(false)
+  const boardIdParam = searchParams.get('boardId')
   
   // Initialize state from config file
-  const [steps, setSteps] = useState<Step[]>(boardConfig.steps)
-  const [sections, setSections] = useState<Section[]>(boardConfig.sections)
+  const [steps, setSteps] = useState<Step[]>(() => boardConfig.steps.map((step) => ({ ...step })))
+  const [sections, setSections] = useState<Section[]>(() => boardConfig.sections.map(createSectionState))
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (activeBoardId) return
+    if (boardIdParam) {
+      setActiveBoardId(boardIdParam)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, boardIdParam)
+      }
+      return
+    }
+
+    const storedId =
+      typeof window !== 'undefined' ? window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY) : null
+    if (storedId) {
+      setActiveBoardId(storedId)
+      if (!boardIdParam) {
+        setSearchParams({ boardId: storedId })
+      }
+      return
+    }
+
+    if (hasAutoCreatedRef.current) return
+    hasAutoCreatedRef.current = true
+    void (async () => {
+      try {
+        const created = await createBoard({
+          template: null,
+          lanes: baseLaneTemplate.map((lane) => ({ ...lane, files: [...lane.files] })),
+          tasksCount: steps.length,
+        })
+        setActiveBoardId(created.id)
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, created.id)
+        }
+        setSearchParams({ boardId: created.id })
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to bootstrap workspace board for NewBoard', error)
+        }
+      }
+    })()
+  }, [activeBoardId, boardIdParam, createBoard, setSearchParams, steps.length])
+
+  const activeBoard = useMemo(
+    () => (activeBoardId ? boards.find((board) => board.id === activeBoardId) ?? null : null),
+    [activeBoardId, boards],
+  )
+
+  useEffect(() => {
+    if (!activeBoard) return
+    setSections((prev) =>
+      prev.map((section) => {
+        if (!section.hasUpload) return section
+        const lane = activeBoard.lanes?.find(
+          (item) => item.id === section.id || item.title === section.title,
+        )
+        if (!lane) return section
+        return {
+          ...section,
+          files: [...lane.files],
+          fileCount: lane.files.length,
+        }
+      }),
+    )
+  }, [activeBoard])
+
+  const persistLaneState = useCallback(
+    async (nextSections: Section[], uploads: File[]) => {
+      if (!activeBoardId) return
+
+      if (uploads.length > 0) {
+        try {
+          await Promise.all(uploads.map((file) => uploadFile(activeBoardId, file)))
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Failed to upload workspace files', error)
+          }
+        }
+      }
+
+      try {
+        const lanesPayload = sectionsToLanes(nextSections)
+        const filesCount = lanesPayload.reduce((total, lane) => total + lane.files.length, 0)
+        await updateBoard(activeBoardId, (prev) => ({
+          ...prev,
+          lanes: lanesPayload,
+          filesCount,
+          tasksCount: steps.length,
+        }))
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, activeBoardId)
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to persist workspace lanes', error)
+        }
+      }
+    },
+    [activeBoardId, steps.length, updateBoard, uploadFile],
+  )
 
   /**
    * Toggles the completion status of a to-do list item
@@ -60,29 +193,33 @@ export default function NewBoard() {
    * @param sectionId - Section where files were uploaded
    * @param files - Array of File objects uploaded by user
    */
-  const handleFilesChange = (sectionId: string, files: File[]) => {
-    // Update the file count display for this section
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === sectionId
-          ? { ...section, fileCount: files.length }
-          : section
-      )
-    )
-    
-    // Store files with metadata for later use in extraction screen
-    const newFiles: UploadedFile[] = files.map(file => ({
-      id: `${sectionId}-${file.name}-${Date.now()}`,
-      file,
-      sectionId
-    }))
-    
-    // Replace old files for this section with new ones
-    setUploadedFiles(prev => [
-      ...prev.filter(f => f.sectionId !== sectionId),
-      ...newFiles
-    ])
-  }
+  const handleFilesChange = useCallback(
+    (sectionId: string, files: File[]) => {
+      setUploadedFiles((prev) => [
+        ...prev.filter((file) => file.sectionId !== sectionId),
+        ...files.map((file) => ({
+          id: `${sectionId}-${file.name}-${Date.now()}-${Math.random()}`,
+          file,
+          sectionId,
+        })),
+      ])
+
+      setSections((prev) => {
+        const prevSection = prev.find((section) => section.id === sectionId)
+        const previousNames = prevSection?.files ?? []
+        const fileNames = files.map((file) => file.name)
+        const nextSections = prev.map((section) =>
+          section.id === sectionId
+            ? { ...section, fileCount: fileNames.length, files: fileNames }
+            : section,
+        )
+        const uploadsToSave = files.filter((file) => !previousNames.includes(file.name))
+        void persistLaneState(nextSections, uploadsToSave)
+        return nextSections
+      })
+    },
+    [persistLaneState],
+  )
 
   /**
    * Navigates to data extraction screen with sample documentation files
@@ -96,17 +233,8 @@ export default function NewBoard() {
     
     // Navigate with files in state (will be used by extraction screen)
     navigate('/sample-documentation/extract', {
-      state: { files: sampleFiles }
+      state: { files: sampleFiles, workspaceId: activeBoardId }
     })
-  }
-
-  /**
-   * Helper to get uploaded files for a specific section
-   * @param sectionId - Section to retrieve files for
-   * @returns Array of files for that section
-   */
-  const getSectionFiles = (sectionId: string) => {
-    return uploadedFiles.filter(f => f.sectionId === sectionId)
   }
 
   return (
