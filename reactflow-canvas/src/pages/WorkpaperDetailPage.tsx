@@ -1,24 +1,17 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { PDFDocument } from 'pdf-lib'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
-import workpaperPreview from '../assets/workpaper-detail.jpg'
+import workpaperImage from '../assets/workpaper-detail.jpg'
 import './WorkpaperDetailPage.css'
-
-const expenseRows = [
-  { amount: '$975.00', currency: 'USD', tags: ['Invoice 1.xlsx', 'Invoice 2.xlsx', 'Shipping Doc.pdf'] },
-  { amount: '$579.60', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
-  { amount: '$909.17', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb'] },
-  { amount: '$381.10', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
-  { amount: '$122.27', currency: 'USD', tags: ['Invoice 3.xlsb', 'Shipping Doc.pdf'] },
-  { amount: '$565.75', currency: 'USD', tags: ['Invoice 3.xlsb', 'Invoice 2.xlsb', 'Shipping Doc.pdf'] },
-]
-
-const agentSuggestions = ['Adjust any cards', 'Recommend next steps', 'Create a new Flow chart', 'Add more options']
 
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [isGenerating, setIsGenerating] = useState(true)
+  const [agentOpen, setAgentOpen] = useState(false)
 
   const workspaceId = useMemo(() => {
     const state = location.state as { workspaceId?: string } | null
@@ -30,6 +23,40 @@ export default function WorkpaperDetailPage() {
   }, [location.state])
 
   const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
+
+  useEffect(() => {
+    let isMounted = true
+    let objectUrl: string | null = null
+
+    const generatePdf = async () => {
+      try {
+        const response = await fetch(workpaperImage)
+        const imageBytes = await response.arrayBuffer()
+        const pdfDoc = await PDFDocument.create()
+        const jpgImage = await pdfDoc.embedJpg(imageBytes)
+        const { width, height } = jpgImage.size()
+        const page = pdfDoc.addPage([width, height])
+        page.drawImage(jpgImage, { x: 0, y: 0, width, height })
+        const pdfBytes = await pdfDoc.save()
+        if (!isMounted) return
+        objectUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }))
+        setPdfUrl(objectUrl)
+      } catch (error) {
+        console.error('Failed to generate PDF from image', error)
+      } finally {
+        if (isMounted) setIsGenerating(false)
+      }
+    }
+
+    void generatePdf()
+
+    return () => {
+      isMounted = false
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!workspaceId) return
@@ -44,80 +71,45 @@ export default function WorkpaperDetailPage() {
   }, [workspaceId])
 
   return (
-    <div className="workpaper-detail-screen">
-      <header className="workpaper-detail-screen__banner">
+    <div className="workpaper-detail-pdf">
+      <header className="workpaper-detail-pdf__header">
         <div>
-          <span>Engagement &gt; Spaces &gt; New Board</span>
-          <h1>Work Paper Name</h1>
-          <p>Confirm samples are mapped to their source evidence before moving the workpaper into review.</p>
+          <span>Engagement &gt; Spaces &gt; Workpaper detail</span>
+          <h1>Workpaper detail</h1>
+          <p>Edit the workpaper directly in-line, then move it forward for review.</p>
         </div>
-        <div className="workpaper-detail-screen__banner-actions">
+        <div className="workpaper-detail-pdf__actions">
           <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
-            Review work paper
-          </button>
-          <button type="button" onClick={() => navigate('/workpaper-detail', workflowNavState)}>
-            Send for review
+            Review workpaper
           </button>
           <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
-            Move to workflow
+            Publish to workspace
           </button>
         </div>
       </header>
 
-      <main className="workpaper-detail-screen__board">
-        <section className="workpaper-detail-screen__table">
-          <header>
-            <span>Expense</span>
-            <span>Currency</span>
-            <span>Find sample in</span>
-          </header>
-          <div className="workpaper-detail-screen__rows">
-            {expenseRows.map((row, idx) => (
-              <div key={idx} className="workpaper-detail-screen__row">
-                <div className="workpaper-detail-screen__cell">
-                  <strong>{row.amount}</strong>
-                  <em>Expense</em>
-                </div>
-                <div className="workpaper-detail-screen__cell">{row.currency}</div>
-                <div className="workpaper-detail-screen__cell workpaper-detail-screen__tags">
-                  {row.tags.map((tag) => (
-                    <span key={`${idx}-${tag}`}>{tag}</span>
-                  ))}
-                </div>
-                <div className="workpaper-detail-screen__cell workpaper-detail-screen__menu">⋯</div>
-              </div>
-            ))}
-          </div>
-        </section>
+      <section className="workpaper-detail-pdf__viewer">
+        {isGenerating ? (
+          <div className="workpaper-detail-pdf__loading">Generating PDF preview…</div>
+        ) : pdfUrl ? (
+          <iframe title="Workpaper detail PDF" src={pdfUrl} />
+        ) : (
+          <div className="workpaper-detail-pdf__error">Unable to render workpaper preview.</div>
+        )}
+      </section>
 
-        <aside className="workpaper-detail-screen__preview">
-          <div className="workpaper-detail-screen__preview-title">[WORK PAPER NAME]</div>
-          <div className="workpaper-detail-screen__preview-body">
-            <img src={workpaperPreview} alt="Workpaper preview" />
-          </div>
-        </aside>
-      </main>
+      <button className="workpaper-detail-pdf__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
+        {agentOpen ? 'Close agent' : 'Ask agent'}
+      </button>
 
-      <div className="workpaper-detail-screen__agent">
-        <div className="workpaper-detail-screen__agent-card">
-          <header>What's next?</header>
-          <ul>
-            {agentSuggestions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <label htmlFor="agent-input">Ask me anything...</label>
-          <textarea id="agent-input" placeholder="e.g., summarize mappings, flag gaps" />
+      {agentOpen && (
+        <div className="workpaper-detail-pdf__agent">
+          <header>Need help?</header>
+          <p>Summarize comments, draft reviewer notes, or highlight missing evidence.</p>
+          <textarea placeholder="Ask me anything about this workpaper" />
           <button type="button">Send</button>
         </div>
-      </div>
-
-      <div className="workpaper-detail-screen__action-bar">
-        {Array.from({ length: 6 }).map((_, idx) => (
-          <span key={idx}>+</span>
-        ))}
-        <span>[Action bar]</span>
-      </div>
+      )}
     </div>
   )
 }
