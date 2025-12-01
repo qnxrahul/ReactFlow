@@ -1,0 +1,65 @@
+{
+  "steps": [
+    {
+      "id": "step-1",
+      "label": "Upload items to be tested",
+      "completed": false
+    },
+    {
+      "id": "step-2",
+      "label": "Review data extraction",
+      "completed": false
+    },
+    {
+      "id": "step-3",
+      "label": "Approve data extraction",
+      "completed": false
+    },
+    {
+      "id": "step-4",
+      "label": "Confirm document mapping",
+      "completed": false
+    },
+    {
+      "id": "step-5",
+      "label": "Create workpaper",
+      "completed": false
+    },
+    {
+      "id": "step-6",
+      "label": "Review work paper",
+      "completed": false
+    },
+    {
+      "id": "step-7",
+      "label": "Approve work paper",
+      "completed": false
+    }
+  ],
+  "sections": [
+    {
+      "id": "items-to-test",
+      "title": "Items to be tested",
+      "fileCount": 0,
+      "hasUpload": true
+    },
+    {
+      "id": "sample-documentation",
+      "title": "Sample Documentation",
+      "fileCount": 0,
+      "hasUpload": true
+    },
+    {
+      "id": "document-mapping",
+      "title": "Document Mapping",
+      "fileCount": 0,
+      "hasUpload": false
+    },
+    {
+      "id": "work-paper",
+      "title": "Work Paper",
+      "fileCount": 0,
+      "hasUpload": false
+    }
+  ]
+}

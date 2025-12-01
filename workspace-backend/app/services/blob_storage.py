@@ -29,9 +29,15 @@ class BlobStorageService:
         self._use_local = False
         self._container_name = settings.azure_storage_container
         self._local_root = Path(settings.local_blob_root)
+        self._service_client: Optional[BlobServiceClient] = None
 
         if settings.azure_storage_connection_string:
-            self._service_client = BlobServiceClient.from_connection_string(settings.azure_storage_connection_string)
+            try:
+                self._service_client = BlobServiceClient.from_connection_string(settings.azure_storage_connection_string)
+            except ValueError:
+                if not settings.enable_local_fallbacks:
+                    raise
+                self._use_local = True
         elif settings.azure_storage_account_url:
             credential: Optional[str] = None
             if settings.azure_storage_sas_token:
@@ -46,7 +52,6 @@ class BlobStorageService:
                     "AZURE_STORAGE_ACCOUNT_URL/AZURE_STORAGE_ACCOUNT_KEY."
                 )
             self._use_local = True
-            self._service_client = None  # type: ignore[assignment]
 
         if self._use_local:
             self._local_root.mkdir(parents=True, exist_ok=True)
