@@ -258,14 +258,10 @@ export default function NewBoard() {
    * Only called when user clicks "Open all items for data extraction"
    */
   const handleOpenDataExtraction = () => {
-    // Filter only sample documentation files for extraction
-    const sampleFiles = uploadedFiles.filter(
-      f => f.sectionId === 'sample-documentation'
-    )
-    
-    // Navigate with files in state (will be used by extraction screen)
+    if (uploadedFiles.length === 0) return
+
     navigate('/sample-documentation/extract', {
-      state: { files: sampleFiles, workspaceId: activeBoardId }
+      state: { files: uploadedFiles, workspaceId: activeBoardId },
     })
   }
 
