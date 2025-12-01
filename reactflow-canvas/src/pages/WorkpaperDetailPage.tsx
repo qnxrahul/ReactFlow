@@ -1,6 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { PDFDocument } from 'pdf-lib'
+import {
+  PdfViewerComponent,
+  Toolbar,
+  Magnification,
+  Navigation,
+  LinkAnnotation,
+  BookmarkView,
+  ThumbnailView,
+  Print,
+  TextSelection,
+  TextSearch,
+  Annotation,
+  Inject,
+} from '@syncfusion/ej2-react-pdfviewer'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 import workpaperImage from '../assets/workpaper-detail-new.jpg'
@@ -9,9 +23,10 @@ import './WorkpaperDetailPage.css'
 export default function WorkpaperDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
-  const [isGenerating, setIsGenerating] = useState(true)
+  const [documentData, setDocumentData] = useState<ArrayBuffer | null>(null)
+  const [loading, setLoading] = useState(true)
   const [agentOpen, setAgentOpen] = useState(false)
+  const viewerRef = useRef<PdfViewerComponent | null>(null)
 
   const workspaceId = useMemo(() => {
     const state = location.state as { workspaceId?: string } | null
@@ -24,9 +39,7 @@ export default function WorkpaperDetailPage() {
 
   useEffect(() => {
     let isMounted = true
-    let objectUrl: string | null = null
-
-    const generatePdf = async () => {
+    const convertImageToPdf = async () => {
       try {
         const response = await fetch(workpaperImage)
         const imageBytes = await response.arrayBuffer()
@@ -37,22 +50,16 @@ export default function WorkpaperDetailPage() {
         page.drawImage(jpgImage, { x: 0, y: 0, width, height })
         const pdfBytes = await pdfDoc.save()
         if (!isMounted) return
-        objectUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }))
-        setPdfUrl(objectUrl)
+        setDocumentData(pdfBytes.buffer)
       } catch (error) {
-        console.error('Failed to generate PDF from image', error)
+        console.error('Unable to generate PDF preview', error)
       } finally {
-        if (isMounted) setIsGenerating(false)
+        if (isMounted) setLoading(false)
       }
     }
-
-    void generatePdf()
-
+    void convertImageToPdf()
     return () => {
       isMounted = false
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl)
-      }
     }
   }, [])
 
@@ -68,39 +75,65 @@ export default function WorkpaperDetailPage() {
     })
   }, [workspaceId])
 
-  const handleBack = () => navigate('/workpaper', workspaceId ? { state: { workspaceId } } : undefined)
+  useEffect(() => {
+    if (documentData && viewerRef.current) {
+      viewerRef.current.load(documentData, null)
+    }
+  }, [documentData])
+
+  const handleFinish = () => {
+    navigate('/workspace', workspaceId ? { state: { workspaceId } } : undefined)
+  }
 
   return (
-    <div className="workpaper-detail-viewer">
-      <div className="workpaper-detail-viewer__frame">
-        <div className="workpaper-detail-viewer__toolbar">
-          <button type="button" onClick={handleBack}>Back</button>
-          <div className="workpaper-detail-viewer__actions">
-            <button type="button">Zoom -</button>
-            <button type="button">100%</button>
-            <button type="button">Zoom +</button>
-          </div>
-        </div>
+    <div className="workpaper-detail-sync">
+      <header className="workpaper-detail-sync__header">
+        <button type="button" onClick={handleFinish}>
+          Finish &amp; publish
+        </button>
+      </header>
 
-        <div className="workpaper-detail-viewer__surface">
-          {isGenerating ? (
-            <div className="workpaper-detail-viewer__loading">Preparing workpaper preview…</div>
-          ) : pdfUrl ? (
-            <iframe title="Workpaper detail PDF" src={pdfUrl} />
-          ) : (
-            <div className="workpaper-detail-viewer__loading">Unable to render workpaper preview.</div>
-          )}
-        </div>
+      <div className="workpaper-detail-sync__viewer">
+        {loading ? (
+          <div className="workpaper-detail-sync__loading">Preparing workpaper preview…</div>
+        ) : documentData ? (
+          <PdfViewerComponent
+            ref={(scope) => {
+              viewerRef.current = scope
+            }}
+            serviceUrl="https://ej2services.syncfusion.com/production/web-services/api/pdfviewer"
+            height="100%"
+            width="100%"
+            enableToolbar
+          >
+            <Inject
+              services={[
+                Toolbar,
+                Magnification,
+                Navigation,
+                LinkAnnotation,
+                BookmarkView,
+                ThumbnailView,
+                Print,
+                TextSelection,
+                TextSearch,
+                Annotation,
+              ]}
+            />
+          </PdfViewerComponent>
+        ) : (
+          <div className="workpaper-detail-sync__loading">Unable to render preview.</div>
+        )}
       </div>
 
-      <button className="workpaper-detail-viewer__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
-        {agentOpen ? 'Close assistant' : 'Ask agent'}
+      <button className="workpaper-detail-sync__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
+        {agentOpen ? 'Close agent' : 'Ask agent'}
       </button>
 
       {agentOpen && (
-        <div className="workpaper-detail-viewer__agent">
+        <div className="workpaper-detail-sync__agent">
           <header>Agent Cloud</header>
-          <p>Summarize comments, draft reviewer notes, or highlight missing evidence.</p>
+          <p>Summarize comments, flag missing evidence, or ask for recommendations.</p>
           <textarea placeholder="Ask me anything about this workpaper…" />
           <button type="button">Send</button>
         </div>

@@ -1,92 +1,81 @@
-.workpaper-detail-viewer {
+.workpaper-detail-sync {
   min-height: 100vh;
-  background: #e5ecf9;
+  background: #f2f5ff;
   font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 32px 40px 120px 40px;
+  gap: 16px;
+  padding: 16px;
   position: relative;
 }
 
-.workpaper-detail-viewer__frame {
-  background: #ffffff;
+.workpaper-detail-sync__header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.workpaper-detail-sync__header button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #1e49e2, #4f6de3);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(30, 73, 226, 0.2);
+}
+
+.workpaper-detail-sync__viewer {
+  flex: 1;
+  background: #fff;
   border-radius: 16px;
   border: 1px solid #d7def0;
-  box-shadow: 0 30px 60px rgba(10, 16, 34, 0.12);
+  box-shadow: 0 30px 50px rgba(10, 16, 34, 0.1);
   overflow: hidden;
 }
 
-.workpaper-detail-viewer__toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #0d214a, #19376d);
-  color: #fff;
-}
-
-.workpaper-detail-viewer__toolbar button {
-  border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.workpaper-detail-viewer__actions {
-  display: flex;
-  gap: 8px;
-}
-
-.workpaper-detail-viewer__surface {
-  padding: 24px;
-  background: #f4f8ff;
-  min-height: 70vh;
+.workpaper-detail-sync__loading {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.workpaper-detail-viewer__surface iframe {
-  width: 100%;
-  height: 72vh;
-  border: none;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.workpaper-detail-viewer__loading {
-  font-size: 16px;
   color: #475569;
+  font-size: 16px;
 }
 
-.workpaper-detail-viewer__agent-toggle {
+.workpaper-detail-sync__viewer .e-pv-toolbar {
+  border-radius: 16px 16px 0 0;
+}
+
+.workpaper-detail-sync__viewer .e-pv-viewer-container {
+  height: calc(100% - 60px);
+}
+
+.workpaper-detail-sync__agent-toggle {
   position: fixed;
-  left: 40px;
+  right: 32px;
   bottom: 32px;
   border: none;
   border-radius: 999px;
   padding: 12px 22px;
-  background: #1e49e2;
+  background: #132c5a;
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 16px 32px rgba(8, 23, 58, 0.25);
+  box-shadow: 0 20px 40px rgba(19, 44, 90, 0.3);
   z-index: 20;
 }
 
-.workpaper-detail-viewer__agent {
+.workpaper-detail-sync__agent {
   position: fixed;
-  left: 40px;
-  bottom: 100px;
+  right: 32px;
+  bottom: 96px;
   width: 340px;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid #d7def0;
-  box-shadow: 0 24px 48px rgba(7, 11, 30, 0.2);
+  box-shadow: 0 24px 48px rgba(8, 14, 32, 0.2);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -94,12 +83,12 @@
   z-index: 19;
 }
 
-.workpaper-detail-viewer__agent header {
+.workpaper-detail-sync__agent header {
   font-weight: 700;
   color: #0f172a;
 }
 
-.workpaper-detail-viewer__agent textarea {
+.workpaper-detail-sync__agent textarea {
   border: 1px solid #d0d7ef;
   border-radius: 8px;
   padding: 10px;
@@ -108,7 +97,7 @@
   resize: none;
 }
 
-.workpaper-detail-viewer__agent button {
+.workpaper-detail-sync__agent button {
   align-self: flex-end;
   border: none;
   border-radius: 6px;
@@ -119,21 +108,13 @@
 }
 
 @media (max-width: 900px) {
-  .workpaper-detail-viewer {
-    padding: 24px 16px 120px 16px;
+  .workpaper-detail-sync {
+    padding: 12px;
   }
 
-  .workpaper-detail-viewer__toolbar {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .workpaper-detail-viewer__surface iframe {
-    height: 60vh;
-  }
-
-  .workpaper-detail-viewer__agent,
-  .workpaper-detail-viewer__agent-toggle {
-    left: 16px;
+  .workpaper-detail-sync__agent,
+  .workpaper-detail-sync__agent-toggle {
+    right: 16px;
+    bottom: 24px;
   }
 }
