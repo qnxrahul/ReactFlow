@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { PDFDocument } from 'pdf-lib'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
-import workpaperImage from '../assets/workpaper-detail.jpg'
+import workpaperImage from '../assets/workpaper-detail-new.jpg'
 import './WorkpaperDetailPage.css'
 
 export default function WorkpaperDetailPage() {
@@ -21,8 +21,6 @@ export default function WorkpaperDetailPage() {
     }
     return null
   }, [location.state])
-
-  const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
 
   useEffect(() => {
     let isMounted = true
@@ -70,43 +68,40 @@ export default function WorkpaperDetailPage() {
     })
   }, [workspaceId])
 
+  const handleBack = () => navigate('/workpaper', workspaceId ? { state: { workspaceId } } : undefined)
+
   return (
-    <div className="workpaper-detail-pdf">
-      <header className="workpaper-detail-pdf__header">
-        <div>
-          <span>Engagement &gt; Spaces &gt; Workpaper detail</span>
-          <h1>Workpaper detail</h1>
-          <p>Edit the workpaper directly in-line, then move it forward for review.</p>
+    <div className="workpaper-detail-viewer">
+      <div className="workpaper-detail-viewer__frame">
+        <div className="workpaper-detail-viewer__toolbar">
+          <button type="button" onClick={handleBack}>Back</button>
+          <div className="workpaper-detail-viewer__actions">
+            <button type="button">Zoom -</button>
+            <button type="button">100%</button>
+            <button type="button">Zoom +</button>
+          </div>
         </div>
-        <div className="workpaper-detail-pdf__actions">
-          <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
-            Review workpaper
-          </button>
-          <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
-            Publish to workspace
-          </button>
+
+        <div className="workpaper-detail-viewer__surface">
+          {isGenerating ? (
+            <div className="workpaper-detail-viewer__loading">Preparing workpaper preview…</div>
+          ) : pdfUrl ? (
+            <iframe title="Workpaper detail PDF" src={pdfUrl} />
+          ) : (
+            <div className="workpaper-detail-viewer__loading">Unable to render workpaper preview.</div>
+          )}
         </div>
-      </header>
+      </div>
 
-      <section className="workpaper-detail-pdf__viewer">
-        {isGenerating ? (
-          <div className="workpaper-detail-pdf__loading">Generating PDF preview…</div>
-        ) : pdfUrl ? (
-          <iframe title="Workpaper detail PDF" src={pdfUrl} />
-        ) : (
-          <div className="workpaper-detail-pdf__error">Unable to render workpaper preview.</div>
-        )}
-      </section>
-
-      <button className="workpaper-detail-pdf__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
-        {agentOpen ? 'Close agent' : 'Ask agent'}
+      <button className="workpaper-detail-viewer__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
+        {agentOpen ? 'Close assistant' : 'Ask agent'}
       </button>
 
       {agentOpen && (
-        <div className="workpaper-detail-pdf__agent">
-          <header>Need help?</header>
+        <div className="workpaper-detail-viewer__agent">
+          <header>Agent Cloud</header>
           <p>Summarize comments, draft reviewer notes, or highlight missing evidence.</p>
-          <textarea placeholder="Ask me anything about this workpaper" />
+          <textarea placeholder="Ask me anything about this workpaper…" />
           <button type="button">Send</button>
         </div>
       )}
