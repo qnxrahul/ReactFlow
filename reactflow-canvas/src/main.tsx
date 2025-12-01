@@ -12,7 +12,10 @@ import { createBrowserRouter, RouterProvider, Link, Outlet } from 'react-router-
 import { BoardsProvider } from './state/BoardsProvider'
 import NewBoard from './pages/NewBoard/NewBoard'
 import DataExtraction from './pages/DataExtraction/DataExtraction'
+import { registerLicense } from '@syncfusion/ej2-base';
 
+// Registering Syncfusion license key
+registerLicense('Ngo9BigBOggjHTQxAR8/V1JFaF1cXGFCf1FpRmJGfV5ycUVFal9STnNWUiweQnxTdEBiW39fcHdWQmBYVkVzXkleYg==');
 function Layout() {
   return (
     <>
