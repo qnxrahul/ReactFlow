@@ -45,14 +45,9 @@ export default function WorkpaperDetailPage() {
     void createPdf()
     return () => {
       mounted = false
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
     }
   }, [])
-
-  useEffect(() => () => {
-    if (pdfUrl) {
-      URL.revokeObjectURL(pdfUrl)
-    }
-  }, [pdfUrl])
 
   useEffect(() => {
     if (!workspaceId) return
@@ -73,27 +68,25 @@ export default function WorkpaperDetailPage() {
   const viewerSrc = useMemo(() => (pdfUrl ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0` : null), [pdfUrl])
 
   return (
-    <div className="workpaper-fullsurface">
-      {loading ? (
-        <div className="workpaper-fullsurface__loading">Preparing workpaper preview…</div>
-      ) : viewerSrc ? (
-        <iframe title="Workpaper detail" src={viewerSrc} />
-      ) : (
-        <div className="workpaper-fullsurface__loading">Unable to render preview.</div>
-      )}
+    <div className="workpaper-detail-kpmg">
+      <header className="workpaper-detail-kpmg__actions">
+        <button type="button" onClick={handleFinish}>
+          Finish &amp; publish
+        </button>
+      </header>
 
-      <button className="workpaper-fullsurface__finish" type="button" onClick={handleFinish}>
-        Finish &amp; publish
-      </button>
+      <div className="workpaper-detail-kpmg__viewer">
+        {loading ? <div className="workpaper-detail-kpmg__loading">Preparing workpaper…</div> : viewerSrc ? <iframe title="Workpaper detail" src={viewerSrc} /> : <div className="workpaper-detail-kpmg__loading">Unable to render workpaper.</div>}
+      </div>
 
-      <button className="workpaper-fullsurface__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
+      <button className="workpaper-detail-kpmg__agent-toggle" type="button" onClick={() => setAgentOpen((value) => !value)}>
         {agentOpen ? 'Close agent' : 'Ask agent'}
       </button>
 
       {agentOpen && (
-        <div className="workpaper-fullsurface__agent">
+        <div className="workpaper-detail-kpmg__agent">
           <header>Agent Cloud</header>
-          <p>Summarize comments, flag missing evidence, or ask for recommendations.</p>
+          <p>Summarize comments, highlight missing evidence, or draft reviewer notes.</p>
           <textarea placeholder="Ask me anything about this workpaper…" />
           <button type="button">Send</button>
         </div>
