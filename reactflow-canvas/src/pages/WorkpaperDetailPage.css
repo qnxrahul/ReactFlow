@@ -52,88 +52,103 @@
   color: #0f172a;
 }
 
-.workpaper-detail-viewer {
+.workpaper-detail-editor {
   margin: 0 40px;
+  background: #fff;
   border: 1px solid #dbe3f3;
   border-radius: 10px;
-  background: #fff;
-  position: relative;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 560px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.workpaper-detail-viewer__toolbar,
-.workpaper-detail-viewer__footer {
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.workpaper-detail-sidebar {
+  border-right: 1px solid #e2e8f0;
+  padding: 24px;
+  background: #f8fafc;
 }
 
-.workpaper-detail-viewer__toolbar {
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.workpaper-detail-viewer__toolbar div strong {
-  display: block;
+.workpaper-detail-sidebar h2 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
   color: #0f172a;
 }
 
-.workpaper-detail-viewer__toolbar div span {
+.workpaper-detail-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workpaper-detail-sidebar button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+
+.workpaper-detail-sidebar button.active {
+  background: #e0e7ff;
+  color: #1e3a8a;
+}
+
+.workpaper-detail-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workpaper-detail-content header h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.workpaper-detail-content header span {
   font-size: 13px;
   color: #94a3b8;
 }
 
-.workpaper-detail-viewer__toolbar-actions {
-  display: flex;
-  gap: 8px;
+.workpaper-detail-content article {
+  flex: 1;
+  border: 1px solid #dbe3f3;
+  border-radius: 8px;
+  padding: 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f2937;
+  background: #fff;
 }
 
-.workpaper-detail-viewer__toolbar-actions button {
+.workpaper-detail-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.workpaper-detail-controls button {
   border: 1px solid #cbd5f5;
   background: #eef2ff;
-  color: #1e3a8a;
+  color: #1e40af;
   border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.workpaper-detail-viewer__canvas {
-  padding: 24px;
-  background: #f5f7fb;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.workpaper-detail-viewer__canvas img {
-  width: 100%;
-  max-width: 1080px;
-  border: 1px solid #dbe3f3;
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
-}
-
-.workpaper-detail-viewer__footer {
-  border-top: 1px solid #e2e8f0;
-  font-size: 14px;
-  color: #475569;
-}
-
-.workpaper-detail-viewer__footer button {
-  border: none;
-  background: transparent;
-  color: #1e49e2;
-  font-weight: 600;
+  padding: 10px 14px;
   cursor: pointer;
 }
 
 .workpaper-chat {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
+  position: fixed;
+  bottom: 32px;
+  left: 40px;
+  z-index: 40;
 }
 
 .workpaper-chat__toggle {
@@ -157,8 +172,6 @@
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
-  display: flex;
-  flex-direction: column;
 }
 
 .workpaper-chat__panel header {
@@ -178,43 +191,36 @@
 
 .workpaper-chat__body {
   padding: 16px;
-  font-size: 14px;
-  color: #475569;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  font-size: 14px;
+  color: #475569;
 }
 
 .workpaper-chat__body ul {
+  list-style: disc;
   margin: 0;
   padding-left: 20px;
 }
 
-.workpaper-chat__input {
-  border-top: 1px solid #e2e8f0;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .workpaper-chat__input textarea {
+  width: 100%;
   border: 1px solid #d0d7ef;
   border-radius: 6px;
-  padding: 10px;
+  padding: 8px 10px;
   font-family: inherit;
-  min-height: 70px;
+  min-height: 80px;
   resize: none;
 }
 
 .workpaper-chat__input button {
-  align-self: flex-end;
+  margin-top: 8px;
   border: none;
   border-radius: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   background: #1e49e2;
   color: #fff;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -242,16 +248,14 @@
 }
 
 @media (max-width: 1024px) {
-  .workpaper-detail-page__header,
-  .workpaper-detail-viewer,
-  .workpaper-detail-nav {
-    margin: 0 16px;
-    padding-left: 16px;
-    padding-right: 16px;
+  .workpaper-detail-editor {
+    grid-template-columns: 1fr;
   }
 
-  .workpaper-detail-page__actions {
-    flex-direction: column;
+  .workpaper-detail-page__header,
+  .workpaper-detail-editor,
+  .workpaper-detail-nav {
+    margin: 0 16px;
   }
 
   .workpaper-chat {
