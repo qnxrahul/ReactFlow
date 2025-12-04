@@ -5,7 +5,6 @@ import './index.css'
 import ClassicCanvas from './pages/ClassicCanvas'
 import FluentCanvas from './pages/FluentCanvas'
 import WorkspaceCanvas from './pages/WorkspaceCanvas'
-import WorkspaceNewBoard from './pages/WorkspaceNewBoard'
 import MappingPage from './pages/MappingPage'
 import WorkpaperPage from './pages/WorkpaperPage'
 import WorkpaperDetailPage from './pages/WorkpaperDetailPage'
@@ -13,7 +12,10 @@ import { createBrowserRouter, RouterProvider, Link, Outlet } from 'react-router-
 import { BoardsProvider } from './state/BoardsProvider'
 import NewBoard from './pages/NewBoard/NewBoard'
 import DataExtraction from './pages/DataExtraction/DataExtraction'
+import { registerLicense } from '@syncfusion/ej2-base';
 
+// Registering Syncfusion license key
+registerLicense('Ngo9BigBOggjHTQxAR8/V1JFaF1cXGFCf1FpRmJGfV5ycUVFal9STnNWUiweQnxTdEBiW39fcHdWQmBYVkVzXkleYg==');
 function Layout() {
   return (
     <>
@@ -29,8 +31,8 @@ const router = createBrowserRouter([
       { path: '/', element: <WorkspaceCanvas /> },
       { path: '/fluent', element: <FluentCanvas /> },
       { path: '/workspace', element: <WorkspaceCanvas /> },
-      { path: '/workspace/new', element: <WorkspaceNewBoard /> },
-        { path: '/new-board', element: <NewBoard /> },
+      { path: '/workspace/new', element: <NewBoard /> },
+      { path: '/new-board', element: <NewBoard /> },
       { path: '/sample-documentation/extract', element: <DataExtraction /> },
       { path: '/mapping', element: <MappingPage /> },
       { path: '/workpaper', element: <WorkpaperPage /> },

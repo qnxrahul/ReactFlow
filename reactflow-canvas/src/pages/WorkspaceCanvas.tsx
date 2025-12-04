@@ -192,7 +192,7 @@ export default function WorkspaceCanvas() {
         if (typeof window !== 'undefined') {
           window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, created.id)
         }
-        navigate(`/workspace/new?boardId=${encodeURIComponent(created.id)}`)
+        navigate(`/new-board?boardId=${encodeURIComponent(created.id)}`)
       } catch (error) {
         setNamingError('Failed to create workspace. Please try again.')
         if (import.meta.env.DEV) {
@@ -271,10 +271,10 @@ export default function WorkspaceCanvas() {
 
   const handleAgentClick = useCallback(() => {
     if (selectedId) {
-      navigate(`/workspace/new?boardId=${encodeURIComponent(selectedId)}`)
+      navigate(`/new-board?boardId=${encodeURIComponent(selectedId)}`)
       return
     }
-    navigate('/workspace/new')
+    navigate('/new-board')
   }, [navigate, selectedId])
 
   const zoomPercent = Math.round(zoom * 100)
@@ -393,7 +393,7 @@ export default function WorkspaceCanvas() {
                 if (typeof window !== 'undefined') {
                   window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, node.id)
                 }
-                navigate(`/workspace/new?boardId=${encodeURIComponent(node.id)}`)
+                navigate(`/new-board?boardId=${encodeURIComponent(node.id)}`)
               }}
               onNodeDragStop={(_, node) => {
                 updateBoard(node.id, (prev) => ({ ...prev, position: node.position }))

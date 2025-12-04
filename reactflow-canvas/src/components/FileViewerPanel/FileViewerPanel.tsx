@@ -23,6 +23,18 @@ import {
 } from '@syncfusion/ej2-react-spreadsheet'
 import { FiDownload } from 'react-icons/fi'
 import './FileViewerPanel.css'
+import '@syncfusion/ej2-base/styles/material.css'
+import '@syncfusion/ej2-buttons/styles/material.css'
+import '@syncfusion/ej2-inputs/styles/material.css'
+import '@syncfusion/ej2-dropdowns/styles/material.css'
+import '@syncfusion/ej2-popups/styles/material.css'
+import '@syncfusion/ej2-lists/styles/material.css'
+import '@syncfusion/ej2-navigations/styles/material.css'
+import '@syncfusion/ej2-calendars/styles/material.css'
+import '@syncfusion/ej2-splitbuttons/styles/material.css'
+import '@syncfusion/ej2-react-pdfviewer/styles/material.css'
+import '@syncfusion/ej2-react-documenteditor/styles/material.css'
+import '@syncfusion/ej2-react-spreadsheet/styles/material.css'
 
 interface FileViewerPanelProps {
   file: File

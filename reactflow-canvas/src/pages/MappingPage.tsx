@@ -1,95 +1,102 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Background, BackgroundVariant, ReactFlow, useEdgesState, useNodesState, type Edge, type Node } from '@xyflow/react'
-import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
-import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
-import '../workspace-board.css'
+import FileUpload from '../components/FileUpload/FileUpload'
+import boardConfig from '../config/boardConfig.json'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
+import { useBoards, type WorkspaceBoard, type WorkspaceLane } from '../state/BoardsProvider'
+import './NewBoard/NewBoard.css'
+import '../workspace-board.css'
+import './MappingPage.css'
 
-type UploadLaneNodeType = Node<UploadLaneData>
+type SectionConfig = (typeof boardConfig.sections)[number]
 
-const navIcons = [FiGrid, FiCompass, FiLayers, FiSettings]
+type MappingSection = SectionConfig & {
+  files: string[]
+  persistedFiles: string[]
+}
 
-const todoItems = [
-  'Complete mapping checklist',
-  'Review AI extracted tags',
-  'Confirm control IDs',
-  'Flag missing evidence',
-  'Hand off to Workpaper',
+const uploadableSections = boardConfig.sections.filter((section) =>
+  ['items-to-test', 'sample-documentation'].includes(section.id),
+)
+
+const mappingTodos = [
+  'Upload items to be tested',
+  'Review data extraction',
+  'Approve data extraction',
+  'Confirm document mapping',
+  'Create workspace',
+  'Review workpaper',
+  'Approve workpaper',
 ]
 
-const mappingColumns = [
-  {
-    title: 'Items to be tested',
-    files: ['Invoice batch 1483', 'Revenue rec schedule', 'Billing summary export', 'Support ticket export'],
-  },
-  {
-    title: 'Sample documentation',
-    files: ['Contract set B', 'Variance memo', 'Sampling worksheet'],
-  },
-  {
-    title: 'Document mapping',
-    files: ['WP-REV-12', 'WP-REV-18', 'WP-REV-22', 'Pending pairing'],
-  },
-]
+const createSectionState = (section: SectionConfig): MappingSection => ({
+  ...section,
+  files: [],
+  persistedFiles: [],
+})
 
-const mappingHighlights = [
-  { label: 'Owner', value: 'Priya Shah' },
-  { label: 'Approver', value: 'Marcus Le' },
-  { label: 'AI status', value: 'Extraction finished · 2m ago' },
-]
+const sectionToLane = (section: MappingSection): WorkspaceLane => ({
+  id: section.id,
+  title: section.title,
+  files: [...section.files],
+})
 
-const mappingTags = ['Revenue', 'Q4 FY25', 'SOX 302', 'Sampling', 'AI summary', 'Pending approver']
+const mergeBoardLanes = (board: WorkspaceBoard | null, replacements: WorkspaceLane[]): WorkspaceLane[] => {
+  const replacementMap = new Map<string, WorkspaceLane>()
+  replacements.forEach((lane) => {
+    replacementMap.set(lane.id, lane)
+  })
 
-const initialUploadNodes: UploadLaneNodeType[] = [
-  {
-    id: 'todo-lane',
-    type: 'uploadLane',
-    position: { x: 0, y: 0 },
-    data: { title: 'Items to be tested', files: ['theprojektis-design-tokens.zip'] } satisfies UploadLaneData,
-    draggable: false,
-  },
-  {
-    id: 'sample-lane',
-    type: 'uploadLane',
-    position: { x: 320, y: 0 },
-    data: { title: 'Sample Documentation', files: [] } satisfies UploadLaneData,
-    draggable: false,
-  },
-  {
-    id: 'mapping-lane',
-    type: 'uploadLane',
-    position: { x: 640, y: 0 },
-    data: { title: 'Document Mapping', files: [] } satisfies UploadLaneData,
-    draggable: false,
-  },
-]
+  const base = board?.lanes ?? []
+  const merged: WorkspaceLane[] = base.map((lane) => {
+    const replacement = replacementMap.get(lane.id)
+    if (replacement) {
+      replacementMap.delete(lane.id)
+      return { ...lane, files: [...replacement.files], title: replacement.title }
+    }
+    return lane
+  })
 
-const nodeTypes = { uploadLane: UploadLaneNode }
-const initialEdges: Edge[] = []
+  replacementMap.forEach((lane) => merged.push(lane))
+  return merged
+}
 
 export default function MappingPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [nodes, , onNodesChange] = useNodesState(initialUploadNodes)
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges)
+  const { boards, updateBoard, uploadFile } = useBoards()
 
-  const workspaceId = useMemo(() => {
-    const state = location.state as { workspaceId?: string } | null
-    if (state?.workspaceId) return state.workspaceId
+  const locationWorkspaceId = (location.state as { workspaceId?: string } | null)?.workspaceId ?? null
+  const [workspaceId, setWorkspaceId] = useState<string | null>(() => {
+    if (locationWorkspaceId) return locationWorkspaceId
     if (typeof window !== 'undefined') {
       return window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
     }
     return null
-  }, [location.state])
+  })
   const workflowNavState = workspaceId ? { state: { workspaceId } } : undefined
+  const [sections, setSections] = useState<MappingSection[]>(() => uploadableSections.map(createSectionState))
+
+  useEffect(() => {
+    if (locationWorkspaceId && locationWorkspaceId !== workspaceId) {
+      setWorkspaceId(locationWorkspaceId)
+    }
+  }, [locationWorkspaceId, workspaceId])
+
+  useEffect(() => {
+    if (workspaceId && typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+    }
+  }, [workspaceId])
+
+  const activeBoard = useMemo(
+    () => (workspaceId ? boards.find((board) => board.id === workspaceId) ?? null : null),
+    [workspaceId, boards],
+  )
 
   useEffect(() => {
     if (!workspaceId) return
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
-    }
     void recordWorkflowStep(workspaceId, { step: 'mapping' }).catch((error) => {
       if (import.meta.env.DEV) {
         console.error('Failed to record mapping workflow step', error)
@@ -97,49 +104,175 @@ export default function MappingPage() {
     })
   }, [workspaceId])
 
-  const mappingMeta = mappingColumns.reduce((acc, column) => acc + column.files.length, 0)
+  useEffect(() => {
+    if (!activeBoard) return
+    setSections((prev) =>
+      prev.map((section) => {
+        const lane =
+          activeBoard.lanes?.find((item) => item.id === section.id || item.title === section.title) ?? null
+        if (!lane) return section
+        const laneFiles = [...(lane.files ?? [])]
+        return {
+          ...section,
+          files: laneFiles,
+          persistedFiles: laneFiles,
+          fileCount: laneFiles.length,
+        }
+      }),
+    )
+  }, [activeBoard])
+
+  const persistLaneState = useCallback(
+    async (nextSections: MappingSection[], uploads: File[]) => {
+      if (!workspaceId) return
+
+      if (uploads.length) {
+        try {
+          await Promise.all(uploads.map((file) => uploadFile(workspaceId, file)))
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Failed to upload workspace files', error)
+          }
+        }
+      }
+
+      try {
+        const replacementLanes = nextSections.map(sectionToLane)
+        const mergedLanes = mergeBoardLanes(activeBoard ?? null, replacementLanes)
+        const filesCount = mergedLanes.reduce((total, lane) => total + lane.files.length, 0)
+        await updateBoard(workspaceId, (prev) => ({
+          ...prev,
+          lanes: mergedLanes,
+          filesCount,
+        }))
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to persist mapping lanes', error)
+        }
+      }
+    },
+    [workspaceId, activeBoard, updateBoard, uploadFile],
+  )
+
+  const handleFilesChange = useCallback(
+    (sectionId: string, files: File[]) => {
+      setSections((prev) => {
+        const prevSection = prev.find((section) => section.id === sectionId)
+        const previousNames = prevSection?.files ?? []
+        const persistedNames = prevSection?.persistedFiles ?? []
+        const incomingNames = files.map((file) => file.name)
+        const mergedNames = Array.from(new Set([...persistedNames, ...incomingNames]))
+        const nextSections = prev.map((section) =>
+          section.id === sectionId ? { ...section, files: mergedNames, fileCount: mergedNames.length } : section,
+        )
+        const uploadsToSave = files.filter((file) => !previousNames.includes(file.name))
+        void persistLaneState(nextSections, uploadsToSave)
+        return nextSections
+      })
+    },
+    [persistLaneState],
+  )
+
+  const handleRemovePersistedFile = useCallback(
+    (sectionId: string, fileName: string) => {
+      setSections((prev) => {
+        const nextSections = prev.map((section) => {
+          if (section.id !== sectionId) return section
+          if (!section.persistedFiles.includes(fileName)) return section
+          const nextPersisted = section.persistedFiles.filter((name) => name !== fileName)
+          const nextFiles = section.files.filter((name) => name !== fileName)
+          return {
+            ...section,
+            persistedFiles: nextPersisted,
+            files: nextFiles,
+            fileCount: nextFiles.length,
+          }
+        })
+        void persistLaneState(nextSections, [])
+        return nextSections
+      })
+    },
+    [persistLaneState],
+  )
+
+  const itemsSection = sections.find((section) => section.id === 'items-to-test')
+  const sampleSection = sections.find((section) => section.id === 'sample-documentation')
+
+  const mappingRows = useMemo(() => {
+    const controlFiles = itemsSection?.persistedFiles ?? []
+    const evidenceFiles = sampleSection?.persistedFiles ?? []
+    const max = Math.max(controlFiles.length, evidenceFiles.length, 5)
+    return Array.from({ length: max }).map((_, idx) => {
+      const control = controlFiles[idx]
+      const evidence = evidenceFiles[idx]
+      const date = new Date(Date.now() - idx * 86400000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+      const documentRef = evidence ? `DOC-${Math.abs(hashString(evidence)).toString().slice(0, 6).padStart(6, '0')}` : 'Pending'
+      const description = evidence ? evidence : 'Awaiting sample documentation'
+      return {
+        id: idx + 1,
+        sample: control ?? `Sample ${idx + 1}`,
+        date,
+        documentRef,
+        description,
+        record: evidence ? 'View record' : 'Assign file',
+        paired: Boolean(control && evidence),
+      }
+    })
+  }, [itemsSection?.persistedFiles, sampleSection?.persistedFiles])
+
+  function hashString(value: string): number {
+    let hash = 0
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(i)
+      hash |= 0
+    }
+    return Math.abs(hash)
+  }
+
+  const handleProceedToWorkpaper = () => {
+    if (!workspaceId) return
+    navigate('/workpaper', workflowNavState)
+  }
+
+  const handleAgentAction = () => {
+    if (workspaceId) {
+      navigate(`/new-board?boardId=${encodeURIComponent(workspaceId)}`)
+      return
+    }
+    navigate('/new-board')
+  }
 
   return (
-    <div className="workspace-page workspace-page--new mapping-page">
-      <header className="workspace-hero workspace-hero--new mapping-hero">
+    <div className="mapping-page">
+      <header className="mapping-page__header">
         <div>
-          <h1>Document mapping before workpaper build-out.</h1>
-          <p>Normalize ERP, billing, and manual uploads, then lock the pairings that will feed the workpaper canvas.</p>
+          <p>Engagement &gt; Spaces &gt; Mapping</p>
+          <h1>Document mapping</h1>
+          <span>Confirm samples are paired to the prior documentation before building the workpaper canvas.</span>
         </div>
-        <div className="mapping-hero__actions">
-          <button
-            type="button"
-            className="mapping-hero__btn mapping-hero__btn--primary"
-            onClick={() => navigate('/workpaper', workflowNavState)}
-          >
+        <div className="mapping-header__actions">
+          <button type="button" onClick={handleProceedToWorkpaper}>
             Start workpaper build
           </button>
-          <button type="button" className="mapping-hero__btn mapping-hero__btn--secondary">Share mapping</button>
+          <button type="button" className="secondary">
+            Share mapping
+          </button>
         </div>
       </header>
 
-      <div className="workspace-body workspace-body--single">
-        <nav className="workspace-rail" aria-label="Primary">
-          {navIcons.map((Icon, idx) => (
-            <button key={idx} type="button" aria-label={`Nav ${idx + 1}`}>
-              <Icon />
-            </button>
-          ))}
-        </nav>
-
-        <div className="workspace-new-canvas mapping-canvas">
-          <div className="workspace-board-top mapping-board-top">
-            <div>Engagement &gt; Spaces &gt; Mapping</div>
-            <span>Frame 2110704769</span>
-          </div>
-
-          <div className="workspace-todo-card">
+      <main className="mapping-page__body">
+        <div className="mapping-grid">
+          <div className="mapping-card mapping-card--todo">
             <div className="workspace-todo-header">
-              <strong>To Do List</strong>
-              <span>{todoItems.length} cards</span>
+              <h2>To Do List</h2>
+              <span>{mappingTodos.length} cards</span>
             </div>
             <ul className="workspace-todo-items">
-              {todoItems.map((item) => (
+              {mappingTodos.map((item) => (
                 <li key={item} className="workspace-todo-item">
                   <label>
                     <input type="checkbox" />
@@ -148,111 +281,112 @@ export default function MappingPage() {
                 </li>
               ))}
             </ul>
-            <button type="button" className="workspace-todo-update">
-              Update
-            </button>
+            <button className="workspace-todo-update">Update</button>
           </div>
 
-          <div className="workspace-board-region mapping-board-region">
-            <div className="workspace-board-actions">
-              <div className="workspace-board-status">
-                <span className="workspace-board-status__label">Mapping stage</span>
-                <strong>Document pairing ready</strong>
-                <button
-                  type="button"
-                  className="workspace-board-status__action"
-                  onClick={() => navigate('/workpaper', workflowNavState)}
-                >
-                  Start workpaper build
-                </button>
+          {sections.map((section) => (
+            <div key={section.id} className="mapping-card mapping-section-card">
+              <div className="mapping-card__header">
+                <div>
+                  <strong>{section.title}</strong>
+                  <span>{section.files.length} files</span>
+                </div>
               </div>
-            </div>
-
-            <div className="mapping-columns-grid">
-              {mappingColumns.map((column) => (
-                <div key={column.title} className="mapping-column-card">
-                  <header>
-                    <span>{column.title}</span>
-                    <strong>{column.files.length}</strong>
-                  </header>
-                  <ul>
-                    {column.files.map((file) => (
-                      <li key={file}>{file}</li>
+              <div className="mapping-card__body">
+                {section.persistedFiles.length > 0 ? (
+                  <ul className="mapping-file-list">
+                    {section.persistedFiles.map((file) => (
+                      <li key={`${section.id}-${file}`}>
+                        <span>{file}</span>
+                        <button type="button" aria-label={`Remove ${file}`} onClick={() => handleRemovePersistedFile(section.id, file)}>
+                          ×
+                        </button>
+                      </li>
                     ))}
                   </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="mapping-flow-preview">
-              <div className="mapping-flow-preview__canvas">
-                <ReactFlow
-                  nodes={nodes}
-                  edges={edges}
-                  nodeTypes={nodeTypes}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  nodesDraggable={false}
-                  zoomOnScroll={false}
-                  zoomOnPinch={false}
-                  panOnDrag
-                  panOnScroll
-                  fitView
-                  fitViewOptions={{ padding: 0.4 }}
-                  proOptions={{ hideAttribution: true }}
-                >
-                  <Background variant={BackgroundVariant.Dots} gap={96} size={1} color="#dce3f5" />
-                </ReactFlow>
+                ) : (
+                  <div className="mapping-empty-state">Files uploaded in New Board will appear here.</div>
+                )}
+                <FileUpload sectionId={section.id} onFilesChange={(files) => handleFilesChange(section.id, files)} maxFiles={50} />
               </div>
-
-              <aside className="mapping-flow-sidebar">
-                {mappingHighlights.map((item) => (
-                  <div key={item.label} className="mapping-flow-sidebar__item">
-                    <span>{item.label}</span>
-                    <strong>{item.value}</strong>
-                  </div>
-                ))}
-                <div className="mapping-flow-sidebar__item">
-                  <span>Documents</span>
-                  <strong>{mappingMeta}</strong>
-                </div>
-                <div className="mapping-flow-sidebar__tags">
-                  {mappingTags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </aside>
             </div>
+          ))}
 
-            <div className="workspace-action-bar">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <span key={idx} className="workspace-action-dot">
-                  +
-                </span>
-              ))}
-              <button
-                type="button"
-                className="workspace-action-label"
-                onClick={() => navigate('/workpaper', workflowNavState)}
-              >
-                [Action bar]
+          <section className="mapping-card mapping-card--table">
+            <header>
+              <div>
+                <strong>Document mapping table</strong>
+                <span>Confirm samples are assigned to the prior document.</span>
+              </div>
+              <button type="button" onClick={handleProceedToWorkpaper}>
+                Continue to workpaper
               </button>
+            </header>
+            <div className="mapping-table-wrapper">
+              <table className="mapping-table">
+                <thead>
+                  <tr>
+                    <th>Sample</th>
+                    <th>Date</th>
+                    <th>Document Ref #</th>
+                    <th>Description</th>
+                    <th>Record</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mappingRows.map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.sample}</td>
+                      <td>{row.date}</td>
+                      <td>{row.documentRef}</td>
+                      <td>{row.description}</td>
+                      <td>
+                        <button type="button" className="mapping-record-btn">
+                          {row.record}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </section>
+        </div>
 
-            <div className="workspace-chat workspace-chat--new">
-              <label htmlFor="mapping-chat-input">Ask me anything...</label>
-              <textarea id="mapping-chat-input" placeholder="Request automations, templates, or help." />
-              <button type="button">Send</button>
+        <div className="mapping-agent-panel">
+          <div className="mapping-agent-panel__header">
+            <strong>What's next?</strong>
+            <ul>
+              <li>Adjust any cards</li>
+              <li>Recommend next steps</li>
+              <li>Create a new flow chart</li>
+              <li>Add more options</li>
+            </ul>
+          </div>
+          <div className="mapping-agent-panel__input">
+            <label htmlFor="mapping-agent-input">Ask me anything...</label>
+            <div className="mapping-agent-panel__input-row">
+              <input id="mapping-agent-input" placeholder="e.g., summarize mappings" />
+              <button type="button" onClick={handleAgentAction}>
+                Send
+              </button>
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="mapping-action-bar">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <span key={idx}>+</span>
+          ))}
+          <span className="mapping-action-bar__label">[Action bar]</span>
+        </div>
+      </main>
 
       <div className="mapping-flow-nav">
         <button type="button" onClick={() => navigate('/workspace', workflowNavState)}>
           Back to workspace
         </button>
-        <button type="button" onClick={() => navigate('/workpaper', workflowNavState)}>
+        <button type="button" onClick={handleProceedToWorkpaper}>
           Next · Workpaper
         </button>
       </div>

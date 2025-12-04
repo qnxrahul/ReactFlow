@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FiCheck, FiSearch } from 'react-icons/fi'
 import DocumentTabs, { type DocumentTab } from '../../components/DocumentTabs/DocumentTabs'
 import DocumentViewPanel from '../../components/DocumentViewPanel/DocumentViewPanel'
 import FileViewerPanel from '../../components/FileViewerPanel/FileViewerPanel'
 import { mockExtractData, type ExtractedData } from '../../utils/mockDataExtractor'
+import { LAST_CREATED_WORKSPACE_KEY } from '../../constants/workspace'
 import './DataExtraction.css'
 
 interface UploadedFile {
@@ -38,12 +39,40 @@ export default function DataExtraction() {
   
   // Get files passed from NewBoard via navigation state
   const uploadedFiles = (location.state?.files || []) as UploadedFile[]
+  const locationWorkspaceId = (location.state?.workspaceId as string | undefined) ?? null
   
   // State management
   const [documents, setDocuments] = useState<DocumentData[]>([])
   const [activeDocumentId, setActiveDocumentId] = useState<string>('')
   const [documentType, setDocumentType] = useState('invoice')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [workspaceId, setWorkspaceId] = useState<string | null>(() => {
+    if (locationWorkspaceId) return locationWorkspaceId
+    if (typeof window !== 'undefined') {
+      return window.sessionStorage.getItem(LAST_CREATED_WORKSPACE_KEY)
+    }
+    return null
+  })
+
+  useEffect(() => {
+    if (locationWorkspaceId && locationWorkspaceId !== workspaceId) {
+      setWorkspaceId(locationWorkspaceId)
+    }
+  }, [locationWorkspaceId, workspaceId])
+
+  useEffect(() => {
+    if (workspaceId && typeof window !== 'undefined') {
+      window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+    }
+  }, [workspaceId])
+
+  const navigateToNewBoard = useCallback(() => {
+    if (workspaceId) {
+      navigate(`/new-board?boardId=${encodeURIComponent(workspaceId)}`)
+      return
+    }
+    navigate('/new-board')
+  }, [navigate, workspaceId])
 
   /**
    * Initialize documents and trigger data extraction on mount
@@ -51,7 +80,7 @@ export default function DataExtraction() {
   useEffect(() => {
     if (uploadedFiles.length === 0) {
       // Redirect back if no files provided
-      navigate('/new-board')
+      navigateToNewBoard()
       return
     }
 
@@ -125,7 +154,7 @@ export default function DataExtraction() {
 
     // Redirect if all tabs closed
     if (newDocs.length === 0) {
-      navigate('/new-board')
+      navigateToNewBoard()
     }
   }
 
@@ -139,15 +168,6 @@ export default function DataExtraction() {
           ? { ...d, approved: true }
           : d
       )
-    )
-  }
-
-  /**
-   * Approves all documents at once
-   */
-  const handleApproveAll = () => {
-    setDocuments(prev =>
-      prev.map(d => ({ ...d, approved: true }))
     )
   }
 
@@ -168,6 +188,8 @@ export default function DataExtraction() {
     name: doc.name,
     approved: doc.approved
   }))
+
+  const allApproved = useMemo(() => documents.length > 0 && documents.every((d) => d.approved), [documents])
 
   // Show loading state if no documents
   if (documents.length === 0) {
@@ -299,14 +321,20 @@ export default function DataExtraction() {
       <div className="data-extraction__footer">
         <button
           className="data-extraction__footer-btn"
-          onClick={() => navigate('/new-board')}
+          onClick={navigateToNewBoard}
         >
           Back to Upload
         </button>
         <button
           className="data-extraction__footer-btn data-extraction__footer-btn--primary"
-          onClick={() => console.log('Proceed to document mapping')}
-          disabled={!documents.every(d => d.approved)}
+          onClick={() => {
+            if (!workspaceId) return
+            if (typeof window !== 'undefined') {
+              window.sessionStorage.setItem(LAST_CREATED_WORKSPACE_KEY, workspaceId)
+            }
+            navigate('/mapping', { state: { workspaceId } })
+          }}
+          disabled={!allApproved || !workspaceId}
         >
           Update or create document mapping
         </button>
