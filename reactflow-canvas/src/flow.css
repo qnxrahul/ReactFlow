@@ -105,3 +105,119 @@ html, body { margin: 0; }
 .react-flow__node-report .controls textarea { background: #0f1013; border: 1px solid #2a2a2a; color: #e5e7eb; border-radius: 6px; padding: 6px 8px; }
 .react-flow__node-report .accordion summary { cursor: pointer; color: #9aa2b2; }
 .react-flow__node-report .adv { display: flex; gap: 10px; margin-top: 6px; color: #c5cbd6; }
+
+.agent-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agent-panel textarea {
+  resize: vertical;
+}
+
+.agent-panel__error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.agent-panel__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.agent-log {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.agent-log__message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.agent-log__message span {
+  text-transform: capitalize;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.agent-log__message--assistant {
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.agent-log__message--user {
+  background: rgba(14, 165, 233, 0.08);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.agent-interrupt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 1rem;
+}
+
+.agent-interrupt-dialog {
+  background: #111828;
+  border-radius: 12px;
+  width: min(540px, 100%);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.agent-interrupt-dialog header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.agent-interrupt-dialog header p {
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.agent-interrupt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.agent-interrupt-body textarea {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font-family: 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+.agent-interrupt-error {
+  margin: 0;
+  color: #f87171;
+  font-size: 0.85rem;
+}
+
+.agent-interrupt-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
