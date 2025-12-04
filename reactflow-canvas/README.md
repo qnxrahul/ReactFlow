@@ -57,6 +57,22 @@ VITE_FAST_AGENT_RUN_PATH=/api/v1/agents/:id/run
 
 If `VITE_FAST_AGENT_BASE_URL` is unset, the app falls back to a built-in mock.
 
+## AG-UI Agent Console (frontend-only)
+
+The Classic canvas now speaks the [AG-UI protocol](https://github.com/ag-ui-protocol/ag-ui) so you can wire any AG-UI compliant backend into the UI before touching our FastAPI service.
+
+1. Add the optional env vars to `reactflow-canvas/.env`:
+   ```bash
+   VITE_AGUI_AGENT_URL=http://localhost:9001
+   VITE_AGUI_AGENT_ID=reactflow-agent
+   VITE_AGUI_THREAD_PREFIX=reactflow
+   ```
+2. Start your AG-UI server (LangGraph Dojo sample, CrewAI flow, etc.) so it can accept `RunAgentInput` requests and stream events.
+3. Select a node in the Classic canvas and use the new **AG-UI Agent** panel on the right to send a prompt. Streaming text/tool events will populate the log in real time and update the node’s status/output.
+4. If the backend emits an interrupt (`RUN_FINISHED` with `outcome: interrupt`), the UI opens an approval modal where you can review the payload and resume the run with custom JSON.
+
+When the env vars are omitted the panel stays disabled, so existing Fast Agent demos keep working unchanged.
+
 ## Execute Nodes
 
 - Right-click a node → Run Node or Run From Here
