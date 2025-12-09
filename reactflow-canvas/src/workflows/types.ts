@@ -57,3 +57,21 @@ export type RunWorkflowNodeResponse = {
   output: string
   lastRunAt: string
 }
+
+export type ComponentDefinition = {
+  id: string
+  type: string
+  label: string
+  baseRenderer: 'agentCard' | 'evidenceCard' | 'decisionCard' | 'reportCard'
+  description?: string | null
+  category?: string | null
+  defaultProps?: Record<string, unknown>
+}
+
+export type HandlerDefinition = {
+  id: string
+  handler: string
+  kind: WorkflowNodeBehavior['kind']
+  description?: string | null
+  defaultPrompt?: string | null
+}

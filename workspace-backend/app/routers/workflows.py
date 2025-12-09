@@ -2,8 +2,27 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..dependencies import get_workflow_repository
-from ..models_workflow import WorkflowDefinition, WorkflowGenerateRequest, WorkflowRunNodeResponse
+from ..dependencies import (
+    get_component_registry_store,
+    get_llm_client,
+    get_policy_service,
+    get_rag_service,
+    get_workflow_repository,
+)
+from ..models_workflow import (
+    ComponentDefinition,
+    ComponentDefinitionRequest,
+    ComponentRegistryResponse,
+    HandlerDefinition,
+    HandlerDefinitionRequest,
+    WorkflowDefinition,
+    WorkflowGenerateRequest,
+    WorkflowRunNodeResponse,
+)
+from ..services.llm_client import OpenRouterClient
+from ..services.policy import WorkflowPolicyService
+from ..services.rag import RAGService
+from ..services.registry_store import ComponentRegistryStore
 from ..services.workflow_authoring import WorkflowAuthoringService
 from ..services.workflow_repository import WorkflowRepository
 
@@ -28,8 +47,16 @@ def get_workflow(workflow_id: str, repo: WorkflowRepository = Depends(get_workfl
 def generate_workflow(
     payload: WorkflowGenerateRequest,
     repo: WorkflowRepository = Depends(get_workflow_repository),
+    registry: ComponentRegistryStore = Depends(get_component_registry_store),
+    rag: RAGService = Depends(get_rag_service),
+    llm: OpenRouterClient = Depends(get_llm_client),
+    policy: WorkflowPolicyService = Depends(get_policy_service),
 ) -> WorkflowDefinition:
-    workflow = WorkflowAuthoringService.generate(payload)
+    components = registry.list_components()
+    handlers = registry.list_handlers()
+    author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
+    workflow = author.generate(payload)
+    policy.validate(workflow, components, handlers)
     repo.save(workflow)
     return _normalize(workflow)
 
@@ -52,3 +79,30 @@ def run_workflow_node(
     # Simulate an agent response for local development
     output = f"Node {node_id} completed for workflow {workflow_id}."
     return WorkflowRunNodeResponse(status="success", output=output)
+
+
+@router.get("/registry", response_model=ComponentRegistryResponse)
+def list_registry(registry: ComponentRegistryStore = Depends(get_component_registry_store)) -> ComponentRegistryResponse:
+    return ComponentRegistryResponse(components=registry.list_components(), handlers=registry.list_handlers())
+
+
+@router.post("/registry/components", response_model=ComponentDefinition, status_code=status.HTTP_201_CREATED)
+def register_component(
+    payload: ComponentDefinitionRequest,
+    registry: ComponentRegistryStore = Depends(get_component_registry_store),
+) -> ComponentDefinition:
+    try:
+        return registry.add_component(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.post("/registry/handlers", response_model=HandlerDefinition, status_code=status.HTTP_201_CREATED)
+def register_handler(
+    payload: HandlerDefinitionRequest,
+    registry: ComponentRegistryStore = Depends(get_component_registry_store),
+) -> HandlerDefinition:
+    try:
+        return registry.add_handler(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc

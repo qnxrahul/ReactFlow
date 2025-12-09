@@ -1,0 +1,23 @@
+[
+  {
+    "id": "kb-mesp-core",
+    "domain": "MESP",
+    "title": "Material Existence Substantive Procedures",
+    "content": "Standard MESP workflow starts with scope alignment, lists client populations, performs sample extraction, maps evidence to controls, and drafts workpapers for review.",
+    "tags": ["scope", "sampling", "workpaper"]
+  },
+  {
+    "id": "kb-risk-fraud",
+    "domain": "Risk",
+    "title": "Risk Assessment with Fraud Overlay",
+    "content": "Risk engagements analyze inherent risk, residual risk after control testing, and include fraud specific decision points that route to investigations when anomalies exceed thresholds.",
+    "tags": ["risk", "fraud", "decision"]
+  },
+  {
+    "id": "kb-compliance-testing",
+    "domain": "Compliance",
+    "title": "Compliance Evidence Collection",
+    "content": "Compliance workflows emphasize gathering regulatory evidence, tagging documents with citations, running automated checks, and compiling compliance memos for sign-off.",
+    "tags": ["compliance", "evidence", "memos"]
+  }
+]

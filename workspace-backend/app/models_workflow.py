@@ -72,4 +72,54 @@ class WorkflowRunNodeResponse(BaseModel):
 
     class Config:
         populate_by_name = True
-*** End of File
+
+
+class ComponentDefinition(BaseModel):
+    id: str = Field(default_factory=lambda: f"cmp-{uuid4()}")
+    type: str
+    label: str
+    base_renderer: Literal["agentCard", "evidenceCard", "decisionCard", "reportCard"] = Field(alias="baseRenderer")
+    description: Optional[str] = None
+    category: Optional[str] = None
+    default_props: Dict[str, object] = Field(default_factory=dict, alias="defaultProps")
+
+    class Config:
+        populate_by_name = True
+
+
+class ComponentDefinitionRequest(BaseModel):
+    type: str
+    label: str
+    base_renderer: Literal["agentCard", "evidenceCard", "decisionCard", "reportCard"] = Field(alias="baseRenderer")
+    description: Optional[str] = None
+    category: Optional[str] = None
+    default_props: Dict[str, object] = Field(default_factory=dict, alias="defaultProps")
+
+    class Config:
+        populate_by_name = True
+
+
+class HandlerDefinition(BaseModel):
+    id: str = Field(default_factory=lambda: f"hnd-{uuid4()}")
+    handler: str
+    kind: Literal["llm-agent", "service", "human-task"]
+    description: Optional[str] = None
+    default_prompt: Optional[str] = Field(default=None, alias="defaultPrompt")
+
+    class Config:
+        populate_by_name = True
+
+
+class HandlerDefinitionRequest(BaseModel):
+    handler: str
+    kind: Literal["llm-agent", "service", "human-task"]
+    description: Optional[str] = None
+    default_prompt: Optional[str] = Field(default=None, alias="defaultPrompt")
+
+    class Config:
+        populate_by_name = True
+
+
+class ComponentRegistryResponse(BaseModel):
+    components: List[ComponentDefinition]
+    handlers: List[HandlerDefinition]

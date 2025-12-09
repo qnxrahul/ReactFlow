@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
-import { getNodeRenderer } from '../registry'
+import { useNodeRegistry } from '../NodeRegistryProvider'
 import type { WorkflowNode } from '../types'
 
 export type DynamicNodeData = {
@@ -11,7 +11,8 @@ export type DynamicNodeData = {
 export type DynamicWorkflowNodeType = Node<DynamicNodeData>
 
 function DynamicWorkflowNodeComponent({ data }: NodeProps<DynamicWorkflowNodeType>) {
-  const Renderer = getNodeRenderer(data.node.ui.componentType)
+  const registry = useNodeRegistry()
+  const Renderer = registry.resolve(data.node.ui.componentType)
   return (
     <div className="rounded-2xl bg-white p-2 shadow-lg">
       <Renderer node={data.node} onRun={() => data.onRun?.(data.node.id)} />

@@ -24,6 +24,7 @@ npm run dev
 - Visit `/workspace` for the workspace overview
 - Visit `/workspace/new` for the new board creation flow
 - Visit `/dynamic` for the new dynamic workflow canvas powered by the backend generator
+- Visit `/registry` to register new workflow components/handlers
 
 ## Workspace Boards
 
@@ -39,6 +40,12 @@ npm run dev
   - Azure Storage: `AZURE_STORAGE_CONNECTION_STRING` (or account URL + key/SAS), `AZURE_STORAGE_CONTAINER`
   - Cosmos DB: `AZURE_COSMOS_ENDPOINT`, `AZURE_COSMOS_KEY`, `AZURE_COSMOS_DATABASE`, `AZURE_COSMOS_CONTAINER`
   - Optional fallbacks: `ENABLE_LOCAL_FALLBACKS=true` keeps using local disk/JSON when Azure creds are omitted.
+
+### Component & Handler Registry
+
+- The `/registry` admin screen talks to `/workflows/registry` on the backend. Registering a component lets you map a new `componentType` to one of the built-in shadcn renderers (Agent card, Evidence card, Decision card, or Report card) and provide default props.
+- Registered handlers simply expose identifiers (e.g., `services.compliance.validate`) that the LLM-driven generator is allowed to reference when drafting workflows.
+- The dynamic workflow canvas automatically consumes the registry so newly registered types become available without redeploying the frontend.
 
 ## Fast Agent Integration (local or cloud)
 

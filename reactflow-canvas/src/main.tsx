@@ -13,7 +13,9 @@ import { BoardsProvider } from './state/BoardsProvider'
 import NewBoard from './pages/NewBoard/NewBoard'
 import DataExtraction from './pages/DataExtraction/DataExtraction'
 import DynamicWorkflowCanvas from './pages/DynamicWorkflowCanvas'
+import RegistryAdmin from './pages/RegistryAdmin'
 import { registerLicense } from '@syncfusion/ej2-base';
+import { NodeRegistryProvider } from './workflows/NodeRegistryProvider'
 
 // Registering Syncfusion license key
 registerLicense('Ngo9BigBOggjHTQxAR8/V1JFaF1cXGFCf1FpRmJGfV5ycUVFal9STnNWUiweQnxTdEBiW39fcHdWQmBYVkVzXkleYg==');
@@ -40,6 +42,7 @@ const router = createBrowserRouter([
       { path: '/workpaper', element: <WorkpaperPage /> },
       { path: '/workpaper-detail', element: <WorkpaperDetailPage /> },
       { path: '/dynamic', element: <DynamicWorkflowCanvas /> },
+      { path: '/registry', element: <RegistryAdmin /> },
     ],
   },
 ])
@@ -47,7 +50,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BoardsProvider>
-      <RouterProvider router={router} />
+      <NodeRegistryProvider>
+        <RouterProvider router={router} />
+      </NodeRegistryProvider>
     </BoardsProvider>
   </StrictMode>,
 )

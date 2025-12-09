@@ -31,13 +31,12 @@ FastAPI service responsible for persisting workspace metadata in Azure Cosmos DB
 
 ## Environment Variables
 
-Key settings (see `.env.example` for the full list):
-
-- `AZURE_STORAGE_CONNECTION_STRING` **or** `AZURE_STORAGE_ACCOUNT_URL` + `AZURE_STORAGE_ACCOUNT_KEY/SAS_TOKEN`
-- `AZURE_STORAGE_CONTAINER`
-- `AZURE_COSMOS_ENDPOINT`, `AZURE_COSMOS_KEY`, `AZURE_COSMOS_DATABASE`, `AZURE_COSMOS_CONTAINER`
-- `CORS_ORIGINS` to permit frontend origins
-- `ENABLE_LOCAL_FALLBACKS` to toggle local storage for non-Azure environments
+- Storage: `AZURE_STORAGE_CONNECTION_STRING` **or** `AZURE_STORAGE_ACCOUNT_URL` + `AZURE_STORAGE_ACCOUNT_KEY/SAS_TOKEN`, `AZURE_STORAGE_CONTAINER`
+- Cosmos DB (optional): `AZURE_COSMOS_ENDPOINT`, `AZURE_COSMOS_KEY`, `AZURE_COSMOS_DATABASE`, `AZURE_COSMOS_CONTAINER`
+- Workflow database: `WORKFLOW_DB_URL` (SQLAlchemy connection string; defaults to local SQLite), `WORKFLOW_COSMOS_CONTAINER`
+- LLM / RAG: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_BASE_URL`, `WORKFLOW_KNOWLEDGE_PATH`
+- Policy tuning: `WORKFLOW_POLICY_MIN_NODES`, `WORKFLOW_POLICY_MAX_NODES`
+- Misc: `CORS_ORIGINS`, `ENABLE_LOCAL_FALLBACKS`, `REGISTRY_STORE_ROOT`
 
 ## API Overview
 
@@ -47,12 +46,17 @@ Key settings (see `.env.example` for the full list):
 - `GET /workspaces/{id}`
 - `PATCH /workspaces/{id}`
 - `POST /workspaces/{id}/files` (multipart upload)
-- `POST /workflows/generate` (prototype OpenRouter workflow builder)
+- `POST /workflows/generate` (LLM workflow builder with policy enforcement)
 - `GET /workflows/{id}`
 - `POST /workflows/{id}/nodes/{nodeId}/run`
+- `GET /workflows/registry` (list dynamic component/handler registry)
+- `POST /workflows/registry/components` (register a renderer)
+- `POST /workflows/registry/handlers` (register a backend handler)
 
 Each workspace document follows the shape expected by the React workspace pages: `name`, `template`, `meta`, `position`, `lanes`, task/file counts, and an array of uploaded files.
 
-### Dynamic Workflow Prototype
+### Dynamic Workflows & Registry
 
-`/workflows` endpoints provide a stubbed implementation of the LLM-backed workflow generator discussed in the design. It currently produces deterministic node graphs using the same persistence layer as workspaces so the frontend can render “unknown” workflows while backend integration with OpenRouter is wired up later.
+- When `OPENROUTER_API_KEY` is provided, `/workflows/generate` performs RAG over `WORKFLOW_KNOWLEDGE_PATH`, feeds the retrieved context plus the component/handler registry into OpenRouter, validates the JSON response, and stores the workflow in Cosmos/SQL.
+- Without an API key the endpoint falls back to a deterministic template that still respects the registry.
+- Admins (or plugins) can call the registry endpoints to map new component types to built-in renderer templates (shadcn cards) and register handler identifiers that the LLM is allowed to reference.
