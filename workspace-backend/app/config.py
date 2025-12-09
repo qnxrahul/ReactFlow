@@ -79,6 +79,13 @@ class Settings(BaseSettings):
     )
     openrouter_base_url: str = Field(default="https://openrouter.ai/api/v1", description="Base URL for OpenRouter API.")
 
+    # MCP agent execution
+    mcp_gateway_url: Optional[str] = Field(
+        default=None,
+        description="Model Context Protocol gateway base URL. When unset, agent invocations fall back to mock responses.",
+    )
+    mcp_api_key: Optional[str] = Field(default=None, description="Optional API key when calling the MCP gateway.")
+
     # Policy
     workflow_policy_min_nodes: int = Field(default=3, description="Minimum number of nodes enforced during validation.")
     workflow_policy_max_nodes: int = Field(default=24, description="Maximum number of nodes enforced during validation.")

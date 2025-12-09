@@ -63,6 +63,7 @@ class WorkflowGenerateRequest(BaseModel):
     domain: str
     intent: str
     description: Optional[str] = None
+    preferred_handlers: List[str] = Field(default_factory=list, alias="preferredHandlers")
 
 
 class WorkflowRunNodeResponse(BaseModel):
@@ -123,3 +124,47 @@ class HandlerDefinitionRequest(BaseModel):
 class ComponentRegistryResponse(BaseModel):
     components: List[ComponentDefinition]
     handlers: List[HandlerDefinition]
+
+
+class AgentDefinition(BaseModel):
+    id: str = Field(default_factory=lambda: f"agent-{uuid4()}")
+    name: str
+    handler: str
+    description: Optional[str] = None
+    domains: List[str] = Field(default_factory=list)
+    intent_tags: List[str] = Field(default_factory=list, alias="intentTags")
+    mcp_tool: str = Field(alias="mcpTool")
+    mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
+    default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
+
+    class Config:
+        populate_by_name = True
+
+
+class AgentDefinitionRequest(BaseModel):
+    name: str
+    handler: str
+    description: Optional[str] = None
+    domains: List[str] = Field(default_factory=list)
+    intent_tags: List[str] = Field(default_factory=list, alias="intentTags")
+    mcp_tool: str = Field(alias="mcpTool")
+    mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
+    default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
+
+    class Config:
+        populate_by_name = True
+
+
+class AgentListResponse(BaseModel):
+    agents: List[AgentDefinition]
+
+
+class AgentRunRequest(BaseModel):
+    input: Optional[str] = None
+    context: Dict[str, object] = Field(default_factory=dict)
+
+
+class AgentRunResponse(BaseModel):
+    status: Literal["success", "error", "running"] = "success"
+    output: str
+    logs: Optional[List[str]] = None

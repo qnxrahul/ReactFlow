@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import List
 
 from ..models_workflow import (
+    AgentDefinition,
+    AgentDefinitionRequest,
     ComponentDefinition,
     ComponentDefinitionRequest,
     HandlerDefinition,
@@ -61,6 +63,29 @@ DEFAULT_HANDLERS = [
     },
 ]
 
+DEFAULT_AGENTS = [
+    {
+        "id": "agent-risk-analyst",
+        "name": "Risk Analyst Agent",
+        "handler": "openrouter.risk",
+        "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+        "domains": ["Risk", "MESP"],
+        "intentTags": ["assessment", "planning"],
+        "mcpTool": "risk_analyst",
+        "defaultParams": {"temperature": 0.1},
+    },
+    {
+        "id": "agent-fraud-reviewer",
+        "name": "Fraud Reviewer",
+        "handler": "rules.fraud",
+        "description": "Reviews anomalies and flags fraud cases for escalation.",
+        "domains": ["Fraud"],
+        "intentTags": ["investigation"],
+        "mcpTool": "fraud_reviewer",
+        "defaultParams": {"threshold": 0.8},
+    },
+]
+
 
 class ComponentRegistryStore:
     def __init__(self, root: Path):
@@ -95,6 +120,14 @@ class ComponentRegistryStore:
                 existing_handlers.add(default["handler"])
                 changed = True
 
+        existing_agents = {item.get("id") for item in data.get("agents", [])}
+        for default in DEFAULT_AGENTS:
+            if default["id"] not in existing_agents:
+                agent = AgentDefinition(**AgentDefinitionRequest(**default).model_dump())
+                data.setdefault("agents", []).append(agent.model_dump(by_alias=True))
+                existing_agents.add(default["id"])
+                changed = True
+
         if changed:
             self._save(data)
 
@@ -107,6 +140,11 @@ class ComponentRegistryStore:
         self._ensure_defaults()
         data = self._load()
         return [HandlerDefinition.model_validate(item) for item in data.get("handlers", [])]
+
+    def list_agents(self) -> List[AgentDefinition]:
+        self._ensure_defaults()
+        data = self._load()
+        return [AgentDefinition.model_validate(item) for item in data.get("agents", [])]
 
     def add_component(self, payload: ComponentDefinitionRequest) -> ComponentDefinition:
         data = self._load()
@@ -127,3 +165,25 @@ class ComponentRegistryStore:
         handlers.append(handler.model_dump(by_alias=True))
         self._save(data)
         return handler
+
+    def add_agent(self, payload: AgentDefinitionRequest) -> AgentDefinition:
+        data = self._load()
+        agents = data.setdefault("agents", [])
+        agent = AgentDefinition(**payload.model_dump())
+        if any(existing.get("id") == agent.id for existing in agents):
+            raise ValueError(f"Agent id '{agent.id}' already exists")
+        agents.append(agent.model_dump(by_alias=True))
+        self._save(data)
+        return agent
+
+    def find_agent_by_id(self, agent_id: str) -> AgentDefinition | None:
+        for agent in self.list_agents():
+            if agent.id == agent_id:
+                return agent
+        return None
+
+    def find_agent_by_handler(self, handler_id: str) -> AgentDefinition | None:
+        for agent in self.list_agents():
+            if agent.handler == handler_id:
+                return agent
+        return None

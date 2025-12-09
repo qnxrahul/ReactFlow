@@ -7,6 +7,7 @@ from fastapi import Depends
 from .config import Settings, get_settings
 from .services.blob_storage import BlobStorageService
 from .services.llm_client import OpenRouterClient
+from .services.mcp_client import MCPClient
 from .services.policy import WorkflowPolicyService
 from .services.rag import RAGService
 from .services.registry_store import ComponentRegistryStore
@@ -59,6 +60,21 @@ def _cached_llm(api_key: Optional[str], model: str, base_url: str) -> OpenRouter
 
 def get_llm_client(settings: Settings = Depends(get_settings)) -> OpenRouterClient:
     return _cached_llm(settings.openrouter_api_key, settings.openrouter_model, settings.openrouter_base_url)
+
+
+def get_agent_registry_store(settings: Settings = Depends(get_settings)) -> ComponentRegistryStore:
+    return ComponentRegistryStore(Path(settings.registry_store_root))
+
+
+@lru_cache
+def _cached_mcp(settings_key: str) -> MCPClient:
+    settings = Settings()
+    return MCPClient(settings)
+
+
+def get_mcp_client(settings: Settings = Depends(get_settings)) -> MCPClient:
+    # reusing cached instance would require Settings hash; simply instantiate per call (httpx uses per request)
+    return MCPClient(settings)
 
 
 @lru_cache

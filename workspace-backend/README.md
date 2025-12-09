@@ -52,6 +52,9 @@ FastAPI service responsible for persisting workspace metadata in Azure Cosmos DB
 - `GET /workflows/registry` (list dynamic component/handler registry)
 - `POST /workflows/registry/components` (register a renderer)
 - `POST /workflows/registry/handlers` (register a backend handler)
+- `GET /agents/` (list MCP-backed agents, filterable by domain/intent)
+- `POST /agents/` (register a new agent definition)
+- `POST /agents/{agentId}/run` (execute an agent on-demand via the MCP gateway)
 
 Each workspace document follows the shape expected by the React workspace pages: `name`, `template`, `meta`, `position`, `lanes`, task/file counts, and an array of uploaded files.
 
@@ -60,3 +63,4 @@ Each workspace document follows the shape expected by the React workspace pages:
 - When `OPENROUTER_API_KEY` is provided, `/workflows/generate` performs RAG over `WORKFLOW_KNOWLEDGE_PATH`, feeds the retrieved context plus the component/handler registry into OpenRouter, validates the JSON response, and stores the workflow in Cosmos/SQL.
 - Without an API key the endpoint falls back to a deterministic template that still respects the registry.
 - Admins (or plugins) can call the registry endpoints to map new component types to built-in renderer templates (shadcn cards) and register handler identifiers that the LLM is allowed to reference.
+- The `/agents` API family lets you register MCP-backed agents tied to handler ids so workflow execution can delegate to specialized tools.

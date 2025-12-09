@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routers import workspaces, workflows
+from .routers import agents, workspaces, workflows
 
 settings = get_settings()
 
@@ -30,3 +30,4 @@ def health():
 
 app.include_router(workspaces.router)
 app.include_router(workflows.router)
+app.include_router(agents.router)

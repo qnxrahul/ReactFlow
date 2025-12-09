@@ -50,6 +50,7 @@ export type GenerateWorkflowPayload = {
   domain: string
   intent: string
   description?: string
+  preferredHandlers?: string[]
 }
 
 export type RunWorkflowNodeResponse = {
@@ -74,4 +75,20 @@ export type HandlerDefinition = {
   kind: WorkflowNodeBehavior['kind']
   description?: string | null
   defaultPrompt?: string | null
+}
+
+export type AgentDefinition = {
+  id: string
+  name: string
+  handler: string
+  description?: string | null
+  domains: string[]
+  intentTags: string[]
+  mcpTool: string
+}
+
+export type AgentRunResponse = {
+  status: WorkflowNodeRuntime['status']
+  output: string
+  logs?: string[]
 }

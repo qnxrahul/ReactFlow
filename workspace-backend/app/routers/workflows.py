@@ -3,13 +3,16 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..dependencies import (
+    get_agent_registry_store,
     get_component_registry_store,
     get_llm_client,
+    get_mcp_client,
     get_policy_service,
     get_rag_service,
     get_workflow_repository,
 )
 from ..models_workflow import (
+    AgentRunRequest,
     ComponentDefinition,
     ComponentDefinitionRequest,
     ComponentRegistryResponse,
@@ -20,6 +23,7 @@ from ..models_workflow import (
     WorkflowRunNodeResponse,
 )
 from ..services.llm_client import OpenRouterClient
+from ..services.mcp_client import MCPClient
 from ..services.policy import WorkflowPolicyService
 from ..services.rag import RAGService
 from ..services.registry_store import ComponentRegistryStore
@@ -66,6 +70,8 @@ def run_workflow_node(
     workflow_id: str,
     node_id: str,
     repo: WorkflowRepository = Depends(get_workflow_repository),
+    registry: ComponentRegistryStore = Depends(get_agent_registry_store),
+    mcp: MCPClient = Depends(get_mcp_client),
 ) -> WorkflowRunNodeResponse:
     try:
         workflow = repo.get(workflow_id)
@@ -76,8 +82,24 @@ def run_workflow_node(
     if not node_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
 
-    # Simulate an agent response for local development
-    output = f"Node {node_id} completed for workflow {workflow_id}."
+    target_node = next(node for node in workflow.nodes if node.id == node_id)
+    handler_id = target_node.behavior.handler
+    agent = registry.find_agent_by_handler(handler_id)
+    if agent:
+        request = AgentRunRequest(
+            input=f"Execute node '{target_node.name}' for workflow '{workflow.title}'.",
+            context={
+                "workflowId": workflow_id,
+                "nodeId": node_id,
+                "nodeType": target_node.type,
+                "description": target_node.description,
+            },
+        )
+        result = mcp.invoke(agent, request)
+        return WorkflowRunNodeResponse(status=result.status if result.status in {"success", "running"} else "error", output=result.output)
+
+    # fallback response when no agent is registered for handler
+    output = f"Node {node_id} executed locally (no MCP agent registered for handler '{handler_id}')."
     return WorkflowRunNodeResponse(status="success", output=output)
 
 

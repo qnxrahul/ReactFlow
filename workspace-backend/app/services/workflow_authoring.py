@@ -52,12 +52,18 @@ class WorkflowAuthoringService:
             for handler in self._handlers
         ]
         knowledge_snippets = [f"- {entry['title']}: {entry['content']}" for entry in knowledge]
+        preferred = (
+            "Preferred handlers: " + ", ".join(request.preferred_handlers)
+            if request.preferred_handlers
+            else "Preferred handlers: (none specified)"
+        )
 
         prompt = "\n".join(
             [
                 f"Domain: {request.domain}",
                 f"Intent: {request.intent}",
                 f"Description: {request.description or 'N/A'}",
+                preferred,
                 "Relevant knowledge:",
                 *(knowledge_snippets or ["- None"]),
                 "Available components:",
@@ -89,12 +95,16 @@ class WorkflowAuthoringService:
         default_decision = component_lookup.get("decisionCard", self._components[-1])
 
         handler_lookup = {handler.handler: handler for handler in self._handlers}
-        handler_cycle = [
+        preferred_handlers = [handler_lookup[hid] for hid in request.preferred_handlers if hid in handler_lookup]
+        fallback_handlers = [
             handler_lookup.get("openrouter.scope") or self._handlers[0],
             handler_lookup.get("openrouter.collect") or self._handlers[min(1, len(self._handlers) - 1)],
             handler_lookup.get("openrouter.risk") or self._handlers[min(2, len(self._handlers) - 1)],
             handler_lookup.get("rules.fraud") or self._handlers[-1],
         ]
+        handler_cycle = (preferred_handlers + fallback_handlers)[:4]
+        while len(handler_cycle) < 4:
+            handler_cycle.append(self._handlers[len(handler_cycle) % len(self._handlers)])
 
         nodes: List[WorkflowNode] = [
             _node_from_definition("Scope Alignment", "agent", default_agent, handler_cycle[0], outputs=["scope"]),
