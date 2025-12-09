@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -26,6 +26,9 @@ import { TurboNode, type TurboNodeData } from './components/TurboNode'
 import { ReportNode, type ReportNodeData } from './components/ReportNode'
 import { FiPlay, FiZap, FiGitBranch, FiCheckCircle, FiUploadCloud, FiDownloadCloud, FiMaximize2 } from 'react-icons/fi'
 import { runNode } from './services/fastAgent'
+import { AgentInterruptModal } from './components/AgentInterruptModal'
+import { useAguiAgent } from './hooks/useAguiAgent'
+import type { Message } from '@ag-ui/client'
 
 type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo' | 'report'
 
@@ -55,6 +58,21 @@ export default function App() {
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const rfRef = useRef<ReactFlowInstance<Node<any>, Edge> | null>(null)
+  const [agentPrompt, setAgentPrompt] = useState('')
+  const [aguiTargetNodeId, setAguiTargetNodeId] = useState<string | null>(null)
+
+  const {
+    enabled: aguiEnabled,
+    status: aguiStatus,
+    error: aguiError,
+    messages: aguiMessages,
+    interrupt: aguiInterrupt,
+    startRun: startAguiRun,
+    resume: resumeAguiRun,
+    cancel: cancelAguiRun,
+    clear: clearAguiLog,
+    latestAssistantMessage,
+  } = useAguiAgent()
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
@@ -252,6 +270,81 @@ export default function App() {
     }
   }, [edges, executeNode])
 
+  const handleAguiRun = useCallback(() => {
+    if (!selectedNode || !aguiEnabled) return
+
+    const prompt =
+      agentPrompt.trim().length > 0
+        ? agentPrompt.trim()
+        : `Help me reason about node "${selectedNode.data?.title ?? selectedNode.id}" and propose the next action.`
+
+    const baseMessages: Message[] = [
+      {
+        id: `sys-${selectedNode.id}`,
+        role: 'system',
+        content:
+          'You are an in-product assistant that helps users execute and debug nodes inside a ReactFlow canvas. Focus on actionable, concise guidance.',
+      },
+      {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: prompt,
+      },
+    ]
+
+    const state = {
+      node: {
+        id: selectedNode.id,
+        title: selectedNode.data?.title,
+        subtitle: selectedNode.data?.subtitle,
+        status: selectedNode.data?.status,
+      },
+      metrics: {
+        nodeCount: nodes.length,
+        edgeCount: edges.length,
+      },
+    }
+
+    const context = [
+      { description: 'nodeId', value: selectedNode.id },
+      { description: 'nodeType', value: selectedNode.type ?? 'turbo' },
+    ]
+
+    setAguiTargetNodeId(selectedNode.id)
+    startAguiRun({
+      messages: baseMessages,
+      state,
+      context,
+    })
+  }, [agentPrompt, aguiEnabled, nodes.length, edges.length, selectedNode, startAguiRun])
+
+  useEffect(() => {
+    if (!aguiTargetNodeId || !latestAssistantMessage) return
+
+    setNodes((prev) =>
+      prev.map((node) => {
+        if (node.id !== aguiTargetNodeId || node.type !== 'turbo') return node
+        const data = node.data as TurboNodeData
+        let nextStatus = data.status
+        if (aguiStatus === 'running') nextStatus = 'running'
+        if (aguiStatus === 'error') nextStatus = 'error'
+        if (aguiStatus === 'idle' && latestAssistantMessage) nextStatus = 'success'
+        return {
+          ...node,
+          data: {
+            ...data,
+            status: nextStatus,
+            output: latestAssistantMessage.content,
+          },
+        }
+      }),
+    )
+
+    if (aguiStatus === 'idle' && !aguiInterrupt) {
+      setAguiTargetNodeId(null)
+    }
+  }, [aguiInterrupt, aguiStatus, aguiTargetNodeId, latestAssistantMessage, setNodes])
+
   return (
     <div className="app-root">
       <div className="leftbar">
@@ -433,7 +526,64 @@ export default function App() {
             <div className="muted">Select a node to edit</div>
           )}
         </div>
+        <div className="section">
+          <div className="section-title">AG-UI Agent</div>
+          {!aguiEnabled ? (
+            <div className="muted">Set VITE_AGUI_AGENT_URL to enable the AG-UI integration.</div>
+          ) : (
+            <div className="agent-panel">
+              <label className="field">
+                <span>Prompt</span>
+                <textarea
+                  value={agentPrompt}
+                  onChange={(event) => setAgentPrompt(event.target.value)}
+                  rows={3}
+                  placeholder="Describe what you want the agent to do with the selected node."
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleAguiRun}
+                disabled={!selectedNode || aguiStatus === 'running'}
+              >
+                {aguiStatus === 'running' ? 'Running…' : 'Run with AG-UI'}
+              </button>
+              {aguiError && <p className="agent-panel__error">{aguiError}</p>}
+              <div className="agent-log" aria-live="polite">
+                {aguiMessages.length === 0 ? (
+                  <div className="muted">Agent output will appear here.</div>
+                ) : (
+                  aguiMessages.map((msg) => (
+                    <div key={msg.id} className={`agent-log__message agent-log__message--${msg.role}`}>
+                      <span>{msg.role}</span>
+                      <p>{msg.content || (msg.streaming ? '…' : '')}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="agent-panel__actions">
+                <button type="button" onClick={clearAguiLog} disabled={aguiMessages.length === 0}>
+                  Clear log
+                </button>
+                {aguiStatus === 'running' && (
+                  <button type="button" onClick={cancelAguiRun}>
+                    Stop run
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+      <AgentInterruptModal
+        interrupt={aguiInterrupt}
+        status={aguiStatus}
+        onResume={(payload) => resumeAguiRun(payload)}
+        onCancel={() => {
+          cancelAguiRun()
+          setAguiTargetNodeId(null)
+        }}
+      />
     </div>
   )
 }
