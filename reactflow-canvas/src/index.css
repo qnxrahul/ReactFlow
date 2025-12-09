@@ -1,7 +1,23 @@
-/* Minimal base to enable full-screen canvas */
-html, body, #root {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal base to enable full-screen canvas alongside Tailwind */
+html,
+body,
+#root {
   height: 100vh;
   width: 100vw;
 }
-html, body { margin: 0; }
-body { display: block; overflow: auto; }
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  display: block;
+  overflow: auto;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f8fafc;
+}

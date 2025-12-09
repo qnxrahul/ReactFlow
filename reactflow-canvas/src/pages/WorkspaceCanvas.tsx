@@ -7,6 +7,7 @@ import {
   type ReactFlowInstance,
   type Edge,
   type Node,
+  type NodeTypes,
   SelectionMode,
 } from '@xyflow/react'
 import { FiCompass, FiGrid, FiLayers, FiSettings, FiPlus, FiZoomIn, FiZoomOut, FiRotateCw, FiGrid as FiGridToggle, FiMessageCircle } from 'react-icons/fi'
@@ -35,7 +36,7 @@ const menuItems = [
   'Lock/Unlock',
 ]
 
-const nodeTypes = { workspace: WorkspaceNode }
+const nodeTypes = { workspace: WorkspaceNode } satisfies NodeTypes
 
 export default function WorkspaceCanvas() {
   const navigate = useNavigate()
@@ -44,7 +45,7 @@ export default function WorkspaceCanvas() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
-  const flowRef = useRef<ReactFlowInstance | null>(null)
+  const flowRef = useRef<ReactFlowInstance<WorkspaceNodeType, Edge> | null>(null)
   const [showGrid, setShowGrid] = useState(true)
   const [zoom, setZoom] = useState(1)
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null)
@@ -214,7 +215,7 @@ export default function WorkspaceCanvas() {
   }, [closeMenu])
 
   const handlePaneContextMenu = useCallback(
-    (evt: ReactMouseEvent) => {
+    (evt: ReactMouseEvent | MouseEvent) => {
       evt.preventDefault()
       const bounds = canvasRef.current?.getBoundingClientRect()
       if (!bounds) return
@@ -365,7 +366,6 @@ export default function WorkspaceCanvas() {
               panOnDrag={false}
               elementsSelectable
               nodesDraggable
-              edgesUpdatable={false}
               translateExtent={[[-200, -200], [1600, 900]]}
               selectionMode={SelectionMode.Partial}
               onInit={(instance) => {

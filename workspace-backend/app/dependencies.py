@@ -3,6 +3,7 @@ from fastapi import Depends
 from .config import Settings, get_settings
 from .services.blob_storage import BlobStorageService
 from .services.workspace_repository import CosmosWorkspaceRepository, FileBackedWorkspaceRepository, WorkspaceRepository
+from .services.workflow_repository import FileBackedWorkflowRepository, WorkflowRepository as DynamicWorkflowRepository
 
 
 def get_blob_service(settings: Settings = Depends(get_settings)) -> BlobStorageService:
@@ -17,3 +18,9 @@ def get_workspace_repository(settings: Settings = Depends(get_settings)) -> Work
     from pathlib import Path
 
     return FileBackedWorkspaceRepository(Path(settings.local_blob_root))
+
+
+def get_workflow_repository(settings: Settings = Depends(get_settings)) -> DynamicWorkflowRepository:
+    from pathlib import Path
+
+    return FileBackedWorkflowRepository(Path(settings.local_blob_root))

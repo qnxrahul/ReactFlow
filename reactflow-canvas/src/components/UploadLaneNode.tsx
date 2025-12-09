@@ -1,4 +1,4 @@
-import type { NodeProps } from '@xyflow/react'
+import type { Node, NodeProps } from '@xyflow/react'
 import { FiFileText } from 'react-icons/fi'
 
 export type UploadLaneData = {
@@ -8,7 +8,9 @@ export type UploadLaneData = {
   onFileClick?: (fileName: string) => void
 }
 
-export function UploadLaneNode({ data }: NodeProps<UploadLaneData>) {
+export type UploadLaneNodeType = Node<UploadLaneData>
+
+export function UploadLaneNode({ data }: NodeProps<UploadLaneNodeType>) {
   return (
     <div className="upload-lane">
       <div className="upload-lane__header">

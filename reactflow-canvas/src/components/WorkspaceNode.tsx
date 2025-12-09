@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import type { NodeProps } from '@xyflow/react'
+import type { Node, NodeProps } from '@xyflow/react'
 
 export type WorkspaceNodeData = {
   title: string
@@ -10,7 +10,9 @@ export type WorkspaceNodeData = {
   onRenameCancel?: () => void
 }
 
-export function WorkspaceNode({ data, selected }: NodeProps<WorkspaceNodeData>) {
+export type WorkspaceNodeType = Node<WorkspaceNodeData>
+
+export function WorkspaceNode({ data, selected }: NodeProps<WorkspaceNodeType>) {
   const color = data.color ?? '#5f79c6'
   const [draft, setDraft] = useState(data.title)
   const inputRef = useRef<HTMLInputElement | null>(null)

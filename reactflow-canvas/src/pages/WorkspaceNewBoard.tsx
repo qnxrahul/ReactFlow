@@ -7,15 +7,16 @@ import {
   useEdgesState,
   useNodesState,
   type Edge,
+  type NodeTypes,
 } from '@xyflow/react'
 import { FiCompass, FiGrid, FiLayers, FiSettings } from 'react-icons/fi'
 import '../workspace-board.css'
-import UploadLaneNode, { type UploadLaneData } from '../components/UploadLaneNode'
+import UploadLaneNode, { type UploadLaneData, type UploadLaneNodeType } from '../components/UploadLaneNode'
 import { useBoards } from '../state/BoardsProvider'
 import { recordWorkflowStep } from '../services/workspaceApi'
 import { LAST_CREATED_WORKSPACE_KEY } from '../constants/workspace'
 
-const initialUploadNodes = [
+const initialUploadNodes: UploadLaneNodeType[] = [
   {
     id: 'todo-lane',
     type: 'uploadLane',
@@ -62,12 +63,12 @@ const todoItems = [
   'Approve work paper',
 ]
 
-const nodeTypes = { uploadLane: UploadLaneNode }
+const nodeTypes = { uploadLane: UploadLaneNode } satisfies NodeTypes
 
 export default function WorkspaceNewBoard() {
   const navigate = useNavigate()
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialUploadNodes)
-  const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState<UploadLaneNodeType>(initialUploadNodes)
+  const [edges, _setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const { createBoard, updateBoard, boards, uploadFile } = useBoards()
   const [searchParams] = useSearchParams()

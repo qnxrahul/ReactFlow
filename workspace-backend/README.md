@@ -47,5 +47,12 @@ Key settings (see `.env.example` for the full list):
 - `GET /workspaces/{id}`
 - `PATCH /workspaces/{id}`
 - `POST /workspaces/{id}/files` (multipart upload)
+- `POST /workflows/generate` (prototype OpenRouter workflow builder)
+- `GET /workflows/{id}`
+- `POST /workflows/{id}/nodes/{nodeId}/run`
 
 Each workspace document follows the shape expected by the React workspace pages: `name`, `template`, `meta`, `position`, `lanes`, task/file counts, and an array of uploaded files.
+
+### Dynamic Workflow Prototype
+
+`/workflows` endpoints provide a stubbed implementation of the LLM-backed workflow generator discussed in the design. It currently produces deterministic node graphs using the same persistence layer as workspaces so the frontend can render “unknown” workflows while backend integration with OpenRouter is wired up later.

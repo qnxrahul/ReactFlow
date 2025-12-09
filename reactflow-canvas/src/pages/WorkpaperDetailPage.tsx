@@ -35,7 +35,9 @@ export default function WorkpaperDetailPage() {
         page.drawImage(jpg, { x: 0, y: 0, width, height })
         const pdfBytes = await pdfDoc.save()
         if (!mounted) return
-        setPdfUrl(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })))
+        const buffer = pdfBytes.buffer as ArrayBuffer
+        const blob = new Blob([buffer], { type: 'application/pdf' })
+        setPdfUrl(URL.createObjectURL(blob))
       } catch (error) {
         console.error('Unable to render PDF', error)
       } finally {

@@ -23,6 +23,7 @@ npm run dev
 - Visit `/fluent` for the Fluent UI demo canvas
 - Visit `/workspace` for the workspace overview
 - Visit `/workspace/new` for the new board creation flow
+- Visit `/dynamic` for the new dynamic workflow canvas powered by the backend generator
 
 ## Workspace Boards
 
