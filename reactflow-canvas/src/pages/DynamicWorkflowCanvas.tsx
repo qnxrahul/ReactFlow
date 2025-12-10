@@ -64,6 +64,7 @@ export default function DynamicWorkflowCanvas() {
   const [assistError, setAssistError] = useState<string | null>(null)
   const [toolbarAgentId, setToolbarAgentId] = useState<string | null>(null)
   const [toolbarError, setToolbarError] = useState<string | null>(null)
+  const [agentMatchScores, setAgentMatchScores] = useState<Record<string, number>>({})
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
@@ -143,12 +144,48 @@ export default function DynamicWorkflowCanvas() {
     const loadAgents = async () => {
       setAgentsLoading(true)
       try {
-        const result = await fetchAgents({ domain: form.domain, intent: form.intent, keywords: contextKeywords })
-        if (!cancelled) {
-          setAgents(result)
-          setAgentError(null)
-          setSelectedAgentIds((prev) => prev.filter((id) => result.some((agent) => agent.id === id)))
+        const result = await fetchAgents()
+        if (cancelled) return
+        const deduped = Array.from(new Map(result.map((agent) => [agent.id, agent])).values())
+        const normalizedDomain = form.domain.trim().toLowerCase()
+        const intentTokens = form.intent
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+        const keywordSet = new Set((contextKeywords ?? []).map((keyword) => keyword.toLowerCase()))
+        const scoreAgent = (agent: AgentDefinition) => {
+          let score = 0
+          if (normalizedDomain && agent.domains.some((domain) => domain.toLowerCase().includes(normalizedDomain))) {
+            score += 3
+          }
+          if (intentTokens.length > 0) {
+            const intentMatches = intentTokens.filter((token) =>
+              agent.intentTags.some((tag) => tag.toLowerCase().includes(token)),
+            )
+            score += intentMatches.length * 2
+          }
+          if (keywordSet.size > 0) {
+            keywordSet.forEach((keyword) => {
+              if (
+                agent.capabilities?.some((capability) => capability.toLowerCase().includes(keyword)) ||
+                agent.domains.some((domain) => domain.toLowerCase().includes(keyword)) ||
+                agent.intentTags.some((tag) => tag.toLowerCase().includes(keyword))
+              ) {
+                score += 1
+              }
+            })
+          }
+          return score
         }
+        const scores = deduped.reduce<Record<string, number>>((acc, agent) => {
+          acc[agent.id] = scoreAgent(agent)
+          return acc
+        }, {})
+        deduped.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0))
+        setAgentMatchScores(scores)
+        setAgents(deduped)
+        setAgentError(null)
+        setSelectedAgentIds((prev) => prev.filter((id) => deduped.some((agent) => agent.id === id)))
       } catch (error) {
         if (!cancelled) setAgentError((error as Error).message)
       } finally {
@@ -366,6 +403,7 @@ export default function DynamicWorkflowCanvas() {
           actionError={toolbarError}
           contextKeywords={contextKeywords}
           lastRunOutput={agentRunOutput}
+          matchScores={agentMatchScores}
         />
         <div className="flex-1">
           <ReactFlow

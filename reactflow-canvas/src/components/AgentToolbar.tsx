@@ -18,6 +18,7 @@ type AgentToolbarProps = {
   actionError?: string | null
   contextKeywords?: string[]
   lastRunOutput?: string | null
+  matchScores?: Record<string, number>
 }
 
 function AgentToolbarComponent({
@@ -32,6 +33,7 @@ function AgentToolbarComponent({
   actionError,
   contextKeywords,
   lastRunOutput,
+  matchScores,
 }: AgentToolbarProps) {
   return (
     <section className="border-b border-slate-200 bg-white/95 px-6 py-4 text-slate-900 shadow-sm backdrop-blur">
@@ -62,12 +64,14 @@ function AgentToolbarComponent({
         ) : (
           agents.map((agent) => {
             const selected = selectedAgentIds.includes(agent.id)
+            const matchScore = matchScores?.[agent.id] ?? 0
             return (
               <div
                 key={agent.id}
                 className={cn(
                   'min-w-[240px] max-w-[280px] shrink-0 rounded-2xl border bg-white p-4 shadow-sm transition-all',
                   selected ? 'border-emerald-200 ring-1 ring-emerald-200' : 'border-slate-200',
+                  matchScore > 0 && !selected && 'border-amber-200 ring-1 ring-amber-100',
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -79,6 +83,9 @@ function AgentToolbarComponent({
                     {selected ? 'Pinned' : agent.mcpTool || 'Agent'}
                   </Badge>
                 </div>
+                {matchScore > 0 && (
+                  <p className="mt-1 text-[11px] font-medium text-amber-600">Matches current audit context</p>
+                )}
                 {agent.description && <p className="mt-2 text-xs text-slate-500">{agent.description}</p>}
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500">
                   {agent.domains.slice(0, 2).map((domain) => (
