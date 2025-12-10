@@ -12,11 +12,30 @@ from ..services.registry_store import ComponentRegistryStore
 router = APIRouter(prefix="/agents", tags=["Agents"])
 
 
-def _filter_agents(agents: List[AgentDefinition], domain: Optional[str], intent: Optional[str]) -> List[AgentDefinition]:
+def _normalize(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    return value.strip().lower() or None
+
+
+def _filter_agents(
+    agents: List[AgentDefinition],
+    domain: Optional[str],
+    intent: Optional[str],
+    keywords: Optional[List[str]],
+) -> List[AgentDefinition]:
+    normalized_keywords = [kw.strip().lower() for kw in keywords or [] if kw.strip()]
+
     def matches(agent: AgentDefinition) -> bool:
-        domain_match = not domain or domain.lower() in (d.lower() for d in agent.domains)
-        intent_match = not intent or intent.lower() in (tag.lower() for tag in agent.intent_tags)
-        return domain_match and intent_match
+        domain_match = not domain or any(domain in d.lower() for d in agent.domains)
+        intent_match = not intent or any(intent in tag.lower() for tag in agent.intent_tags)
+        keyword_match = True
+        if normalized_keywords:
+            capability_tokens = {c.lower() for c in agent.capabilities}
+            capability_tokens.update(tag.lower() for tag in agent.intent_tags)
+            capability_tokens.update(d.lower() for d in agent.domains)
+            keyword_match = any(keyword in token or token in keyword for keyword in normalized_keywords for token in capability_tokens)
+        return domain_match and intent_match and keyword_match
 
     return [agent for agent in agents if matches(agent)]
 
@@ -25,9 +44,10 @@ def _filter_agents(agents: List[AgentDefinition], domain: Optional[str], intent:
 def list_agents(
     domain: Optional[str] = Query(default=None),
     intent: Optional[str] = Query(default=None),
+    keywords: Optional[List[str]] = Query(default=None),
     registry: ComponentRegistryStore = Depends(get_agent_registry_store),
 ) -> AgentListResponse:
-    agents = _filter_agents(registry.list_agents(), domain, intent)
+    agents = _filter_agents(registry.list_agents(), _normalize(domain), _normalize(intent), keywords)
     return AgentListResponse(agents=agents)
 
 

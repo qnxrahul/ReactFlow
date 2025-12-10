@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..dependencies import (
@@ -18,6 +20,8 @@ from ..models_workflow import (
     ComponentRegistryResponse,
     HandlerDefinition,
     HandlerDefinitionRequest,
+    WorkflowAssistRequest,
+    WorkflowAssistResponse,
     WorkflowDefinition,
     WorkflowGenerateRequest,
     WorkflowRunNodeResponse,
@@ -128,3 +132,91 @@ def register_handler(
         return registry.add_handler(payload)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.post("/assist", response_model=WorkflowAssistResponse)
+def assist_workflow(
+    payload: WorkflowAssistRequest,
+    registry: ComponentRegistryStore = Depends(get_component_registry_store),
+    repo: WorkflowRepository = Depends(get_workflow_repository),
+    rag: RAGService = Depends(get_rag_service),
+    llm: OpenRouterClient = Depends(get_llm_client),
+    policy: WorkflowPolicyService = Depends(get_policy_service),
+) -> WorkflowAssistResponse:
+    components = registry.list_components()
+    handlers = registry.list_handlers()
+    author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
+
+    context = payload.context or {}
+    existing_workflow: WorkflowDefinition | None = None
+    if payload.workflow_id:
+        try:
+            existing_workflow = repo.get(payload.workflow_id)
+        except KeyError:
+            existing_workflow = None
+
+    domain = payload.domain or context.get("domain") or (existing_workflow.domain if existing_workflow else "General")
+    intent = payload.intent or context.get("intent") or (existing_workflow.intent if existing_workflow else "analysis")
+    description_parts = []
+    if existing_workflow and existing_workflow.intent:
+        description_parts.append(existing_workflow.intent)
+    if payload.description:
+        description_parts.append(payload.description)
+    if payload.question:
+        description_parts.append(f"User question: {payload.question}")
+    description = "\n".join(part for part in description_parts if part)
+
+    request = WorkflowGenerateRequest(
+        domain=str(domain),
+        intent=str(intent),
+        description=description or "Provide actionable workflow steps.",
+        preferred_handlers=payload.preferred_handlers or [],
+        context_keywords=payload.context_keywords or [],
+    )
+
+    generated = author.generate(request)
+    policy.validate(generated, components, handlers)
+
+    suggested_nodes = generated.nodes
+    result_workflow = generated
+    if existing_workflow:
+        merged = existing_workflow.model_copy(
+            update={
+                "nodes": existing_workflow.nodes + generated.nodes,
+                "edges": existing_workflow.edges + generated.edges,
+                "updated_at": datetime.utcnow(),
+            }
+        )
+        policy.validate(merged, components, handlers)
+        repo.save(merged)
+        result_workflow = merged
+    else:
+        repo.save(generated)
+
+    answer = _build_assist_answer(llm, payload, result_workflow)
+    return WorkflowAssistResponse(answer=answer, suggested_nodes=suggested_nodes, workflow=result_workflow)
+
+
+def _build_assist_answer(llm: OpenRouterClient, payload: WorkflowAssistRequest, workflow: WorkflowDefinition) -> str:
+    summary = ", ".join(node.name for node in workflow.nodes[:4]) or "new workflow steps were drafted"
+    if llm and llm.enabled:
+        prompt = "\n".join(
+            [
+                "You are an audit workflow assistant.",
+                f"Question: {payload.question}",
+                f"Workflow summary: {summary}",
+                f"Domain: {workflow.domain}",
+                f"Intent: {workflow.intent}",
+                "Provide a concise recommendation for the next steps.",
+            ]
+        )
+        try:
+            return llm.generate(
+                [
+                    {"role": "system", "content": "You help audit teams plan workflows."},
+                    {"role": "user", "content": prompt},
+                ]
+            )
+        except Exception:
+            pass
+    return f"{summary}. Focus on executing these steps to address the question."
