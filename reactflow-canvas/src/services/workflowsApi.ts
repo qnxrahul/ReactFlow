@@ -1,4 +1,10 @@
-import type { GenerateWorkflowPayload, RunWorkflowNodeResponse, WorkflowDefinition } from '../workflows/types'
+import type {
+  GenerateWorkflowPayload,
+  RunWorkflowNodeResponse,
+  WorkflowAssistRequest,
+  WorkflowAssistResponse,
+  WorkflowDefinition,
+} from '../workflows/types'
 
 const API_BASE = (import.meta.env.VITE_WORKSPACE_API_URL as string | undefined)?.replace(/\/+$/, '') || 'http://localhost:9000'
 
@@ -34,4 +40,13 @@ export async function runWorkflowNode(
     body: JSON.stringify({}),
   })
   return handle<RunWorkflowNodeResponse>(res)
+}
+
+export async function assistWorkflow(payload: WorkflowAssistRequest): Promise<WorkflowAssistResponse> {
+  const res = await fetch(`${API_BASE}/workflows/assist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return handle<WorkflowAssistResponse>(res)
 }

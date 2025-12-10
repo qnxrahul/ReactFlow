@@ -71,6 +71,7 @@ DEFAULT_AGENTS = [
         "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
         "domains": ["Risk", "MESP"],
         "intentTags": ["assessment", "planning"],
+        "capabilities": ["risk", "planning", "analysis"],
         "mcpTool": "risk_analyst",
         "defaultParams": {"temperature": 0.1},
     },
@@ -81,8 +82,20 @@ DEFAULT_AGENTS = [
         "description": "Reviews anomalies and flags fraud cases for escalation.",
         "domains": ["Fraud"],
         "intentTags": ["investigation"],
+        "capabilities": ["fraud", "investigation", "anomaly"],
         "mcpTool": "fraud_reviewer",
         "defaultParams": {"threshold": 0.8},
+    },
+    {
+        "id": "agent-compliance-scout",
+        "name": "Compliance Evidence Scout",
+        "handler": "openrouter.collect",
+        "description": "Collects and tags regulatory evidence mapped to citations.",
+        "domains": ["Compliance"],
+        "intentTags": ["evidence", "collection"],
+        "capabilities": ["compliance", "evidence", "regulation"],
+        "mcpTool": "compliance_scout",
+        "defaultParams": {},
     },
 ]
 

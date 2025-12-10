@@ -15,21 +15,34 @@ export function useDynamicWorkflow() {
   const [state, setState] = useState<WorkflowState>({ definition: null, nodes: [] })
   const [runtime, setRuntime] = useState<RuntimeMap>({})
 
+  const applyDefinition = useCallback(
+    (definition: WorkflowDefinition | null) => {
+      if (!definition) {
+        setState({ definition: null, nodes: [] })
+        setRuntime({})
+        return null
+      }
+      const enrichedNodes = definition.nodes.map((node) => ({
+        ...node,
+        runtime: runtime[node.id] ?? { status: 'idle' as const },
+      }))
+      const nextRuntime: RuntimeMap = {}
+      enrichedNodes.forEach((node) => {
+        nextRuntime[node.id] = node.runtime ?? { status: 'idle' as const }
+      })
+      setState({ definition, nodes: enrichedNodes })
+      setRuntime(nextRuntime)
+      return definition
+    },
+    [runtime],
+  )
+
   const generate = useCallback(async (payload: GenerateWorkflowPayload) => {
     setLoading(true)
     setError(null)
     try {
       const workflow = await generateWorkflow(payload)
-      const enrichedNodes = workflow.nodes.map((node) => ({
-        ...node,
-        runtime: runtime[node.id] ?? { status: 'idle' as const },
-      }))
-      setState({ definition: workflow, nodes: enrichedNodes })
-      const nextRuntime: RuntimeMap = {}
-      enrichedNodes.forEach((node) => {
-        nextRuntime[node.id] = node.runtime ?? { status: 'idle' }
-      })
-      setRuntime(nextRuntime)
+      applyDefinition(workflow)
       return workflow
     } catch (err) {
       setError((err as Error).message)
@@ -37,7 +50,7 @@ export function useDynamicWorkflow() {
     } finally {
       setLoading(false)
     }
-  }, [runtime])
+  }, [applyDefinition])
 
   const runNode = useCallback(
     async (nodeId: string) => {
@@ -83,5 +96,6 @@ export function useDynamicWorkflow() {
     edges: state.definition?.edges ?? [],
     generate,
     runNode,
+    applyDefinition,
   }
 }

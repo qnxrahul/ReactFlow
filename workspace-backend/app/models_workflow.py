@@ -64,6 +64,7 @@ class WorkflowGenerateRequest(BaseModel):
     intent: str
     description: Optional[str] = None
     preferred_handlers: List[str] = Field(default_factory=list, alias="preferredHandlers")
+    context_keywords: List[str] = Field(default_factory=list, alias="contextKeywords")
 
 
 class WorkflowRunNodeResponse(BaseModel):
@@ -133,6 +134,7 @@ class AgentDefinition(BaseModel):
     description: Optional[str] = None
     domains: List[str] = Field(default_factory=list)
     intent_tags: List[str] = Field(default_factory=list, alias="intentTags")
+    capabilities: List[str] = Field(default_factory=list)
     mcp_tool: str = Field(alias="mcpTool")
     mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
     default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
@@ -147,6 +149,7 @@ class AgentDefinitionRequest(BaseModel):
     description: Optional[str] = None
     domains: List[str] = Field(default_factory=list)
     intent_tags: List[str] = Field(default_factory=list, alias="intentTags")
+    capabilities: List[str] = Field(default_factory=list)
     mcp_tool: str = Field(alias="mcpTool")
     mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
     default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
@@ -168,3 +171,20 @@ class AgentRunResponse(BaseModel):
     status: Literal["success", "error", "running"] = "success"
     output: str
     logs: Optional[List[str]] = None
+
+
+class WorkflowAssistRequest(BaseModel):
+    question: str
+    workflow_id: Optional[str] = Field(default=None, alias="workflowId")
+    domain: Optional[str] = None
+    intent: Optional[str] = None
+    description: Optional[str] = None
+    context: Dict[str, object] = Field(default_factory=dict)
+    context_keywords: List[str] = Field(default_factory=list, alias="contextKeywords")
+    preferred_handlers: List[str] = Field(default_factory=list, alias="preferredHandlers")
+
+
+class WorkflowAssistResponse(BaseModel):
+    answer: str
+    suggested_nodes: List[WorkflowNode] = Field(default_factory=list, alias="suggestedNodes")
+    workflow: Optional[WorkflowDefinition] = None

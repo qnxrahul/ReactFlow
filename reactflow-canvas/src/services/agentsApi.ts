@@ -14,10 +14,15 @@ export type AgentListResponse = {
   agents: AgentDefinition[]
 }
 
-export async function fetchAgents(params: { domain?: string; intent?: string } = {}): Promise<AgentDefinition[]> {
+export async function fetchAgents(params: { domain?: string; intent?: string; keywords?: string[] } = {}): Promise<AgentDefinition[]> {
   const url = new URL(`${API_BASE}/agents/`)
   if (params.domain) url.searchParams.set('domain', params.domain)
   if (params.intent) url.searchParams.set('intent', params.intent)
+  params.keywords?.forEach((keyword) => {
+    if (keyword.trim().length > 0) {
+      url.searchParams.append('keywords', keyword)
+    }
+  })
   const res = await fetch(url)
   const data = await handle<AgentListResponse>(res)
   return data.agents
@@ -30,4 +35,13 @@ export async function runAgent(agentId: string, input?: string, context?: Record
     body: JSON.stringify({ input, context }),
   })
   return handle<AgentRunResponse>(res)
+}
+
+export async function registerAgent(payload: Omit<AgentDefinition, 'id'>): Promise<AgentDefinition> {
+  const res = await fetch(`${API_BASE}/agents/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return handle<AgentDefinition>(res)
 }

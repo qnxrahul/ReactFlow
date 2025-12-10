@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import List, Optional
+import re
+from typing import List, Optional, Set
 
 from ..models_workflow import (
     ComponentDefinition,
@@ -93,7 +94,6 @@ class WorkflowAuthoringService:
         default_agent = component_lookup.get("agentCard", self._components[0])
         default_evidence = component_lookup.get("evidenceCard", self._components[0])
         default_decision = component_lookup.get("decisionCard", self._components[-1])
-
         handler_lookup = {handler.handler: handler for handler in self._handlers}
         preferred_handlers = [handler_lookup[hid] for hid in request.preferred_handlers if hid in handler_lookup]
         fallback_handlers = [
@@ -105,34 +105,97 @@ class WorkflowAuthoringService:
         handler_cycle = (preferred_handlers + fallback_handlers)[:4]
         while len(handler_cycle) < 4:
             handler_cycle.append(self._handlers[len(handler_cycle) % len(self._handlers)])
+        keywords = {keyword.lower() for keyword in request.context_keywords}
+        if request.description:
+            keywords.update(token for token in re.findall(r"[a-zA-Z]+", request.description.lower()) if len(token) > 3)
 
-        nodes: List[WorkflowNode] = [
-            _node_from_definition("Scope Alignment", "agent", default_agent, handler_cycle[0], outputs=["scope"]),
-            _node_from_definition(
-                "Collect Evidence",
-                "evidence",
-                default_evidence,
-                handler_cycle[1],
-                inputs=["scope"],
-                outputs=["documents"],
-            ),
-            _node_from_definition(
-                "Risk Assessment",
-                "analysis",
-                default_agent,
-                handler_cycle[2],
-                inputs=["documents"],
-                outputs=["risk"],
-            ),
-            _node_from_definition(
-                "Fraud Gate",
-                "decision",
-                default_decision,
-                handler_cycle[3],
-                inputs=["risk"],
-                outputs=["decision"],
-            ),
-        ]
+        def topic(match_set: Set[str]) -> bool:
+            return any(token in keywords for token in match_set)
+
+        if topic({"compliance", "regulation", "control", "policy"}):
+            nodes: List[WorkflowNode] = [
+                _node_from_definition("Review Regulations", "analysis", default_agent, handler_cycle[0], outputs=["requirements"]),
+                _node_from_definition(
+                    "Collect Regulatory Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_cycle[1],
+                    inputs=["requirements"],
+                    outputs=["evidenceSet"],
+                ),
+                _node_from_definition(
+                    "Control Mapping",
+                    "analysis",
+                    default_agent,
+                    handler_cycle[2],
+                    inputs=["evidenceSet"],
+                    outputs=["controlSummary"],
+                ),
+                _node_from_definition(
+                    "Compliance Sign-off",
+                    "decision",
+                    default_decision,
+                    handler_cycle[3],
+                    inputs=["controlSummary"],
+                    outputs=["attestation"],
+                ),
+            ]
+        elif topic({"fraud", "investigation", "anomaly", "aml"}):
+            nodes = [
+                _node_from_definition("Ingest Alerts", "agent", default_agent, handler_cycle[0], outputs=["alerts"]),
+                _node_from_definition(
+                    "Link Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_cycle[1],
+                    inputs=["alerts"],
+                    outputs=["caseFiles"],
+                ),
+                _node_from_definition(
+                    "Analyze Patterns",
+                    "analysis",
+                    default_agent,
+                    handler_cycle[2],
+                    inputs=["caseFiles"],
+                    outputs=["suspicions"],
+                ),
+                _node_from_definition(
+                    "Escalation Gate",
+                    "decision",
+                    default_decision,
+                    handler_cycle[3],
+                    inputs=["suspicions"],
+                    outputs=["fraudOutcome"],
+                ),
+            ]
+        else:
+            nodes = [
+                _node_from_definition("Scope Alignment", "agent", default_agent, handler_cycle[0], outputs=["scope"]),
+                _node_from_definition(
+                    "Collect Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_cycle[1],
+                    inputs=["scope"],
+                    outputs=["documents"],
+                ),
+                _node_from_definition(
+                    "Risk Assessment",
+                    "analysis",
+                    default_agent,
+                    handler_cycle[2],
+                    inputs=["documents"],
+                    outputs=["risk"],
+                ),
+                _node_from_definition(
+                    "Fraud Gate",
+                    "decision",
+                    default_decision,
+                    handler_cycle[3],
+                    inputs=["risk"],
+                    outputs=["decision"],
+                ),
+            ]
 
         edges = [WorkflowEdge(source=nodes[i].id, target=nodes[i + 1].id) for i in range(len(nodes) - 1)]
         return WorkflowDefinition(

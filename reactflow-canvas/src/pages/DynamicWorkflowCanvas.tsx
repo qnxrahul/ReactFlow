@@ -18,20 +18,35 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { fetchAgents, runAgent } from '../services/agentsApi'
+import { assistWorkflow } from '../services/workflowsApi'
 import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
 import { DynamicWorkflowNode, type DynamicWorkflowNodeType } from '../workflows/components/DynamicWorkflowNode'
-import type { AgentDefinition, GenerateWorkflowPayload, WorkflowNode } from '../workflows/types'
+import type { AgentDefinition, WorkflowNode } from '../workflows/types'
 
 const nodeTypes = { dynamic: DynamicWorkflowNode } satisfies NodeTypes
 
-const defaultPayload: GenerateWorkflowPayload = {
+const defaultPayload = {
   domain: 'MESP',
   intent: 'Plan engagement',
   description: 'Create an end-to-end audit workflow leveraging LLM agents.',
 }
 
+const STOP_WORDS = new Set(['the', 'and', 'with', 'that', 'this', 'from', 'into', 'your', 'about', 'risk', 'audit'])
+
+function extractKeywords(text: string): string[] {
+  return Array.from(
+    new Set(
+      text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((token) => token.length > 3 && !STOP_WORDS.has(token)),
+    ),
+  ).slice(0, 8)
+}
+
 export default function DynamicWorkflowCanvas() {
-  const { generate, definition, nodes, runNode, loading, error } = useDynamicWorkflow()
+  const { generate, definition, nodes, runNode, loading, error, applyDefinition } = useDynamicWorkflow()
   const [form, setForm] = useState(defaultPayload)
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<DynamicWorkflowNodeType>([])
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -41,6 +56,13 @@ export default function DynamicWorkflowCanvas() {
   const [agentError, setAgentError] = useState<string | null>(null)
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([])
   const [agentRunOutput, setAgentRunOutput] = useState<string | null>(null)
+  const [assistQuestion, setAssistQuestion] = useState('')
+  const [assistAnswer, setAssistAnswer] = useState<string | null>(null)
+  const [assistSuggestions, setAssistSuggestions] = useState<WorkflowNode[]>([])
+  const [assistLoading, setAssistLoading] = useState(false)
+  const [assistError, setAssistError] = useState<string | null>(null)
+  const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
+  const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
   const gridPosition = useCallback(
     (index: number) => ({
@@ -77,7 +99,7 @@ export default function DynamicWorkflowCanvas() {
   )
 
   const onGenerate = useCallback(async () => {
-    const workflow = await generate({ ...form, preferredHandlers })
+    const workflow = await generate({ ...form, preferredHandlers, contextKeywords })
     const positions: Record<string, { x: number; y: number }> = {}
     workflow.nodes.forEach((node, index) => {
       positions[node.id] = gridPosition(index)
@@ -91,7 +113,7 @@ export default function DynamicWorkflowCanvas() {
       label: edge.label ?? undefined,
     }))
     setRfEdges(flowEdges)
-  }, [form, preferredHandlers, generate, gridPosition, setRfEdges])
+  }, [form, preferredHandlers, contextKeywords, generate, gridPosition, setRfEdges])
 
   useEffect(() => {
     if (!nodes.length) return
@@ -103,7 +125,7 @@ export default function DynamicWorkflowCanvas() {
     const loadAgents = async () => {
       setAgentsLoading(true)
       try {
-        const result = await fetchAgents({ domain: form.domain, intent: form.intent })
+        const result = await fetchAgents({ domain: form.domain, intent: form.intent, keywords: contextKeywords })
         if (!cancelled) {
           setAgents(result)
           setAgentError(null)
@@ -119,7 +141,7 @@ export default function DynamicWorkflowCanvas() {
     return () => {
       cancelled = true
     }
-  }, [form.domain, form.intent])
+  }, [form.domain, form.intent, contextKeywords])
 
   const stats = useMemo(() => {
     if (!definition) return null
@@ -145,6 +167,38 @@ export default function DynamicWorkflowCanvas() {
       setAgentRunOutput((err as Error).message)
     }
   }
+
+  const handleAssist = useCallback(async () => {
+    const question = assistQuestion.trim() || form.description || `Help me reason about ${form.intent}`
+    if (!question) {
+      return
+    }
+    setAssistLoading(true)
+    setAssistError(null)
+    try {
+      const response = await assistWorkflow({
+        question,
+        workflowId: definition?.id,
+        domain: form.domain,
+        intent: form.intent,
+        description: form.description,
+        contextKeywords,
+        preferredHandlers,
+        context: { description: form.description },
+      })
+      setAssistAnswer(response.answer)
+      setAssistSuggestions(response.suggestedNodes ?? [])
+      if (response.workflow) {
+        applyDefinition(response.workflow)
+        setNodePositions((prev) => ({ ...prev }))
+      }
+      setAssistQuestion('')
+    } catch (err) {
+      setAssistError((err as Error).message)
+    } finally {
+      setAssistLoading(false)
+    }
+  }, [assistQuestion, definition?.id, form, contextKeywords, preferredHandlers, applyDefinition])
 
   return (
     <div className="flex h-full w-full bg-slate-50">
@@ -228,6 +282,11 @@ export default function DynamicWorkflowCanvas() {
                             {domain}
                           </span>
                         ))}
+                        {(agent.capabilities ?? []).map((capability) => (
+                          <span key={capability} className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
+                            {capability}
+                          </span>
+                        ))}
                       </div>
                       <div className="mt-3 flex gap-2">
                         <Button
@@ -253,6 +312,50 @@ export default function DynamicWorkflowCanvas() {
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
                 <strong>Last run:</strong>
                 <p className="whitespace-pre-wrap">{agentRunOutput}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Ask the AI planner</CardTitle>
+            <CardDescription>Use the LLM to refine your workflow or request new steps.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Textarea
+              value={assistQuestion}
+              onChange={(event) => setAssistQuestion(event.target.value)}
+              rows={3}
+              placeholder="Describe a gap or question you want the AI to explore."
+            />
+            <Button
+              type="button"
+              className="w-full"
+              disabled={assistLoading || (!assistQuestion.trim() && !form.description && !definition)}
+              onClick={handleAssist}
+            >
+              {assistLoading ? 'Thinking…' : 'Ask AI for suggestions'}
+            </Button>
+            {assistError && <p className="text-sm text-red-600">{assistError}</p>}
+            {assistAnswer && (
+              <div className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700">
+                <strong>AI insight:</strong>
+                <p className="mt-1">{assistAnswer}</p>
+              </div>
+            )}
+            {assistSuggestions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-slate-500">Suggested steps</p>
+                <ul className="space-y-2">
+                  {assistSuggestions.map((node) => (
+                    <li key={node.id} className="rounded border border-dashed border-slate-300 px-3 py-2 text-sm">
+                      <div className="font-medium">{node.name}</div>
+                      {node.description && <p className="text-xs text-slate-500">{node.description}</p>}
+                      <p className="mt-1 text-xs text-slate-400">Type: {node.type}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </CardContent>
