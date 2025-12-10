@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import logging
 from typing import List, Optional, Set
 
 from ..models_workflow import (
@@ -16,6 +17,8 @@ from ..models_workflow import (
 )
 from .llm_client import OpenRouterClient
 from .rag import RAGService
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowAuthoringService:
@@ -38,9 +41,10 @@ class WorkflowAuthoringService:
         if self._llm and self._llm.enabled:
             try:
                 return self._generate_with_llm(request, knowledge)
-            except Exception:
-                # Fall back to deterministic plan if the LLM fails
-                pass
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("LLM generation failed, falling back to deterministic workflow: %s", exc, exc_info=True)
+        else:
+            logger.info("LLM disabled or missing API key; using deterministic workflow authoring.")
         return self._fallback_workflow(request)
 
     def _generate_with_llm(self, request: WorkflowGenerateRequest, knowledge: List[dict]) -> WorkflowDefinition:
