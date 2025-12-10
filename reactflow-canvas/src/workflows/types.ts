@@ -87,6 +87,7 @@ export type AgentDefinition = {
   intentTags: string[]
   mcpTool: string
   capabilities?: string[]
+  isGlobal?: boolean
 }
 
 export type AgentRunResponse = {

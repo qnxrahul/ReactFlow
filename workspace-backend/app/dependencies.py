@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import Depends
 
 from .config import Settings, get_settings
+from .services.audit_taxonomy import AuditTaxonomy, load_taxonomy
 from .services.blob_storage import BlobStorageService
 from .services.llm_client import OpenRouterClient
 from .services.mcp_client import MCPClient
@@ -84,3 +85,12 @@ def _cached_policy(min_nodes: int, max_nodes: int) -> WorkflowPolicyService:
 
 def get_policy_service(settings: Settings = Depends(get_settings)) -> WorkflowPolicyService:
     return _cached_policy(settings.workflow_policy_min_nodes, settings.workflow_policy_max_nodes)
+
+
+@lru_cache
+def _cached_taxonomy(path: str) -> AuditTaxonomy:
+    return load_taxonomy(Path(path))
+
+
+def get_audit_taxonomy(settings: Settings = Depends(get_settings)) -> AuditTaxonomy:
+    return _cached_taxonomy(settings.audit_taxonomy_path)

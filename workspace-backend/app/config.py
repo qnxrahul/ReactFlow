@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     workflow_knowledge_path: str = Field(
         default="./app/data/workflow_knowledge.json", description="Path to the workflow knowledge base used for RAG."
     )
+    audit_taxonomy_path: str = Field(
+        default="./app/data/audit_taxonomy.json", description="Path to the audit domain taxonomy used for agent filtering."
+    )
 
     # OpenRouter LLM
     openrouter_api_key: Optional[str] = Field(default=None, description="OpenRouter API key for LLM-backed workflow generation.")
