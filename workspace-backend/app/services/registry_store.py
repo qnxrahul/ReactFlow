@@ -139,8 +139,13 @@ class ComponentRegistryStore:
 
     def _ensure_defaults(self) -> None:
         data = self._load()
-        existing_types = {item.get("type") for item in data.get("components", [])}
         changed = False
+
+        changed |= self._dedupe_entries(data, "components", key_field="type")
+        changed |= self._dedupe_entries(data, "handlers", key_field="handler")
+        changed |= self._dedupe_entries(data, "agents", key_field=("handler", "mcpTool"))
+
+        existing_types = {item.get("type") for item in data.get("components", [])}
         for default in DEFAULT_COMPONENTS:
             if default["type"] not in existing_types:
                 component = ComponentDefinition(**ComponentDefinitionRequest(**default).model_dump())
@@ -156,16 +161,44 @@ class ComponentRegistryStore:
                 existing_handlers.add(default["handler"])
                 changed = True
 
-        existing_agents = {item.get("id") for item in data.get("agents", [])}
+        agents = data.setdefault("agents", [])
         for default in DEFAULT_AGENTS:
-            if default["id"] not in existing_agents:
-                agent = AgentDefinition(**AgentDefinitionRequest(**default).model_dump())
-                data.setdefault("agents", []).append(agent.model_dump(by_alias=True))
-                existing_agents.add(default["id"])
+            agent_obj = AgentDefinition(**AgentDefinitionRequest(**default).model_dump())
+            serialized = agent_obj.model_dump(by_alias=True)
+            replaced = False
+            for index, existing in enumerate(agents):
+                if existing.get("handler") == serialized["handler"]:
+                    if existing != serialized:
+                        agents[index] = serialized
+                        changed = True
+                    replaced = True
+                    break
+            if not replaced:
+                agents.append(serialized)
                 changed = True
 
         if changed:
             self._save(data)
+
+    def _dedupe_entries(self, data: dict, key: str, *, key_field: str | tuple[str, ...]) -> bool:
+        items = data.get(key, [])
+        if not items:
+            return False
+        seen = set()
+        deduped = []
+        for entry in items:
+            if isinstance(key_field, tuple):
+                identifier = tuple(entry.get(field) for field in key_field)
+            else:
+                identifier = entry.get(key_field)
+            if identifier in seen:
+                continue
+            seen.add(identifier)
+            deduped.append(entry)
+        if len(deduped) == len(items):
+            return False
+        data[key] = deduped
+        return True
 
     def list_components(self) -> List[ComponentDefinition]:
         self._ensure_defaults()
