@@ -25,10 +25,16 @@ def _filter_agents(
     keywords: Optional[List[str]],
 ) -> List[AgentDefinition]:
     normalized_keywords = [kw.strip().lower() for kw in keywords or [] if kw.strip()]
+    intent_tokens = [token for token in (intent or "").split() if token]
 
     def matches(agent: AgentDefinition) -> bool:
         domain_match = not domain or any(domain in d.lower() for d in agent.domains)
-        intent_match = not intent or any(intent in tag.lower() for tag in agent.intent_tags)
+        if not intent_tokens:
+            intent_match = True
+        else:
+            agent_intents = [tag.lower() for tag in agent.intent_tags]
+            intent_match = any(any(token in tag for token in intent_tokens) for tag in agent_intents)
+
         keyword_match = True
         if normalized_keywords:
             capability_tokens = {c.lower() for c in agent.capabilities}
