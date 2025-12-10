@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import '@xyflow/react/dist/base.css'
 import {
   Background,
@@ -123,20 +123,19 @@ export default function DynamicWorkflowCanvas() {
     syncNodes(nodes, nodePositions)
   }, [nodes, nodePositions, syncNodes])
 
+  const workflowEdgeSignatureRef = useRef<string>('')
   useEffect(() => {
-    if (!edges?.length) {
-      setRfEdges([])
-      return
-    }
-    setRfEdges(
-      edges.map((edge) => ({
-        id: edge.id || nanoid(),
-        source: edge.source,
-        target: edge.target,
-        animated: true,
-        label: edge.label ?? undefined,
-      })),
-    )
+    const nextEdges = (edges ?? []).map((edge) => ({
+      id: edge.id || nanoid(),
+      source: edge.source,
+      target: edge.target,
+      animated: true,
+      label: edge.label ?? undefined,
+    }))
+    const signature = JSON.stringify(nextEdges)
+    if (workflowEdgeSignatureRef.current === signature) return
+    workflowEdgeSignatureRef.current = signature
+    setRfEdges(nextEdges)
   }, [edges, setRfEdges])
 
   useEffect(() => {
