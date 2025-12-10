@@ -56,6 +56,39 @@ class Settings(BaseSettings):
         default="./.blob-data",
         description="Filesystem path used for blob persistence when fallbacks are enabled.",
     )
+    registry_store_root: str = Field(
+        default="./.workflow-registry",
+        description="Filesystem path for workflow component/handler registry when database storage is not configured.",
+    )
+
+    # Workflow persistence + generation
+    workflow_db_url: Optional[str] = Field(
+        default="sqlite:///./.workflow.db",
+        description="SQLAlchemy database URL for workflow definitions. Supports Postgres, SQLite, etc.",
+    )
+    workflow_cosmos_container: str = Field(default="workflows", description="Cosmos DB container for workflow definitions.")
+    workflow_knowledge_path: str = Field(
+        default="./app/data/workflow_knowledge.json", description="Path to the workflow knowledge base used for RAG."
+    )
+
+    # OpenRouter LLM
+    openrouter_api_key: Optional[str] = Field(default=None, description="OpenRouter API key for LLM-backed workflow generation.")
+    openrouter_model: str = Field(
+        default="openai/gpt-4o-mini",
+        description="OpenRouter model identifier used for workflow generation.",
+    )
+    openrouter_base_url: str = Field(default="https://openrouter.ai/api/v1", description="Base URL for OpenRouter API.")
+
+    # MCP agent execution
+    mcp_gateway_url: Optional[str] = Field(
+        default=None,
+        description="Model Context Protocol gateway base URL. When unset, agent invocations fall back to mock responses.",
+    )
+    mcp_api_key: Optional[str] = Field(default=None, description="Optional API key when calling the MCP gateway.")
+
+    # Policy
+    workflow_policy_min_nodes: int = Field(default=3, description="Minimum number of nodes enforced during validation.")
+    workflow_policy_max_nodes: int = Field(default=24, description="Maximum number of nodes enforced during validation.")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

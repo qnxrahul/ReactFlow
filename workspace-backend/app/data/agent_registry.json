@@ -1,0 +1,32 @@
+[
+  {
+    "id": "agent-risk-analyst",
+    "name": "Risk Analyst Agent",
+    "handler": "openrouter.risk",
+    "description": "LLM-powered agent that summarizes inherent and residual risk with recommended next steps.",
+    "domains": ["Risk", "MESP"],
+    "intentTags": ["assessment", "planning"],
+    "mcpTool": "risk_analyst",
+    "defaultParams": {"temperature": 0.1}
+  },
+  {
+    "id": "agent-fraud-reviewer",
+    "name": "Fraud Reviewer",
+    "handler": "rules.fraud",
+    "description": "Hybrid service that inspects anomalies and proposes escalation paths.",
+    "domains": ["Fraud"],
+    "intentTags": ["investigation"],
+    "mcpTool": "fraud_reviewer",
+    "defaultParams": {"threshold": 0.8}
+  },
+  {
+    "id": "agent-compliance-scout",
+    "name": "Compliance Evidence Scout",
+    "handler": "openrouter.collect",
+    "description": "Collects and tags regulatory evidence mapped to citations.",
+    "domains": ["Compliance"],
+    "intentTags": ["evidence", "collection"],
+    "mcpTool": "compliance_scout",
+    "defaultParams": {}
+  }
+]

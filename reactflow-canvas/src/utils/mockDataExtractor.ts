@@ -42,7 +42,7 @@ const generateAmount = (min: number, max: number): string => {
 /**
  * Mock extraction for Excel invoice files
  */
-const extractInvoiceData = (fileName: string): ExtractedData => {
+const extractInvoiceData = (_fileName: string): ExtractedData => {
   return {
     'Invoice number': generateInvoiceNumber(),
     'Invoice date': generateRecentDate(),
@@ -54,7 +54,7 @@ const extractInvoiceData = (fileName: string): ExtractedData => {
 /**
  * Mock extraction for PDF shipping documents
  */
-const extractShippingData = (fileName: string): ExtractedData => {
+const extractShippingData = (_fileName: string): ExtractedData => {
   return {
     'Shipping Doc ID': `SHP-${Math.floor(Math.random() * 9000) + 1000}`,
     'Ship Date': generateRecentDate(),

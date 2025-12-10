@@ -86,7 +86,7 @@ function normalizeWorkspace(dto: WorkspaceBoardDTO): WorkspaceBoard {
     template: dto.template ?? null,
     meta: dto.meta ?? 'Workspace board',
     color: dto.color ?? '#5f79c6',
-    position: dto.position ?? undefined,
+    position: dto.position ?? { x: 0, y: 0 },
     lanes: dto.lanes ?? [],
     tasksCount: dto.tasksCount ?? undefined,
     filesCount: dto.filesCount ?? undefined,

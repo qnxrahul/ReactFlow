@@ -8,11 +8,14 @@ import WorkspaceCanvas from './pages/WorkspaceCanvas'
 import MappingPage from './pages/MappingPage'
 import WorkpaperPage from './pages/WorkpaperPage'
 import WorkpaperDetailPage from './pages/WorkpaperDetailPage'
-import { createBrowserRouter, RouterProvider, Link, Outlet } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 import { BoardsProvider } from './state/BoardsProvider'
 import NewBoard from './pages/NewBoard/NewBoard'
 import DataExtraction from './pages/DataExtraction/DataExtraction'
+import DynamicWorkflowCanvas from './pages/DynamicWorkflowCanvas'
+import RegistryAdmin from './pages/RegistryAdmin'
 import { registerLicense } from '@syncfusion/ej2-base';
+import { NodeRegistryProvider } from './workflows/NodeRegistryProvider'
 
 // Registering Syncfusion license key
 registerLicense('Ngo9BigBOggjHTQxAR8/V1JFaF1cXGFCf1FpRmJGfV5ycUVFal9STnNWUiweQnxTdEBiW39fcHdWQmBYVkVzXkleYg==');
@@ -29,6 +32,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: '/', element: <WorkspaceCanvas /> },
+      { path: '/classic', element: <ClassicCanvas /> },
       { path: '/fluent', element: <FluentCanvas /> },
       { path: '/workspace', element: <WorkspaceCanvas /> },
       { path: '/workspace/new', element: <NewBoard /> },
@@ -37,6 +41,8 @@ const router = createBrowserRouter([
       { path: '/mapping', element: <MappingPage /> },
       { path: '/workpaper', element: <WorkpaperPage /> },
       { path: '/workpaper-detail', element: <WorkpaperDetailPage /> },
+      { path: '/dynamic', element: <DynamicWorkflowCanvas /> },
+      { path: '/registry', element: <RegistryAdmin /> },
     ],
   },
 ])
@@ -44,7 +50,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BoardsProvider>
-      <RouterProvider router={router} />
+      <NodeRegistryProvider>
+        <RouterProvider router={router} />
+      </NodeRegistryProvider>
     </BoardsProvider>
   </StrictMode>,
 )
