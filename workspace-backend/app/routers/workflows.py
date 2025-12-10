@@ -24,6 +24,9 @@ from ..models_workflow import (
     WorkflowAssistResponse,
     WorkflowDefinition,
     WorkflowGenerateRequest,
+    WorkflowNode,
+    WorkflowNodeBehavior,
+    WorkflowNodeUI,
     WorkflowRunNodeResponse,
 )
 from ..services.llm_client import OpenRouterClient
@@ -138,6 +141,7 @@ def register_handler(
 def assist_workflow(
     payload: WorkflowAssistRequest,
     registry: ComponentRegistryStore = Depends(get_component_registry_store),
+    agent_registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     repo: WorkflowRepository = Depends(get_workflow_repository),
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
@@ -175,6 +179,32 @@ def assist_workflow(
     )
 
     generated = author.generate(request)
+    agent_context = (payload.context or {}).get("agentId")
+    handler_hint = None
+    agent_profile = None
+    if agent_context:
+        agent_profile = agent_registry.find_agent_by_id(str(agent_context))
+        if agent_profile:
+            handler_hint = agent_profile.handler
+
+    if handler_hint:
+        filtered_nodes = [node for node in generated.nodes if node.behavior.handler == handler_hint]
+        filtered_ids = {node.id for node in filtered_nodes}
+        filtered_edges = [edge for edge in generated.edges if edge.source in filtered_ids and edge.target in filtered_ids]
+        if not filtered_nodes and agent_profile:
+            fallback_node = WorkflowNode(
+                type="agentTask",
+                name=agent_profile.name,
+                description=agent_profile.description,
+                ui=WorkflowNodeUI(component_type="agentCard", props={"subtitle": agent_profile.mcp_tool}),
+                behavior=WorkflowNodeBehavior(handler=agent_profile.handler, kind="llm-agent"),
+            )
+            filtered_nodes = [fallback_node]
+            filtered_ids = {fallback_node.id}
+            filtered_edges = []
+
+        if filtered_nodes:
+            generated = generated.model_copy(update={"nodes": filtered_nodes, "edges": filtered_edges})
     policy.validate(generated, components, handlers)
 
     suggested_nodes = generated.nodes
