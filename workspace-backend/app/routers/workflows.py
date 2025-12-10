@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..dependencies import (
     get_agent_registry_store,
+    get_audit_taxonomy,
     get_component_registry_store,
     get_llm_client,
     get_mcp_client,
@@ -29,6 +30,7 @@ from ..models_workflow import (
     WorkflowNodeUI,
     WorkflowRunNodeResponse,
 )
+from ..services.audit_taxonomy import AuditTaxonomy
 from ..services.llm_client import OpenRouterClient
 from ..services.mcp_client import MCPClient
 from ..services.policy import WorkflowPolicyService
@@ -62,11 +64,32 @@ def generate_workflow(
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
     policy: WorkflowPolicyService = Depends(get_policy_service),
+    taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowDefinition:
     components = registry.list_components()
     handlers = registry.list_handlers()
     author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
-    workflow = author.generate(payload)
+    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
+    available_agents = registry.list_agents()
+    domain_agents = [
+        agent
+        for agent in available_agents
+        if canonical_domain and canonical_domain in taxonomy.canonicalize_list(agent.domains)
+    ]
+    if not domain_agents:
+        domain_agents = [agent for agent in available_agents if agent.is_global]
+    preferred_handlers = []
+    for handler_id in payload.preferred_handlers + [agent.handler for agent in domain_agents]:
+        if handler_id not in preferred_handlers:
+            preferred_handlers.append(handler_id)
+    workflow = author.generate(
+        payload.model_copy(
+            update={
+                "domain": canonical_domain,
+                "preferred_handlers": preferred_handlers,
+            }
+        )
+    )
     policy.validate(workflow, components, handlers)
     repo.save(workflow)
     return _normalize(workflow)

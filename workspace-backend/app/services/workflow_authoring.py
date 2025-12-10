@@ -102,9 +102,16 @@ class WorkflowAuthoringService:
             handler_lookup.get("openrouter.risk") or self._handlers[min(2, len(self._handlers) - 1)],
             handler_lookup.get("rules.fraud") or self._handlers[-1],
         ]
-        handler_cycle = (preferred_handlers + fallback_handlers)[:4]
+        handler_cycle = list(preferred_handlers or fallback_handlers)
+        if not handler_cycle:
+            handler_cycle = self._handlers[:4]
+        if not handler_cycle:
+            handler_cycle = [self._handlers[0]]
         while len(handler_cycle) < 4:
-            handler_cycle.append(self._handlers[len(handler_cycle) % len(self._handlers)])
+            handler_cycle.append(handler_cycle[len(handler_cycle) % len(handler_cycle)])
+
+        def handler_at(index: int) -> HandlerDefinition:
+            return handler_cycle[index % len(handler_cycle)]
         keywords = {keyword.lower() for keyword in request.context_keywords}
         if request.description:
             keywords.update(token for token in re.findall(r"[a-zA-Z]+", request.description.lower()) if len(token) > 3)
@@ -112,42 +119,72 @@ class WorkflowAuthoringService:
         def topic(match_set: Set[str]) -> bool:
             return any(token in keywords for token in match_set)
 
-        if topic({"compliance", "regulation", "control", "policy"}):
+        domain_key = domain.lower()
+
+        if domain_key == "mesp":
             nodes: List[WorkflowNode] = [
-                _node_from_definition("Review Regulations", "analysis", default_agent, handler_cycle[0], outputs=["requirements"]),
+                _node_from_definition("Engagement Planning", "planning", default_agent, handler_at(0), outputs=["plan"]),
                 _node_from_definition(
-                    "Collect Regulatory Evidence",
+                    "Sample Selection",
+                    "analysis",
+                    default_agent,
+                    handler_at(1),
+                    inputs=["plan"],
+                    outputs=["samples"],
+                ),
+                _node_from_definition(
+                    "Execute Substantive Tests",
                     "evidence",
                     default_evidence,
-                    handler_cycle[1],
-                    inputs=["requirements"],
+                    handler_at(2),
+                    inputs=["samples"],
+                    outputs=["testResults"],
+                ),
+                _node_from_definition(
+                    "Assemble Workpapers",
+                    "documentation",
+                    default_agent,
+                    handler_at(3),
+                    inputs=["testResults"],
+                    outputs=["workpapers"],
+                ),
+            ]
+        elif domain_key == "enterprise risk":
+            nodes = [
+                _node_from_definition("Risk Scoping", "analysis", default_agent, handler_at(0), outputs=["riskCatalog"]),
+                _node_from_definition(
+                    "Evidence Ingestion",
+                    "evidence",
+                    default_evidence,
+                    handler_at(1),
+                    inputs=["riskCatalog"],
                     outputs=["evidenceSet"],
                 ),
                 _node_from_definition(
-                    "Control Mapping",
+                    "Residual Risk Scoring",
                     "analysis",
                     default_agent,
-                    handler_cycle[2],
+                    handler_at(2),
                     inputs=["evidenceSet"],
-                    outputs=["controlSummary"],
+                    outputs=["residualRisk"],
                 ),
                 _node_from_definition(
-                    "Compliance Sign-off",
+                    "Risk Review",
                     "decision",
                     default_decision,
-                    handler_cycle[3],
-                    inputs=["controlSummary"],
-                    outputs=["attestation"],
+                    handler_at(3),
+                    inputs=["residualRisk"],
+                    outputs=["riskResponse"],
                 ),
             ]
-        elif topic({"fraud", "investigation", "anomaly", "aml"}):
+        elif domain_key == "fraud & investigations":
             nodes = [
-                _node_from_definition("Ingest Alerts", "agent", default_agent, handler_cycle[0], outputs=["alerts"]),
+                _node_from_definition("Ingest Alerts", "agent", default_agent, handler_at(0), outputs=["alerts"]),
                 _node_from_definition(
                     "Link Evidence",
                     "evidence",
                     default_evidence,
-                    handler_cycle[1],
+                    handler_at(1),
                     inputs=["alerts"],
                     outputs=["caseFiles"],
                 ),
@@ -155,7 +192,7 @@ class WorkflowAuthoringService:
                     "Analyze Patterns",
                     "analysis",
                     default_agent,
-                    handler_cycle[2],
+                    handler_at(2),
                     inputs=["caseFiles"],
                     outputs=["suspicions"],
                 ),
@@ -163,19 +200,103 @@ class WorkflowAuthoringService:
                     "Escalation Gate",
                     "decision",
                     default_decision,
-                    handler_cycle[3],
+                    handler_at(3),
+                    inputs=["suspicions"],
+                    outputs=["fraudOutcome"],
+                ),
+            ]
+        elif domain_key == "regulatory compliance":
+            nodes: List[WorkflowNode] = [
+                _node_from_definition("Review Regulations", "analysis", default_agent, handler_cycle[0], outputs=["requirements"]),
+                _node_from_definition(
+                    "Collect Regulatory Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_at(1),
+                    inputs=["requirements"],
+                    outputs=["evidenceSet"],
+                ),
+                _node_from_definition(
+                    "Control Mapping",
+                    "analysis",
+                    default_agent,
+                    handler_at(2),
+                    inputs=["evidenceSet"],
+                    outputs=["controlSummary"],
+                ),
+                _node_from_definition(
+                    "Compliance Sign-off",
+                    "decision",
+                    default_decision,
+                    handler_at(3),
+                    inputs=["controlSummary"],
+                    outputs=["attestation"],
+                ),
+            ]
+        elif domain_key == "workpaper production":
+            nodes = [
+                _node_from_definition("Draft Workpaper", "documentation", default_agent, handler_at(0), outputs=["draft"]),
+                _node_from_definition(
+                    "Cross-reference Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_at(1),
+                    inputs=["draft"],
+                    outputs=["referencedDraft"],
+                ),
+                _node_from_definition(
+                    "Reviewer Notes",
+                    "analysis",
+                    default_agent,
+                    handler_at(2),
+                    inputs=["referencedDraft"],
+                    outputs=["notes"],
+                ),
+                _node_from_definition(
+                    "Finalize Workpaper",
+                    "decision",
+                    default_decision,
+                    handler_at(3),
+                    inputs=["notes"],
+                    outputs=["finalWorkpaper"],
+                ),
+            ]
+        elif topic({"fraud", "investigation", "anomaly", "aml"}):
+            nodes = [
+                _node_from_definition("Ingest Alerts", "agent", default_agent, handler_at(0), outputs=["alerts"]),
+                _node_from_definition(
+                    "Link Evidence",
+                    "evidence",
+                    default_evidence,
+                    handler_at(1),
+                    inputs=["alerts"],
+                    outputs=["caseFiles"],
+                ),
+                _node_from_definition(
+                    "Analyze Patterns",
+                    "analysis",
+                    default_agent,
+                    handler_at(2),
+                    inputs=["caseFiles"],
+                    outputs=["suspicions"],
+                ),
+                _node_from_definition(
+                    "Escalation Gate",
+                    "decision",
+                    default_decision,
+                    handler_at(3),
                     inputs=["suspicions"],
                     outputs=["fraudOutcome"],
                 ),
             ]
         else:
             nodes = [
-                _node_from_definition("Scope Alignment", "agent", default_agent, handler_cycle[0], outputs=["scope"]),
+                _node_from_definition("Scope Alignment", "agent", default_agent, handler_at(0), outputs=["scope"]),
                 _node_from_definition(
                     "Collect Evidence",
                     "evidence",
                     default_evidence,
-                    handler_cycle[1],
+                    handler_at(1),
                     inputs=["scope"],
                     outputs=["documents"],
                 ),
@@ -183,7 +304,7 @@ class WorkflowAuthoringService:
                     "Risk Assessment",
                     "analysis",
                     default_agent,
-                    handler_cycle[2],
+                    handler_at(2),
                     inputs=["documents"],
                     outputs=["risk"],
                 ),
@@ -191,7 +312,7 @@ class WorkflowAuthoringService:
                     "Fraud Gate",
                     "decision",
                     default_decision,
-                    handler_cycle[3],
+                    handler_at(3),
                     inputs=["risk"],
                     outputs=["decision"],
                 ),
