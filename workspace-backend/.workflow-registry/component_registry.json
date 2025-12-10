@@ -4418,6 +4418,810 @@
       "defaultParams": {
         "threshold": 0.8
       }
+    },
+    {
+      "id": "agent-fa1697cd-a204-4ae3-9a56-af1e247a4aa6",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-9719cdd0-cf72-45ff-bdc5-8a3aeab5e8fc",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-d7ab1562-f694-478d-a457-0d9fbda7f7a9",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-381155ef-6973-4321-abb3-6469e27f6766",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-97b9febf-7013-4360-aa58-e703858d45b8",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-8f7d040f-96bd-499f-9d4f-0953ac3e6b2f",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-36f1ae58-311b-4193-803f-5830c8d38d4a",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-586d9915-a2cf-4180-8e32-fb8e27b35f41",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-6a687307-3c0d-494e-978f-25f809f58185",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-5ed90f5e-9238-493d-b1c2-b7b749bab65f",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-b16b8e22-0eb7-4e36-aee2-d29d364b27b8",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-6208026b-e75e-4f6b-a9df-2effa9a14cd6",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-01a3a898-daad-4100-9ee7-3fdfff75b5f5",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-da89f80c-e9c1-4f41-b35c-ff03df0be43d",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-4ec2ce48-ab6e-42e1-9d2f-96f26af45433",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-431f2200-64bc-4f71-8b07-56ac265b41ea",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-3c6772d1-ba37-418d-b6bf-95637db877c4",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-2610e64e-f031-4e64-b70c-4d53d3bc5347",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-0fee7fe7-01c4-4bca-88c3-6a35e35f890f",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-0e9537ec-f2c1-4f7a-b935-f9a8203c73e6",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-e885e0c5-1862-4aa4-95dd-86ec2e7e0797",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-64bcaebe-a37c-4ed5-a525-e4c79e9ed51f",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-1b29c8c1-69d9-4e85-b5e5-829443fc6e1d",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-6e62ebb9-59d3-4087-a9ac-d98577e97585",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-2851c078-b724-4dd6-abd9-ecf0d9d06d19",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-5f8f9adb-2e69-4b13-8319-4ed68f21036c",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-6db6fd15-4a7a-4c3f-8173-11da0042b5ef",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-623cd0d0-97e6-4cbb-b36e-075c61dcb7be",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-156bb435-b1d2-43b1-8fb4-0af9c869c415",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-6693923a-1014-47a7-8214-91522f6e1fb7",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-6fbce5f5-bac1-4e2b-935a-cdd06d5f91a1",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-76b3673b-d0ab-4a9a-bb99-fe5ab75121c3",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-bb360913-fd9b-4327-8e0e-1359c4b69bbe",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
+    },
+    {
+      "id": "agent-99eb0c7a-41d0-42c8-a497-c11f20730f7e",
+      "name": "Risk Analyst Agent",
+      "handler": "openrouter.risk",
+      "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
+      "domains": [
+        "Risk",
+        "MESP"
+      ],
+      "intentTags": [
+        "assessment",
+        "planning"
+      ],
+      "capabilities": [
+        "risk",
+        "planning",
+        "analysis"
+      ],
+      "mcpTool": "risk_analyst",
+      "mcpServer": null,
+      "defaultParams": {
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "agent-cef9dd96-0885-4231-993f-b59ddb6b9f1f",
+      "name": "Fraud Reviewer",
+      "handler": "rules.fraud",
+      "description": "Reviews anomalies and flags fraud cases for escalation.",
+      "domains": [
+        "Fraud"
+      ],
+      "intentTags": [
+        "investigation"
+      ],
+      "capabilities": [
+        "fraud",
+        "investigation",
+        "anomaly"
+      ],
+      "mcpTool": "fraud_reviewer",
+      "mcpServer": null,
+      "defaultParams": {
+        "threshold": 0.8
+      }
+    },
+    {
+      "id": "agent-bd999890-4165-4f61-8c72-b32c62d2c566",
+      "name": "Compliance Evidence Scout",
+      "handler": "openrouter.collect",
+      "description": "Collects and tags regulatory evidence mapped to citations.",
+      "domains": [
+        "Compliance"
+      ],
+      "intentTags": [
+        "evidence",
+        "collection"
+      ],
+      "capabilities": [
+        "compliance",
+        "evidence",
+        "regulation"
+      ],
+      "mcpTool": "compliance_scout",
+      "mcpServer": null,
+      "defaultParams": {}
     }
   ]
 }
