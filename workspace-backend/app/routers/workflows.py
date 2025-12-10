@@ -205,7 +205,7 @@ def assist_workflow(
 
         if filtered_nodes:
             generated = generated.model_copy(update={"nodes": filtered_nodes, "edges": filtered_edges})
-    policy.validate(generated, components, handlers)
+    policy.validate(generated, components, handlers, allow_small_workflows=bool(handler_hint))
 
     suggested_nodes = generated.nodes
     result_workflow = generated
