@@ -1,0 +1,11 @@
+## POC GitHub link
+https://github.com/kpmg-global-audit-emu/Clara-AI/tree/js-mcp-server-creation/POC/MCPServers/swagger_mcp_server
+
+## Detailed Explanation Remote MCP server
+https://github.com/saha-rajdeep/Remote-MCP-Server
+
+## FastMCP-openapi
+https://gofastmcp.com/integrations/openapi#openapi-fastmcp
+
+## MCP official docs
+https://modelcontextprotocol.io/docs/getting-started/intro

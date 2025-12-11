@@ -1,0 +1,2674 @@
+{
+  "blocks": [
+    {
+      "blockId": "d9be9715-f725-4b49-b834-f650cc06cf87",
+      "blockType": "Section",
+      "title": "General requirements",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "a37c3a34-7f0a-446b-86e8-616d2d2317ca",
+          "blockType": "Section",
+          "title": "1.21 Presentation currency different to functional currency",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "0328f425-0d5f-452b-a811-f848991ca791",
+              "blockType": "MultiQuestionContainer",
+              "title": "When financial statements or other financial information is displayed in a currency that is different from the functional currency or presentation currency and_x000D_\n_x000D_\n  (i) the translation method required by paragraphs 39 and 42 of IAS 21 has not been used; and_x000D_\n_x000D_\n  (ii) the financial statements state that they are in compliance with International Financial Reporting Standards_x000D_\n_x000D_\nthen:\na) clearly identify the information as supplementary information to distinguish it from the information that complies with International Financial Reporting Standards;\nb) disclose the currency in which the supplementary information is displayed; and\nc) disclose the entity's functional currency and the method of translation used to determine the supplementary information",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "0334a163-0608-4cd1-ac30-b33370d208a7",
+                  "blockType": "RadioQuestion",
+                  "title": "a) clearly identify the information as supplementary information to distinguish it from the information that complies with International Financial Reporting Standards;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "fc0ee629-0af4-405f-ab51-ebc7ff47fe85",
+                  "blockType": "RadioQuestion",
+                  "title": "b) disclose the currency in which the supplementary information is displayed; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "8dabc1fc-5303-49e6-aa55-fabb78e359ef",
+                  "blockType": "RadioQuestion",
+                  "title": "c) disclose the entity's functional currency and the method of translation used to determine the supplementary information",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "3236c7b7-52ea-4fae-9836-f242c560f6f3",
+      "blockType": "Section",
+      "title": "ISSB",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "41d74e8d-ad1b-498b-801c-838afabf60ee",
+          "blockType": "Section",
+          "title": "12.48 Climate",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "ea9f4e70-cd0f-4ed0-a662-32fbbb576580",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity disclosed information to enable users of general purpose financial reports to understand the following:\n(a) the climate-related risks and opportunities that could reasonably be expected to affect the entity‚Äôs prospects;\n(b) the current and anticipated effects of those climate-related risks and opportunities on the entity‚Äôs business model and value chain ;\n(c) the effects of those climate-related risks and opportunities on the entity‚Äôs strategy and decision-making, including information about its climate-related transition plan;\n(d) the effects of those climate-related risks and opportunities on the entity‚Äôs financial position, financial performance and cash flows for the reporting period, and their anticipated effects on the entity‚Äôs financial position, financial performance and cash flows over the short, medium and long term, taking into consideration how those climate-related risks and opportunities have been factored into the entity‚Äôs financial planning ; and\n(e) the climate resilience of the entity‚Äôs strategy and its business model to climate-related changes, developments and uncertainties, taking into consideration the entity‚Äôs identified climate-related risks and opportunities ?",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "407edffa-f8c5-4050-a81c-1e5c8b6eb650",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the climate-related risks and opportunities that could reasonably be expected to affect the entity‚Äôs prospects;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2d54cadf-36a2-472d-9338-c6bfa8ece764",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the current and anticipated effects of those climate-related risks and opportunities on the entity‚Äôs business model and value chain ;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "69ee9d3e-db4a-42f2-9b80-dd5b4a47d2ad",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the effects of those climate-related risks and opportunities on the entity‚Äôs strategy and decision-making, including information about its climate-related transition plan;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "7ecb0284-ab48-4046-aa4b-cbe02d28f6bb",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) the effects of those climate-related risks and opportunities on the entity‚Äôs financial position, financial performance and cash flows for the reporting period, and their anticipated effects on the entity‚Äôs financial position, financial performance and cash flows over the short, medium and long term, taking into consideration how those climate-related risks and opportunities have been factored into the entity‚Äôs financial planning ; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "03a2fc2b-0e9d-4a9d-a227-ffd249b9c989",
+                  "blockType": "RadioQuestion",
+                  "title": "(e) the climate resilience of the entity‚Äôs strategy and its business model to climate-related changes, developments and uncertainties, taking into consideration the entity‚Äôs identified climate-related risks and opportunities ?",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "ad410f9b-e335-43e9-bb8b-7bb36e6aa394",
+          "blockType": "Section",
+          "title": "12.49 Climate",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "9173a271-a1f7-4791-817d-6b80e3231ba6",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity disclosed information that enables users of general purpose financial reports to understand the climate-related risks and opportunities that could reasonably be expected to affect the entity‚Äôs prospects?",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "8cb393ba-8c1b-4b88-8015-a6c684540a4e",
+                  "blockType": "RadioQuestion",
+                  "title": "Has the entity disclosed information that enables users of general purpose financial reports to understand the climate-related risks and opportunities that could reasonably be expected to affect the entity‚Äôs prospects?",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "2e6b9bd3-4ee9-4e4e-a1a0-3f16adac0f54",
+      "blockType": "Section",
+      "title": "Accounting policies",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "4c996d94-18a0-4781-9779-cb09856e1af8",
+          "blockType": "Section",
+          "title": "2.1 Going concern basis",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "d5ffafb5-1d99-4dee-8aa5-20f2fdf366aa",
+              "blockType": "MultiQuestionContainer",
+              "title": "If the financial statements are not prepared on a going concern basis, disclose that fact together with the basis on which the financial statements are prepared and the reason why the entity is not considered to be a going concern.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "7e227d68-5097-429b-b81c-d0033eac4030",
+                  "blockType": "RadioQuestion",
+                  "title": "If the financial statements are not prepared on a going concern basis, disclose that fact together with the basis on which the financial statements are prepared and the reason why the entity is not considered to be a going concern.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "c9ffb144-6518-46d4-bd6f-562a1958538d",
+          "blockType": "Section",
+          "title": "2.95 Accounting policies - Financial Instruments",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "f5ef16e1-854e-4440-882e-0c7ecc962132",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose in the summary of significant accounting policies:\n(a) the measurement basis (or bases) used in preparing the financial statements; and\n(b) other accounting policies used that are relevant to an understanding of the financial statements.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "ff7d034d-8a27-4a32-be2f-79fab5505bb6",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the measurement basis (or bases) used in preparing the financial statements; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "0dc96eaf-3ed7-47d7-8048-ae65078d1626",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) other accounting policies used that are relevant to an understanding of the financial statements.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "265a03f5-9671-41cd-9d9c-ab86ab571a64",
+      "blockType": "Section",
+      "title": "General",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "7233788a-7d3b-4e96-9c84-4cd4e62f233c",
+          "blockType": "Section",
+          "title": "3.1.7 Separate statement of comprehensive income",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "1aa8ea89-4f93-46bd-b588-2e614996df18",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity presented the following in relation to the separate statement of comprehensive income:\n(a) Present a separate statement of other comprehensive income.  Note: This statement should immediately follow the separate statement of profit or loss.\n(b) Present in the other comprehensive income section:  (i) Profit or loss.\n(ii) line items for amounts of other comprehensive income for the period. Note: These line items are required to reflect items classified by nature\n(iii) the above line items shall include the share of the other comprehensive income of associates and joint ventures accounted for using the equity method, separated into the share of items.\n(iii) Further, the above line items (except for the share of the other comprehensive income of associates and joint ventures) shall be grouped into those that (in accordance with other IFRSs) that:\n\n  (a) Will not be reclassified subsequently to profit or loss; and\n(b) Will be reclassified subsequently to profit or loss when specific conditions are met,\n(iii)Further, the share of the other comprehensive income of associates and joint ventures separated into those that (in accordance with other IFRSs)that:_x000D_\n_x000D_\n  (a) Will not be reclassified subsequently to profit or loss; and\n(b) Will be reclassified subsequently to profit or loss when specific conditions are met,\n(vi) total other comprehensive income.\n(vii) total comprehensive income.\n(c) total comprehensive income for the period attributable to: _x000D_\n_x000D_\n(i) non-controlling interests, and\n(ii) owners of the parent.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "5b95e50f-afd7-43dc-82a7-b15cfdaa8e6c",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) Present a separate statement of other comprehensive income.  Note: This statement should immediately follow the separate statement of profit or loss.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "47fb1fef-b9ff-422d-8ff9-a780cf1c9f26",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) Present in the other comprehensive income section:  (i) Profit or loss.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "7d4c77d5-4433-4586-af91-fc4dd39dcf73",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) line items for amounts of other comprehensive income for the period. Note: These line items are required to reflect items classified by nature",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "5d91c123-8927-44a5-b2bc-8ed94c5c2fba",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii) the above line items shall include the share of the other comprehensive income of associates and joint ventures accounted for using the equity method, separated into the share of items.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "10db954a-6c8c-4797-83d9-24bb8b885a8e",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii) Further, the above line items (except for the share of the other comprehensive income of associates and joint ventures) shall be grouped into those that (in accordance with other IFRSs) that:\n\n  (a) Will not be reclassified subsequently to profit or loss; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "04dadfff-e790-42f0-9a7d-ba883f8a3528",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) Will be reclassified subsequently to profit or loss when specific conditions are met,",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1a55d55f-e92a-4b4d-9bb1-73b43446651b",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii)Further, the share of the other comprehensive income of associates and joint ventures separated into those that (in accordance with other IFRSs)that:_x000D_\n_x000D_\n  (a) Will not be reclassified subsequently to profit or loss; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "4a2eb8be-fd70-4362-a148-f649b5c25940",
+                  "blockType": "RadioQuestion",
+                  "title": "(vii) total comprehensive income.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "81b807bf-b586-4656-a7a9-1f80cab0ab75",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) total comprehensive income for the period attributable to: _x000D_\n_x000D_\n(i) non-controlling interests, and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "33352666-0da1-4fb4-8052-c57b39b74914",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) owners of the parent.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            },
+            {
+              "blockId": "6c6351a0-2f87-4f56-95b2-a2f5995a891c",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity presented the following in relation to the separate statement of comprehensive income:\n(a) Present a separate statement of other comprehensive income.  Note: This statement should immediately follow the separate statement of profit or loss.\n(b) Present in the other comprehensive income section:  (i) Profit or loss.\n(ii) line items for amounts of other comprehensive income for the period. Note: These line items are required to reflect items classified by nature\n(iii) the above line items shall include the share of the other comprehensive income of associates and joint ventures accounted for using the equity method, separated into the share of items.\n(iii) Further, the above line items (except for the share of the other comprehensive income of associates and joint ventures) shall be grouped into those that (in accordance with other IFRSs) that:\n\n  (a) Will not be reclassified subsequently to profit or loss; and\n(b) Will be reclassified subsequently to profit or loss when specific conditions are met,\n(iii)Further, the share of the other comprehensive income of associates and joint ventures separated into those that (in accordance with other IFRSs)that:\n\n  (a) Will not be reclassified subsequently to profit or loss; and\n(b) Will be reclassified subsequently to profit or loss when specific conditions are met,\n(vi) total other comprehensive income.\n(vii) total comprehensive income.\n(c) total comprehensive income for the period attributable to: \n\n(i) non-controlling interests, and\n(ii) owners of the parent.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "fdd83bd6-72aa-491a-975f-848538ca1248",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) Will be reclassified subsequently to profit or loss when specific conditions are met,",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "4534eccf-eeb2-4e90-a776-92d1f6f0d00b",
+                  "blockType": "RadioQuestion",
+                  "title": "(vi) total other comprehensive income.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "154791bf-3462-48ae-b7d9-972546e91483",
+          "blockType": "Section",
+          "title": "4.1.19 Estimates used to measure value in use of CGUs",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "a6d1955f-feac-422d-9c04-17eed9a0f0ad",
+              "blockType": "MultiQuestionContainer",
+              "title": "If_x000D_\n¬∑ the carrying amount of goodwill or intangible assets with indefinite useful lives allocated to a cash-generating unit (group of units) is significant in comparison with the entity's total carrying amount of goodwill or intangible assets with indefinite useful lives; and_x000D_\n¬∑ the recoverable amount of the unit (group of units) is based on value in use_x000D_\n_x000D_\ndisclose  for each such cash-generating unit:\n(aa) each key assumption on which management has based its cash flow projections for the period covered by the most recent budgets / forecasts.  Key assumptions are those to which the unit's (group of units') recoverable amount is most sensitive;\n(b) a description of management's approach to determining the value(s) assigned to each key assumption;\n(c) whether those value(s) reflect past experience or, if appropriate, are consistent with external sources of information;\n(d) if the key assumptions differ from past experience or external sources of information, how and why they differ;\n(e) the period over which management has projected cash flows based on financial budgets/forecasts approved by management;\n(f) when a period greater than five years is used in the cash flow projections of a cash-generating unit (group of units), an explanation of why that longer period is justified;\n(g) the growth rate used to extrapolate cash flow projections beyond the period covered by the most recent budgets/forecasts;\n(h) the justification for using any growth rate that exceeds the long-term average growth rate for the products, industries, or country or countries in which the entity operates, or for the market to which the unit (group of units) is dedicated;\n(i) the discount rate(s) applied to the cash flow projections.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "ed5c4ae1-0712-4cc3-b43d-fd6ce9513adb",
+                  "blockType": "RadioQuestion",
+                  "title": "(f) when a period greater than five years is used in the cash flow projections of a cash-generating unit (group of units), an explanation of why that longer period is justified;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "3d04d967-ba42-4a9a-b969-ee630acb4c5a",
+      "blockType": "Section",
+      "title": "Income",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "efd8b684-a36e-47c4-8f04-c11727c802af",
+          "blockType": "Section",
+          "title": "3.2.10 Revenue -performance obligations - general information",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "0c412117-3ca4-4f23-9f74-7418a2fa7373",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose information about its performance obligations in contracts with customers, including a description of all of the following:\n(a) when the entity typically satisfies its performance obligations; and\nNote: for example, upon shipment, upon delivery, as services are rendered or upon completion of service, including when performance obligations are satisfied in a bill-and-hold arrangement;\n(b) the significant payment terms.\nNote: for example, when payment is typically due, whether the contract has a significant financing component, whether the consideration amount is variable and whether the estimate of variable consideration is typically constrained in accordance with paragraphs 56 -58 of IFRS 15);\n(c) the nature of the goods or services that the entity has promised to transfer\n(d) any performance obligations to arrange for another party to transfer goods or services (ie if the entity is acting as an agent);\n(e) obligations for returns, refunds and other similar obligations; and\n(f) types of warranties and related obligations.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "4d52c499-3df8-44eb-b0c4-67487bed3741",
+                  "blockType": "RadioQuestion",
+                  "title": "Note: for example, upon shipment, upon delivery, as services are rendered or upon completion of service, including when performance obligations are satisfied in a bill-and-hold arrangement;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1eb9fb8c-b530-43ba-b766-6efd3a6bd98e",
+                  "blockType": "RadioQuestion",
+                  "title": "Note: for example, when payment is typically due, whether the contract has a significant financing component, whether the consideration amount is variable and whether the estimate of variable consideration is typically constrained in accordance with paragraphs 56 -58 of IFRS 15);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "9bbc35cb-1341-4b56-aa9e-1a342c8ab420",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) when the entity typically satisfies its performance obligations; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "3e046e6d-9064-48c4-92df-7ffca456bb38",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the significant payment terms.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "f00dc1b3-af4a-4169-b9d2-7c08dc66799e",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the nature of the goods or services that the entity has promised to transfer",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "a18458a7-e92c-46ea-b17b-b00788823bae",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) any performance obligations to arrange for another party to transfer goods or services (ie if the entity is acting as an agent);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "4bf0b270-742b-417e-8ec3-af71eb6cc6e6",
+                  "blockType": "RadioQuestion",
+                  "title": "(e) obligations for returns, refunds and other similar obligations; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "89eb505e-503a-47e0-b6ff-db273130a8ee",
+                  "blockType": "RadioQuestion",
+                  "title": "(f) types of warranties and related obligations.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "f1ca7bf9-7ead-4e94-b4a8-b7f2ac3e1710",
+      "blockType": "Section",
+      "title": "Expense items",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "e2f927ac-de27-4593-b744-a0b0e24438ec",
+          "blockType": "Section",
+          "title": "3.3.1 Cost of Sales",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "841c751e-5896-473d-abbd-e8602556052b",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose:\n(a) the amount of inventories recognised as an expense during the period;\n(b) the amount of any write-down of inventories to fair value less costs to sell recognised as an expense in the period;\n(c) the amount of any reversal of any write-down of inventories recognised during the period arising from an increase in net realisable value;\n(d) the circumstances or events that led to the reversal of a write-down of inventories.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "7fc50485-f1a5-461e-abb3-cebb23122e1d",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the amount of inventories recognised as an expense during the period;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2422a9be-bf4a-48d9-b33b-488b652a51fc",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the amount of any write-down of inventories to fair value less costs to sell recognised as an expense in the period;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2c806ee1-500d-4e69-924e-12d3ac5e910c",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the amount of any reversal of any write-down of inventories recognised during the period arising from an increase in net realisable value;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "7a608a02-eefb-44fd-9771-9f022eb694d9",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) the circumstances or events that led to the reversal of a write-down of inventories.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "090bb1bc-101f-4e5e-a675-c95f29202ecb",
+      "blockType": "Section",
+      "title": "Taxation",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "30edf002-80a0-406b-bf4d-b11dfb7651b8",
+          "blockType": "Section",
+          "title": "3.4.2 Tax reconciliation",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "61cf64c4-91e0-4bf1-8aaa-59204c85c282",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose an explanation of the relationship between tax and accounting result in either or both of the following forms_x000D_\n_x000D_\n(a) a numerical reconciliation between tax charge (income) and the product of accounting profit multiplied by the applicable tax rate(s), disclosing also the basis on which the applicable tax rates are computed; or_x000D_\n_x000D_\n(b) a numerical reconciliation between the average effective tax rate and the applicable tax rate, disclosing also the basis on which the applicable tax rate is computed.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "f543cda0-b6f7-406b-9f2c-f535a0ddc2c9",
+                  "blockType": "RadioQuestion",
+                  "title": "Disclose an explanation of the relationship between tax and accounting result in either or both of the following forms_x000D_\n_x000D_\n(a) a numerical reconciliation between tax charge (income) and the product of accounting profit multiplied by the applicable tax rate(s), disclosing also the basis on which the applicable tax rates are computed; or_x000D_\n_x000D_\n(b) a numerical reconciliation between the average effective tax rate and the applicable tax rate, disclosing also the basis on which the applicable tax rate is computed.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "c8690629-eba4-4ca1-90b7-2fcf70273c2c",
+      "blockType": "Section",
+      "title": "Dividends",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "c34114cf-2806-4826-8c0d-aee9859496fa",
+          "blockType": "Section",
+          "title": "3.5.4 Income tax consequences of dividends",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "ba787baa-e486-4dc6-8d9c-4dddfa55bd0f",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose the amount of income tax consequences of dividends to shareholders of the entity that were proposed or declared before the financial statements were authorised for issue, but are not recognised as a liability in the financial statements.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "771032c7-0b1f-4594-a561-62924b7b0f9d",
+                  "blockType": "RadioQuestion",
+                  "title": "Disclose the amount of income tax consequences of dividends to shareholders of the entity that were proposed or declared before the financial statements were authorised for issue, but are not recognised as a liability in the financial statements.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "229e1e28-8b32-4490-8759-3e04cef7ea3a",
+      "blockType": "Section",
+      "title": "Earnings per Share",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "17555518-cdcc-49a8-bbfc-b06975f1bbe1",
+          "blockType": "Section",
+          "title": "3.7.12 Earnings per share",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "ca625318-0021-4500-a452-c1cb5976d7b5",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose:\n(a) the amounts used as the numerators in calculating basic and diluted earnings per share, and a reconciliation of those amounts to profit or loss attributable to the parent entity for the period. Include in the reconciliation the individual effect of each class of instruments that affects earnings per share;\n(b) the weighted average number of ordinary shares used as the denominator in calculating basic and diluted earnings per share, and a reconciliation of these denominators to each other. Include in the reconciliation the individual effect of each class of instruments that affects earnings per share;\n(c) instruments (including contingently issuable shares) that could potentially dilute basic earnings per share in the future, but were not included in the calculation of diluted earnings per share because they are antidilutive for the periods presented;\n(d) a description of ordinary share transactions or potential ordinary share transactions, that occur after the balance sheet date and that would have changed significantly the number of ordinary shares or potential ordinary shares outstanding at the end of the period if those transactions had occurred before the end of the reporting period._x000D_\n_x000D_\nNote: Where, after the year end, the number of ordinary or potential ordinary shares outstanding increases as a result of a capitalisation, bonus issue or share split, or decreases as a result of a reverse share split, this disclosure does not apply.  This is because the denominator used in the calculation of basic and diluted earnings per share presented on the face of the income statement already reflect those changes.  The help screen gives examples of transactions which are relevant for the purposes of this disclosure",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "b9c48c4e-4319-4c64-adfd-a5bec977654e",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the amounts used as the numerators in calculating basic and diluted earnings per share, and a reconciliation of those amounts to profit or loss attributable to the parent entity for the period. Include in the reconciliation the individual effect of each class of instruments that affects earnings per share;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "e6e01aaf-6213-42ec-afd1-546c8fbd2958",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the weighted average number of ordinary shares used as the denominator in calculating basic and diluted earnings per share, and a reconciliation of these denominators to each other. Include in the reconciliation the individual effect of each class of instruments that affects earnings per share;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "593e01f7-2f18-4342-988c-d307e15f9c22",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) instruments (including contingently issuable shares) that could potentially dilute basic earnings per share in the future, but were not included in the calculation of diluted earnings per share because they are antidilutive for the periods presented;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "7f70e6b9-1d2d-4e8f-a1b0-7bd39163fcc2",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) a description of ordinary share transactions or potential ordinary share transactions, that occur after the balance sheet date and that would have changed significantly the number of ordinary shares or potential ordinary shares outstanding at the end of the period if those transactions had occurred before the end of the reporting period._x000D_\n_x000D_\nNote: Where, after the year end, the number of ordinary or potential ordinary shares outstanding increases as a result of a capitalisation, bonus issue or share split, or decreases as a result of a reverse share split, this disclosure does not apply.  This is because the denominator used in the calculation of basic and diluted earnings per share presented on the face of the income statement already reflect those changes.  The help screen gives examples of transactions which are relevant for the purposes of this disclosure",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "55027665-1b5f-4cb7-8615-19eb583fda09",
+      "blockType": "Section",
+      "title": "Debtors",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "56c6d9fb-1c72-464a-b924-2fb42f616502",
+          "blockType": "Section",
+          "title": "4.10.4 Balances arising from revenue from contract with customers",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "0caaeeb9-2d9d-4109-83c7-549424bb9f68",
+              "blockType": "MultiQuestionContainer",
+              "title": "Present the contract in the statement of financial position as follows:\n(a) Any unconditional rights to consideration separately as a receivable (see help text).\n(b)  contract asset (see help text)\nNote IFRS 15 uses the terms 'contract asset' but does not prohibit an entity from using alternative descriptions in the statement of financial position for those items. If an entity uses an alternative description for a contract asset, the entity shall provide sufficient information for a user of the financial statements to distinguish between receivables and contract assets.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "b6b5c5d5-8398-4c22-962f-e5a454c077a8",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) Any unconditional rights to consideration separately as a receivable (see help text).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "5628bc3a-71b9-476c-946c-f9973d41256b",
+                  "blockType": "RadioQuestion",
+                  "title": "(b)  contract asset (see help text)",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "f8700cf0-455d-4a43-b69e-ab33be4b9bb7",
+                  "blockType": "RadioQuestion",
+                  "title": "Note IFRS 15 uses the terms 'contract asset' but does not prohibit an entity from using alternative descriptions in the statement of financial position for those items. If an entity uses an alternative description for a contract asset, the entity shall provide sufficient information for a user of the financial statements to distinguish between receivables and contract assets.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "6a76cce3-edc8-4727-83ab-87372288991a",
+      "blockType": "Section",
+      "title": "Creditors",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "4cc2ecf9-be94-4ea9-a997-81efe4f8618c",
+          "blockType": "Section",
+          "title": "4.11.6 Members' shares in Co-Operative entities and similar instruments",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "e8c21a8e-4062-4ead-893f-cce338045f68",
+              "blockType": "MultiQuestionContainer",
+              "title": "When a change in the redemption prohibition leads to a transfer between financial liabilities and equity, disclose separately the amount, timing and reason for the transfer.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "dd421f79-1390-4bc8-9ff6-fd4bd68fb77c",
+                  "blockType": "RadioQuestion",
+                  "title": "When a change in the redemption prohibition leads to a transfer between financial liabilities and equity, disclose separately the amount, timing and reason for the transfer.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "d5078be3-613b-46d8-a864-67ffc7e26865",
+      "blockType": "Section",
+      "title": "Provisions, Contingent liabilities & contingent assets",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "df9eeafe-5a18-4ea8-9621-c876021ce19a",
+          "blockType": "Section",
+          "title": "4.12.3 Contingent liabilities",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "ace53c74-92f2-4cf5-9a08-495ac47c64a7",
+              "blockType": "MultiQuestionContainer",
+              "title": "Unless the possibility of any outflow in settlement is remote, disclose for each class of contingent liability at the balance sheet date a brief description of the nature of the contingent liability and, where practicable:  Note: When a provision and a contingent liability arise from the same set of circumstances, information should be disclosed in a way that shows the link between the provision and the contingent liability.\n(a) an estimate of its financial effect;\n(b) an indication of the uncertainties relating to the amount or timing of any inflow;\n(c) the possibility of any reimbursement.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "56887997-43e1-4258-998a-4c750529eeb0",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) an estimate of its financial effect;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "5f0cdb1f-f565-4a87-86c7-a9fb10894d01",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) an indication of the uncertainties relating to the amount or timing of any inflow;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "216f17bd-9643-47f9-bf71-daf5adb70b8a",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the possibility of any reimbursement.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "bc42af3c-c34b-4813-b5bd-c7cc8da78090",
+      "blockType": "Section",
+      "title": "Deferred tax",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "d1b7ec5d-b0ac-41fe-9e3d-c6aefca67790",
+          "blockType": "Section",
+          "title": "4.13.3 Deferred tax asset",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "b5ab594d-8017-4e91-a21b-f54f0a7aa954",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose the amount of a deferred tax asset and the nature of the evidence supporting its recognition, when:_x000D_\n_x000D_\n(a) the utilisation of the deferred tax asset is dependent on future taxable profits in excess of the profits arising from the reversal of existing taxable temporary differences; and_x000D_\n_x000D_\n(b) the entity has suffered a loss in either the current or preceding period in the tax jurisdiction to which the deferred tax assets relates.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "aeae2add-abc5-431a-934d-f617f8b98033",
+                  "blockType": "RadioQuestion",
+                  "title": "Disclose the amount of a deferred tax asset and the nature of the evidence supporting its recognition, when:_x000D_\n_x000D_\n(a) the utilisation of the deferred tax asset is dependent on future taxable profits in excess of the profits arising from the reversal of existing taxable temporary differences; and_x000D_\n_x000D_\n(b) the entity has suffered a loss in either the current or preceding period in the tax jurisdiction to which the deferred tax assets relates.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "9c58bf82-d46e-4aa8-b358-fbf9ce445244",
+      "blockType": "Section",
+      "title": "Share capital and Reserves",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "2c293d99-c416-4c44-9d76-397a2c671a6b",
+          "blockType": "Section",
+          "title": "4.14.6 Purpose of each reserve in equity",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "6ab4b424-5ea5-4ef6-a1e5-60f2ce72cd80",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose a description of the nature and purpose of each reserve within equity.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "8908b5ba-9d7d-4d01-8daa-b17cfc229d6f",
+                  "blockType": "RadioQuestion",
+                  "title": "Disclose a description of the nature and purpose of each reserve within equity.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "1d9b13b6-2f5e-46cf-9875-d2106e97a2e3",
+      "blockType": "Section",
+      "title": "Employee benefits - defined benefit schemes",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "508d38f2-1387-4faa-8fda-c2047149695f",
+          "blockType": "Section",
+          "title": "4.15.23 Defined Benefit Plans - amount, timing and uncertainty of future cash flows",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "d7e9e170-bb3b-4810-baee-726f515118c2",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose:\n(a) a sensitivity analysis for each significant actuarial assumption (as disclosed where applicable) as of the end of the reporting period, showing how the defined benefit obligation would have been affected by changes in the relevant actuarial assumption that were reasonably possible at that date.\n(b) the methods and assumptions used in preparing the sensitivity analyses required by (a) and the limitations of those methods.\n(c) changes from the previous period in the methods and assumptions used in preparing the sensitivity analyses, and the reasons for such changes.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "c80126c7-be7c-48e9-9938-17c374488697",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) a sensitivity analysis for each significant actuarial assumption (as disclosed where applicable) as of the end of the reporting period, showing how the defined benefit obligation would have been affected by changes in the relevant actuarial assumption that were reasonably possible at that date.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "6cf4e2d6-6e1c-4751-8e86-12bfcb0c96eb",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the methods and assumptions used in preparing the sensitivity analyses required by (a) and the limitations of those methods.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "24699b6a-a7fc-46e1-85fb-1994c4382d18",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) changes from the previous period in the methods and assumptions used in preparing the sensitivity analyses, and the reasons for such changes.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "b6176f29-9478-488b-9166-0bd207954593",
+      "blockType": "Section",
+      "title": "Financial Instruments",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "52163169-a73f-4ad4-9117-403f1d8adbdf",
+          "blockType": "Section",
+          "title": "4.16.10 Financial liabilities at fair value through profit or loss (IFRS 9)",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "29a8f255-c238-4a6b-9f54-ebc6359f6af9",
+              "blockType": "MultiQuestionContainer",
+              "title": "If the entity has designated a financial liability as at fair value through profit or loss (see help text) and is required to present the effects of changes in that liability's credit risk in other comprehensive income it shall disclose:\n(a) the amount of change, cumulatively, in the fair value of the financial liability that is attributable to changes in the credit risk of that liabilility (see help text).\n(b) the difference between the financial liability's carrying amount and the amount that the entity would be contractually required to repay at maturity to the holder of the obligation.\n(c) any transfers of the cumulative gain or loss within equity during the period including the reason for such transfers.\n(d) if a liability is derecognised during the period, the amount (if any) presented in other comprehensive income that was realised at derecognition.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "6a45adee-49e3-413e-bb29-7a781c4a9a9a",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the amount of change, cumulatively, in the fair value of the financial liability that is attributable to changes in the credit risk of that liabilility (see help text).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "e6d5dffa-dc82-4a70-8c6f-cc44ff4a38a4",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the difference between the financial liability's carrying amount and the amount that the entity would be contractually required to repay at maturity to the holder of the obligation.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d30159e1-320e-4d84-a59d-edd7c9f92bc4",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) any transfers of the cumulative gain or loss within equity during the period including the reason for such transfers.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "7fce028b-fc7a-47c7-8063-4b28b4164c60",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) if a liability is derecognised during the period, the amount (if any) presented in other comprehensive income that was realised at derecognition.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "ab961a25-803e-4452-977a-0823233fe550",
+          "blockType": "Section",
+          "title": "4.16.5 Categories of Financial Liability (IFRS 9)",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "c348c462-33c8-44d6-8b9e-03eb2f159870",
+              "blockType": "MultiQuestionContainer",
+              "title": "The carrying amounts of each of the following categories of financial liability shall be disclosed either on the face of the balance sheet or in the notes:\n(b) Financial liabilities measured at fair value through profit or loss as designated at initial recognition under IFRS 9\n(c) Financial liabilities measured at amortised cost.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "2daa4a18-9f88-4dd0-a25e-3f85a059a7e7",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) Financial liabilities measured at fair value through profit or loss as designated at initial recognition under IFRS 9",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "3e51abaa-b5c0-4271-8c45-3f035e36c45a",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) Financial liabilities measured at amortised cost.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "blockId": "75907976-b961-4165-b739-b744f043e08c",
+          "blockType": "Section",
+          "title": "4.16.56 Fair Value Hedges: Effects on financial position and performance",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "a2fae4af-c096-411e-b5b9-8351849552fb",
+              "blockType": "MultiQuestionContainer",
+              "title": "An entity must disclose the following in tabular format separately for each risk category:\na) for items designated as hedging instruments:\na-i) the carrying amount of the hedging instruments (financial assets separately from financial liabilities);\na-ii) the line item in the statement of financial position that includes the hedging instrument;\na-iii) the change in fair value of the hedging instrument used as the basis for recognising hedge ineffectiveness for the period;\na-iv) the nominal amounts (including quantities such as tonnes or cubic metres) of the hedging instruments.\nb) the following amounts related to hedged items:\nb-i) the carrying amount of the hedged item recognised in the statement of financial position (presenting assets separately from liabilities);\nb-ii) (ii) the accumulated amount of fair value hedge adjustments on the hedged item included in the carrying amount of the hedged item recognised in the statement of financial position (presenting assets separately from liabilities);\nb-iii) the line item in the statement of financial position that includes the hedged item;\nb-iv) the change in value of the hedged item used as the basis for recognising hedge ineffectiveness for the period; and\nb-v) the accumulated amount of fair value hedge adjustments remaining in the statement of financial position for any hedged items that have ceased to be adjusted for hedging gains and losses\nc) the amount of:\nc-i)hedge ineffectiveness‚Äîie the difference between the hedging gains or losses of the hedging instrument and the hedged item‚Äîrecognised in profit or loss (or other comprehensive income for hedges of an equity instrument for which an entity has elected to present changes in fair value in other comprehensive income);\nc-ii) the line item in the statement of comprehensive income that includes the recognised hedge ineffectiveness",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "35b09887-3ea6-45e6-858f-01856381c087",
+                  "blockType": "RadioQuestion",
+                  "title": "a) for items designated as hedging instruments:\na-i) the carrying amount of the hedging instruments (financial assets separately from financial liabilities);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "01511b66-048f-4abc-be40-dacaf949bfb2",
+                  "blockType": "RadioQuestion",
+                  "title": "a-ii) the line item in the statement of financial position that includes the hedging instrument;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "aceef62e-e432-47f4-9e0e-408b7129bfe5",
+                  "blockType": "RadioQuestion",
+                  "title": "a-iii) the change in fair value of the hedging instrument used as the basis for recognising hedge ineffectiveness for the period;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "ceba6092-6c26-46c3-a3fb-5162ab789546",
+                  "blockType": "RadioQuestion",
+                  "title": "a-iv) the nominal amounts (including quantities such as tonnes or cubic metres) of the hedging instruments.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "af4f0921-e23f-4f49-bd47-9147f480f02e",
+                  "blockType": "RadioQuestion",
+                  "title": "b) the following amounts related to hedged items:\nb-i) the carrying amount of the hedged item recognised in the statement of financial position (presenting assets separately from liabilities);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "6681b78c-3140-4eea-90a6-ce35247ab43f",
+                  "blockType": "RadioQuestion",
+                  "title": "b-ii) (ii) the accumulated amount of fair value hedge adjustments on the hedged item included in the carrying amount of the hedged item recognised in the statement of financial position (presenting assets separately from liabilities);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "77610695-f681-40cb-a82b-e1260b5f6346",
+                  "blockType": "RadioQuestion",
+                  "title": "b-iii) the line item in the statement of financial position that includes the hedged item;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "a8079ce5-7cd1-477b-ab4c-3ef5f3615fe5",
+                  "blockType": "RadioQuestion",
+                  "title": "b-iv) the change in value of the hedged item used as the basis for recognising hedge ineffectiveness for the period; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "5f049d62-1229-453a-a1fc-0cd0cb5add4c",
+                  "blockType": "RadioQuestion",
+                  "title": "b-v) the accumulated amount of fair value hedge adjustments remaining in the statement of financial position for any hedged items that have ceased to be adjusted for hedging gains and losses",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "b0be863e-adf1-48c9-a9ca-d332b8731cf7",
+                  "blockType": "RadioQuestion",
+                  "title": "c) the amount of:\nc-i)hedge ineffectiveness‚Äîie the difference between the hedging gains or losses of the hedging instrument and the hedged item‚Äîrecognised in profit or loss (or other comprehensive income for hedges of an equity instrument for which an entity has elected to present changes in fair value in other comprehensive income);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "0fd80772-34dc-44a9-9b6b-c851221542a8",
+                  "blockType": "RadioQuestion",
+                  "title": "c-ii) the line item in the statement of comprehensive income that includes the recognised hedge ineffectiveness",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "ada825f4-030e-46d8-9b2c-85e928f7c6f3",
+      "blockType": "Section",
+      "title": "Business Combinations",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "cbc5914e-cc70-41fa-8049-2c2397567215",
+          "blockType": "Section",
+          "title": "4.17.2 Disclosures in respect of business combinations",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "ea842861-a218-4670-9b14-7ecd355b81d1",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity disclosed the following information for each material  business combination that occurs during the reporting period:\n(a) the name of the acquiree.\n(b) a description of the acquiree.\n(c) the acquisition date.\n(d) the percentage of voting equity interests acquired.\n(e) the primary reasons for the business combination.\n(f) a description of how the entity (the acquirer) obtained control of the acquiree.\n(g) a qualitative description of the factors that make up the goodwill recognised, such as expected synergies from combining operations of the acquiree and the entity (the acquirer), intangible assets that do not qualify for separate recognition or other factors.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "d36d3976-f82b-49ea-8ef0-3e9fa01890eb",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the name of the acquiree.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "df6cd79f-1cca-4d23-aa4d-435dfd365d8e",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) a description of the acquiree.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "ad07c995-7a76-4bdb-a940-f308e3a32a9f",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the acquisition date.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d5350f9e-28a2-48a1-be9b-c17845d9c167",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) the percentage of voting equity interests acquired.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d4066b85-4f32-4da1-b074-631e71f4fec8",
+                  "blockType": "RadioQuestion",
+                  "title": "(e) the primary reasons for the business combination.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "bba8f87b-70da-40b5-adfa-6bb619ebb87d",
+                  "blockType": "RadioQuestion",
+                  "title": "(f) a description of how the entity (the acquirer) obtained control of the acquiree.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "271132c9-53a1-4607-bc0f-073cc0323d46",
+                  "blockType": "RadioQuestion",
+                  "title": "(g) a qualitative description of the factors that make up the goodwill recognised, such as expected synergies from combining operations of the acquiree and the entity (the acquirer), intangible assets that do not qualify for separate recognition or other factors.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "e7dbb716-37e6-4477-89e3-689555a79a1e",
+      "blockType": "Section",
+      "title": "Events after the reporting period (balance sheet date)",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "ba4ed06e-9f13-415c-a5fc-d3ef031defc2",
+          "blockType": "Section",
+          "title": "4.18.2 Non-adjusting events after the balance sheet date",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "b4467958-dae8-4f1c-9f4a-f67cf81b76f9",
+              "blockType": "MultiQuestionContainer",
+              "title": "For each material category of non-adjusting event after the balance sheet date; disclose:\n(a) the nature of the event;\n(b) an estimate of its financial effect, or a statement that such an estimate cannot be made.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "af919787-e882-4d4f-8faf-8c84e708bdbc",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the nature of the event;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2bef061b-7e8d-45cc-a05d-2f6945c1917d",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) an estimate of its financial effect, or a statement that such an estimate cannot be made.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "3657d5a6-8d57-4c4e-a89d-d41f4be55be8",
+      "blockType": "Section",
+      "title": "Related Party Disclosures",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "fc89a53f-1c46-4948-ac2a-7acefdda0f41",
+          "blockType": "Section",
+          "title": "4.19.6 Disclosure of Related Party Transactions",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "d630bc4c-92db-4f60-9250-042d858e5208",
+              "blockType": "MultiQuestionContainer",
+              "title": "If there have been related party transactions during the periods covered by the financial statements:_x000D_\n_x000D_\nNote: Where the entity is controlled, jointly controlled or significantly influenced by a government and it has taken advantage of the paragraph 25 disclosure exemption in IAS 24(2009) please answer not applicable to this question if this is so the case and answer question 4.18.14\n(a) disclose the nature of the related party relationship;\n(b) disclose information about those transactions and outstanding balances, including commitments, necessary for users to understand the potential effect of the relationship on the financial statements, at a minimum, such disclosures shall include:      _x000D_\n_x000D_\n(i) the amount of the transactions;\n(ii) the amount of outstanding balances, including commitments, and:\n(iii) their terms and conditions, including whether they are secured, and the nature of the consideration to be provided in settlement; and\n(iv) details of any guarantees given or received;\n(v) provisions for doubtful debts related to the amount of outstanding balances; and\n(vi) the expense recognised during the period in respect of bad or doubtful debts due from related parties.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "f3f012a9-896e-4230-9afe-e5fab71239c8",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) disclose the nature of the related party relationship;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "3ed10073-9929-4277-ad54-bdb19c91124d",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) disclose information about those transactions and outstanding balances, including commitments, necessary for users to understand the potential effect of the relationship on the financial statements, at a minimum, such disclosures shall include:      _x000D_\n_x000D_\n(i) the amount of the transactions;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "62b25842-a9b6-4cdd-a0b9-866f7075f306",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) the amount of outstanding balances, including commitments, and:",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "32e1fe09-b0aa-424b-b577-fad4ca620062",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii) their terms and conditions, including whether they are secured, and the nature of the consideration to be provided in settlement; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d67ee6f3-3d6b-4864-af62-43468d90ffe1",
+                  "blockType": "RadioQuestion",
+                  "title": "(iv) details of any guarantees given or received;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2322061e-80fe-4fa4-97a7-87404f77f08e",
+                  "blockType": "RadioQuestion",
+                  "title": "(v) provisions for doubtful debts related to the amount of outstanding balances; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "9ffbcf25-c947-4252-963b-a1f43e990417",
+                  "blockType": "RadioQuestion",
+                  "title": "(vi) the expense recognised during the period in respect of bad or doubtful debts due from related parties.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "dea54834-9429-438a-9f9f-590618a7a8dd",
+      "blockType": "Section",
+      "title": "Intangible assets",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "1b2900e0-b99e-482b-8db0-aaa9f7e02760",
+          "blockType": "Section",
+          "title": "4.2.11 Goodwill",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "7e122a9a-f5bb-49f6-95ed-dca024137cf9",
+              "blockType": "MultiQuestionContainer",
+              "title": "(a) Do the notes disclose a reconciliation of the carrying amount of goodwill at the beginning and end of the reporting period showing separately:\n(i) the gross amount and accumulated impairment losses at the beginning of the reporting period.\n(ii) additional goodwill recognised during the reporting period (except goodwill included in a disposal group that, on acquisition, meets the criteria to be classified as held for sale in accordance with IFRS 5 Non-current Assets Held for Sale and Discontinued Operations).\n(iii) adjustments resulting from the subsequent recognition of deferred tax assets during the reporting period (in accordance with paragraph IFRS 3(2008) paragraph 67 - see help text).\n(iv) goodwill included in a disposal group classified as held for sale in accordance with IFRS 5 and goodwill derecognised during the reporting period without having previously been included in a disposal group classified as held for sale.\n(vi) net exchange rate differences arising during the reporting period in accordance with IAS 21 The Effects of Changes in Foreign Exchange Rates.\n(vii) any other changes in the carrying amount during the reporting period.\n(viii) the gross amount and accumulated impairment losses at the end of the reporting period.\n(b) Where the specific disclosures required by IFRS 3 and other IFRSs do not meet the objectives set out in those standards then disclose whatever additional information necessary to enable users of the financial statements to evaluate the changes in the carrying amount of goodwill during the period.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "9d31719f-d000-4705-bcca-c0e60b5c36da",
+                  "blockType": "RadioQuestion",
+                  "title": "(i) the gross amount and accumulated impairment losses at the beginning of the reporting period.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "a2248f31-7f3a-4760-a1d4-447760dae640",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) additional goodwill recognised during the reporting period (except goodwill included in a disposal group that, on acquisition, meets the criteria to be classified as held for sale in accordance with IFRS 5 Non-current Assets Held for Sale and Discontinued Operations).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "dbc9b44d-b939-4ee1-8fa4-0e3a64bb3c53",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii) adjustments resulting from the subsequent recognition of deferred tax assets during the reporting period (in accordance with paragraph IFRS 3(2008) paragraph 67 - see help text).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "00c5c217-5f9e-49cf-a626-9a4f3df1d539",
+                  "blockType": "RadioQuestion",
+                  "title": "(iv) goodwill included in a disposal group classified as held for sale in accordance with IFRS 5 and goodwill derecognised during the reporting period without having previously been included in a disposal group classified as held for sale.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "668d1b5c-4d02-4d23-89dd-b6deb39ba4b5",
+                  "blockType": "RadioQuestion",
+                  "title": "(vi) net exchange rate differences arising during the reporting period in accordance with IAS 21 The Effects of Changes in Foreign Exchange Rates.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "b14e7823-d831-4d56-b831-928abad06571",
+                  "blockType": "RadioQuestion",
+                  "title": "(vii) any other changes in the carrying amount during the reporting period.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "a39beaff-23d8-4fef-a13b-6059b404c22a",
+                  "blockType": "RadioQuestion",
+                  "title": "(viii) the gross amount and accumulated impairment losses at the end of the reporting period.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "b26b1961-326f-4f03-8f12-886648f3b85a",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) Where the specific disclosures required by IFRS 3 and other IFRSs do not meet the objectives set out in those standards then disclose whatever additional information necessary to enable users of the financial statements to evaluate the changes in the carrying amount of goodwill during the period.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "2212088a-4a12-4c81-a019-6d3dd89f033f",
+      "blockType": "Section",
+      "title": "Share-based Payments",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "06716262-9839-443a-ae0a-cadaa6832a1f",
+          "blockType": "Section",
+          "title": "4.23.7 Transaction with parties other than employees measured indirectly",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "e0c46ee9-c096-4cfc-9d58-1f8501b75314",
+              "blockType": "MultiQuestionContainer",
+              "title": "If the entity has entered into equity-settled share-based transactions with parties other than employees, and has measured the transaction indirectly at the fair value of the instruments granted (i.e. it has rebutted the presumption that the fair value of goods and services received can be estimated reliably), disclose:\n(a) that fact;\n(b) an explanation of why the presumption was rebutted.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "338845d2-712c-46e6-a7d3-00e88cbcd2c5",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) that fact;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1b34cc67-1d16-4e69-9870-74bc0d137940",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) an explanation of why the presumption was rebutted.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "78a4ee95-dc85-410b-82b7-3cf8744f686b",
+      "blockType": "Section",
+      "title": "Leases",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "932cecd1-584c-4867-85b3-dc9e002076b4",
+          "blockType": "Section",
+          "title": "4.24.3 Disclosure for lessees",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "8482b6c7-03cd-44df-873d-033bcb8d50e4",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the lessee disclosed the following amounts for the reporting period:\n(a) depreciation charge for right-of-use assets by class of underlying asset;  Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.\n(b) interest expense on lease liabilities;\n(c) the expense relating to short-term leases accounted for by applying IFRS paragraph 6;  Note.  This expense need not include the expense relating to leases with a lease term of one month or less;\n(d) the expense relating to leases of low-value assets accounted for by applying IFRS 16 paragraph 6;  Note.  This expense shall not include the expense relating to short-term leases of low-value assets included above.\n(e) the expense relating to variable lease payments not included in the measurement of lease liabilities;\n(f) income from subleasing right-of-use assets; Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.\n(g) total cash outflow for leases;\n(h) additions to right-of-use assets. Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.\n(i) gains or losses arising from sale and leaseback transactions; and\n(j) the carrying amount of right-of-use assets at the end of the reporting period by class of underlying asset? Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "11509008-91f6-44ea-911b-19fab0063a08",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) depreciation charge for right-of-use assets by class of underlying asset;  Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "5f11bd82-a108-4c04-bc4e-41d2ef9b75f6",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) interest expense on lease liabilities;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "f5fa627d-65a6-419f-bb52-dc7fcd2133d5",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the expense relating to short-term leases accounted for by applying IFRS paragraph 6;  Note.  This expense need not include the expense relating to leases with a lease term of one month or less;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "fed70201-7126-4a8a-93d5-a166282df389",
+                  "blockType": "RadioQuestion",
+                  "title": "(d) the expense relating to leases of low-value assets accounted for by applying IFRS 16 paragraph 6;  Note.  This expense shall not include the expense relating to short-term leases of low-value assets included above.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "602c8bee-db7a-4e1d-ae72-a0b93cce289d",
+                  "blockType": "RadioQuestion",
+                  "title": "(e) the expense relating to variable lease payments not included in the measurement of lease liabilities;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "59529041-21c0-4fba-b617-03b1ab1c83f5",
+                  "blockType": "RadioQuestion",
+                  "title": "(f) income from subleasing right-of-use assets; Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "b5a487b4-a38b-4fd2-934f-4eecd752697e",
+                  "blockType": "RadioQuestion",
+                  "title": "(g) total cash outflow for leases;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1ae325fc-83f0-4a4c-80da-3cb9b7292d3e",
+                  "blockType": "RadioQuestion",
+                  "title": "(h) additions to right-of-use assets. Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "a8d97738-b6ca-44c7-8e49-028fc2b278b8",
+                  "blockType": "RadioQuestion",
+                  "title": "(i) gains or losses arising from sale and leaseback transactions; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "6483dca1-2c95-42d4-ad44-67e1642a8443",
+                  "blockType": "RadioQuestion",
+                  "title": "(j) the carrying amount of right-of-use assets at the end of the reporting period by class of underlying asset? Note.  This disclosure is not required for a right-of-use asset which meets the definition of investment property and therefore has been disclosed in accordance with IAS 40.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "1aec1bc1-acf5-4ef6-a239-3f35b8d93270",
+      "blockType": "Section",
+      "title": "Property, plant & equipment",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "bd861374-25d8-492f-9d1c-620f111d24da",
+          "blockType": "Section",
+          "title": "4.3.5 Property, plant and equipment - Security for liabilities",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "053f9ee4-a7e2-4700-a5f2-601c3b232804",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose the existence and amounts of restrictions on title, and property, plant and equipment pledged as security for liabilities.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "4488a7e7-42b0-4d14-9aa6-e34f9ef7af9d",
+                  "blockType": "RadioQuestion",
+                  "title": "Disclose the existence and amounts of restrictions on title, and property, plant and equipment pledged as security for liabilities.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "2997e792-593e-4e8b-aa57-2ede6c594400",
+      "blockType": "Section",
+      "title": "Subs, associates and JVs",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "da97926e-a035-4844-b57e-93e4e5641e4b",
+          "blockType": "Section",
+          "title": "4.6.15 Consolidation - Consequences of losing control of a subsidiary",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "971c64f9-768b-4768-9fd4-8fdbbaa5c39e",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose:\n(a) the gain or loss, if any.\n(b) the portion of that gain or loss attributable to measuring any investment retained in the former subsidiary at its fair value at the date when control is lost; and\n(c) the line item(s) in profit or loss in which the gain or loss is recognised (if not presented separately).",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "008df426-c436-423a-aa12-7bbe68fc57d7",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the gain or loss, if any.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "4e143649-cf4b-4ecd-873a-df41d40c11d3",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the portion of that gain or loss attributable to measuring any investment retained in the former subsidiary at its fair value at the date when control is lost; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "ff903255-3ab7-47fc-a3f7-3e5b130f3fd3",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) the line item(s) in profit or loss in which the gain or loss is recognised (if not presented separately).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "f68f7466-1a25-4b37-a2cc-17edf2cbf791",
+      "blockType": "Section",
+      "title": "Inventories",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "ed8ade14-83c8-44e4-8a6a-c52cf06658d5",
+          "blockType": "Section",
+          "title": "4.8.1 Inventories",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "02151a5a-7670-4249-9b09-7d5e302865c7",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose:\n(a) total carrying amount of inventories and the carrying amount in appropriate classifications to the entity;\n(b) carrying amount of inventories carried at fair value less costs to sell;\n(c) carrying amount of inventories pledged as security for liabilities.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "8dcffd17-232a-4829-8ef8-f758815e73b8",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) total carrying amount of inventories and the carrying amount in appropriate classifications to the entity;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "6889966b-7a70-46ae-8571-e2dd95d4828b",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) carrying amount of inventories carried at fair value less costs to sell;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "65900068-71a1-4d4f-96ac-9b7db1f1c339",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) carrying amount of inventories pledged as security for liabilities.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "ecbffa8b-a8eb-4a93-b871-a8a9da8ae3a8",
+      "blockType": "Section",
+      "title": "Statement of Cash Flows",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "705e9c4c-8749-46f5-a82d-7e178a450c47",
+          "blockType": "Section",
+          "title": "5.14 Cash and cash equivalents",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "4ad52fd2-6493-489c-b207-4d679a202da4",
+              "blockType": "MultiQuestionContainer",
+              "title": "Has the entity disclosed separately from cash flows from operating, investing and financing activities, the effect of exchange rate changes on cash and cash equivalents held or due in foreign currency?  Note: This amount includes the differences, if any, had those cash flows been reported at end of period exchange rates.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "29bb676f-d55c-4e75-90d9-f6eed07b9004",
+                  "blockType": "RadioQuestion",
+                  "title": "Has the entity disclosed separately from cash flows from operating, investing and financing activities, the effect of exchange rate changes on cash and cash equivalents held or due in foreign currency?  Note: This amount includes the differences, if any, had those cash flows been reported at end of period exchange rates.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "7e9a5c06-a550-49a4-8c20-86c25a5c04dc",
+      "blockType": "Section",
+      "title": "Statement of Changes in Equity",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "4fef89d0-a871-42eb-852d-101cb5686b29",
+          "blockType": "Section",
+          "title": "6.1 Statement of Changes in Equity",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "3fc0d607-fff7-483b-ba31-33dc37effbc4",
+              "blockType": "MultiQuestionContainer",
+              "title": "Present a statement of changes in equity that shows in that statement:\n(A) total comprehensive income for the period;\n(B) the total amounts of total comprehensive income attributable to owners of the parent and to non-controlling interests (minority interest);\n(D) for each component of equity, a reconciliation between the carrying amount at the beginning and end of the period separately disclosing:_x000D_\n_x000D_\n(a) profit or loss\n(b) other comprehensive income\n(c) transactions with owners in their capacity as owners, showing separately:_x000D_\n_x000D_\n  (i) contributions by owners\n(ii) distributions to owners",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "f67f4971-37e9-47ea-8cd8-debbb00e9308",
+                  "blockType": "RadioQuestion",
+                  "title": "(A) total comprehensive income for the period;",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "db2dcbdc-1ccf-4791-b553-86d8715fa6dc",
+                  "blockType": "RadioQuestion",
+                  "title": "(B) the total amounts of total comprehensive income attributable to owners of the parent and to non-controlling interests (minority interest);",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "f4dc8068-f29f-4ad4-a7bd-78e099d81884",
+                  "blockType": "RadioQuestion",
+                  "title": "(D) for each component of equity, a reconciliation between the carrying amount at the beginning and end of the period separately disclosing:_x000D_\n_x000D_\n(a) profit or loss",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "4cad8397-990c-4b2b-a47c-97bf19559623",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) other comprehensive income",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "31cb3228-89e3-4d56-a4a7-98ce364a6228",
+                  "blockType": "RadioQuestion",
+                  "title": "(c) transactions with owners in their capacity as owners, showing separately:_x000D_\n_x000D_\n  (i) contributions by owners",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2b3467db-f0b7-48d9-935e-beeaa535643f",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) distributions to owners",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "3162133e-c6a8-470d-b0a8-15e7f08fe71f",
+      "blockType": "Section",
+      "title": "Operating Segments",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "03fa4f57-aa1e-4809-a035-df8879317cc0",
+          "blockType": "Section",
+          "title": "7.12 Reconciliations",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "601d3327-361f-4f24-b4a6-963702aaac35",
+              "blockType": "MultiQuestionContainer",
+              "title": "An entity shall provide reconciliations of all of the following : _x000D_\n_x000D_\nNote: All material reconciling items shall be separately identified and described (see help text).\n(a) the total of the reportable segments' revenues to the entity's revenue.\n(b) the total of the reportable segments' measures of profit or loss to the entity's profit or loss before tax expense (tax income) and discontinued operations. _x000D_\n_x000D_\nHowever, if an entity allocates to reportable segments items such as tax expense (tax income), the entity may reconcile the total of the segments' measures of profit or loss to the entity's profit or loss after those items.\n(e) the total of the reportable segments' amounts for every other material item of information disclosed to the corresponding amount for the entity.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "ca9e7e79-9fed-454d-8ae4-0c4790e5745d",
+                  "blockType": "RadioQuestion",
+                  "title": "(a) the total of the reportable segments' revenues to the entity's revenue.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "3d0e71e2-ffbe-4463-a220-10bd7d6a80ef",
+                  "blockType": "RadioQuestion",
+                  "title": "(b) the total of the reportable segments' measures of profit or loss to the entity's profit or loss before tax expense (tax income) and discontinued operations. _x000D_\n_x000D_\nHowever, if an entity allocates to reportable segments items such as tax expense (tax income), the entity may reconcile the total of the segments' measures of profit or loss to the entity's profit or loss after those items.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "f7a0fc5f-fe01-49c9-bed8-d04f240b72b9",
+                  "blockType": "RadioQuestion",
+                  "title": "(e) the total of the reportable segments' amounts for every other material item of information disclosed to the corresponding amount for the entity.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "60963dc0-c194-4f3d-9fb7-c96204643ab9",
+      "blockType": "Section",
+      "title": "Capital Disclosure",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "fbeed49e-ff0c-4372-ae41-892a18a74fbe",
+          "blockType": "Section",
+          "title": "8.1 Capital",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "d7dd3d2c-c7ee-444b-9b85-0b678e93a8f8",
+              "blockType": "MultiQuestionContainer",
+              "title": "An entity shall disclose information that enables the users of its financial statements to evaluate the entity's objectives, policies and processes for managing capital.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "997c29d5-c648-402f-95bb-f1ac998c9ffa",
+                  "blockType": "RadioQuestion",
+                  "title": "An entity shall disclose information that enables the users of its financial statements to evaluate the entity's objectives, policies and processes for managing capital.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blockId": "0fd88b6e-cd05-4f22-bfb9-fc50dd04364e",
+      "blockType": "Section",
+      "title": "Fair Value Hierarchy Transfers",
+      "responseOptions": [],
+      "guidanceText": "",
+      "blocks": [
+        {
+          "blockId": "615b48c5-2211-42a7-a430-c327a2a972a6",
+          "blockType": "Section",
+          "title": "9.3 Fair value measurement - minimum disclosure requirements",
+          "responseOptions": [],
+          "guidanceText": "",
+          "blocks": [
+            {
+              "blockId": "49a926db-cf8d-4a73-9fa2-635c9046c983",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose, at a minimum, the following information for each class of assets and liabilities (see help text) measured at fair value (including measurements based on fair value within the scope of IFRS 13) in the statement of financial position after initial recognition:\n(A) for recurring and non-recurring fair value measurements, the fair value measurement at the end of the reporting period.\n(B) for non-recurring fair value measurements, the reasons for the measurement.\n(C) for recurring and non-recurring fair value measurements, the level of the fair value hierarchy within which the fair value measurements are categorised in their entirety (Level 1, 2 or 3).\n(E) For recurring and non-recurring fair value measurements categorised within Level 2 and Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) A description of the valuation technique(s).\n(ii) The inputs used in the fair value measurement.\n(F) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, an entity shall provide quantitative information about the significant unobservable inputs used in the fair value measurement (see help text).\n(G) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) a reconciliation from the opening balances to the closing balances.\n(ii) Disclose separately in the reconciliation changes during the period attributable to the following:_x000D_\n_x000D_\n(I) total gains or losses for the period recognised in profit or loss.\n(II) the line item(s) in profit or loss in which the above gains or losses are recognised.\n(III) total gains or losses for the period recognised in other comprehensive income.\n(IV) the line item(s) in other comprehensive income in which the above gains or losses are recognised.\n(V) purchases, sales, issues and settlements (each of those types of changes disclosed separately).\n(H) for recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:\n\n(i)  the amount of the total gains or losses for the period (as required to be disclosed above) included in profit or loss that is attributable to the change in unrealised gains or losses relating to those assets and liabilities held at the end of the reporting period; and\n(ii) the line item(s) in profit or loss in which those unrealised gains or losses are recognised.\n(I) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, a description of the valuation processes used by the entity (including, for example, how an entity decides its valuation policies and procedures and analyses changes in fair value measurements from period to period).\n(J) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) for all such measurements, a narrative description of the sensitivity of the fair value measurement to changes in unobservable inputs if a change in those inputs to a different amount might result in a significantly higher or lower fair value measurement.\n(ii) If there are interrelationships between those inputs and other unobservable inputs used in the fair value measurement, an entity shall also provide a description of those interrelationships and of how they might magnify or mitigate the effect of changes in the unobservable inputs on the fair value measurement.\n\nNote: To comply with that disclosure requirement, the narrative description of the sensitivity to changes in unobservable inputs shall include, at a minimum, the unobservable inputs disclosed when complying with the question above.\n(K) for financial assets and financial liabilities, if changing one or more of the unobservable inputs to reflect reasonably possible alternative assumptions would change fair value significantly (see help text):_x000D_\n_x000D_\n(i) state that fact.\n(ii) disclose the effect of those changes.\n(iii) disclose how the effect of a change to reflect a reasonably possible alternative assumption was calculated.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "5930df35-02a0-4b3f-b33d-19d5c2b9e2a2",
+                  "blockType": "RadioQuestion",
+                  "title": "(A) for recurring and non-recurring fair value measurements, the fair value measurement at the end of the reporting period.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d08e0296-1bfd-4c2d-830a-57a18fb053d4",
+                  "blockType": "RadioQuestion",
+                  "title": "(B) for non-recurring fair value measurements, the reasons for the measurement.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "9f9c5613-00fd-412a-9161-42858de32abe",
+                  "blockType": "RadioQuestion",
+                  "title": "(C) for recurring and non-recurring fair value measurements, the level of the fair value hierarchy within which the fair value measurements are categorised in their entirety (Level 1, 2 or 3).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "81b565e6-af80-4264-ab26-28f5a0bb31d1",
+                  "blockType": "RadioQuestion",
+                  "title": "(E) For recurring and non-recurring fair value measurements categorised within Level 2 and Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) A description of the valuation technique(s).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "e5582914-fd05-4ca7-aaa1-8694bfe49071",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) The inputs used in the fair value measurement.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "2cd861a1-cf29-4428-aabb-bee5760b757a",
+                  "blockType": "RadioQuestion",
+                  "title": "(F) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, an entity shall provide quantitative information about the significant unobservable inputs used in the fair value measurement (see help text).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "873d3d9a-af10-4bf8-951d-771117a76ddd",
+                  "blockType": "RadioQuestion",
+                  "title": "(G) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) a reconciliation from the opening balances to the closing balances.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1971f4da-c1b4-4907-889c-4b65cb2811fc",
+                  "blockType": "RadioQuestion",
+                  "title": "(II) the line item(s) in profit or loss in which the above gains or losses are recognised.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "3e1c1358-470c-4d8e-8d5b-d63f6c757818",
+                  "blockType": "RadioQuestion",
+                  "title": "(IV) the line item(s) in other comprehensive income in which the above gains or losses are recognised.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "43bd1a20-217c-4152-bbb0-49a1a7fe533f",
+                  "blockType": "RadioQuestion",
+                  "title": "(V) purchases, sales, issues and settlements (each of those types of changes disclosed separately).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "e9d50bc7-c93b-4e59-aae7-811f8ca2d65e",
+                  "blockType": "RadioQuestion",
+                  "title": "(H) for recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:\n\n(i)  the amount of the total gains or losses for the period (as required to be disclosed above) included in profit or loss that is attributable to the change in unrealised gains or losses relating to those assets and liabilities held at the end of the reporting period; and",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "ac1eb434-675d-4df9-b33f-bbf7d92df3fd",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) the line item(s) in profit or loss in which those unrealised gains or losses are recognised.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "d2972ee9-47ad-4184-bca1-87a0d1d2c467",
+                  "blockType": "RadioQuestion",
+                  "title": "(I) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, a description of the valuation processes used by the entity (including, for example, how an entity decides its valuation policies and procedures and analyses changes in fair value measurements from period to period).",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "eb3b5b58-348a-49cc-80a4-610145c4e7dc",
+                  "blockType": "RadioQuestion",
+                  "title": "(J) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:_x000D_\n_x000D_\n(i) for all such measurements, a narrative description of the sensitivity of the fair value measurement to changes in unobservable inputs if a change in those inputs to a different amount might result in a significantly higher or lower fair value measurement.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1acfbc74-6184-4817-bdf2-61cb57794ce6",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) If there are interrelationships between those inputs and other unobservable inputs used in the fair value measurement, an entity shall also provide a description of those interrelationships and of how they might magnify or mitigate the effect of changes in the unobservable inputs on the fair value measurement.\n\nNote: To comply with that disclosure requirement, the narrative description of the sensitivity to changes in unobservable inputs shall include, at a minimum, the unobservable inputs disclosed when complying with the question above.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "9ddf27db-f67a-4f55-800c-e2b7f8b92660",
+                  "blockType": "RadioQuestion",
+                  "title": "(K) for financial assets and financial liabilities, if changing one or more of the unobservable inputs to reflect reasonably possible alternative assumptions would change fair value significantly (see help text):_x000D_\n_x000D_\n(i) state that fact.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "c8164691-9654-4007-b14c-1ffb0bddbcd0",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) disclose the effect of those changes.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "1fa8c77d-6f56-49d3-ad40-9e3fb7d54fdd",
+                  "blockType": "RadioQuestion",
+                  "title": "(iii) disclose how the effect of a change to reflect a reasonably possible alternative assumption was calculated.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            },
+            {
+              "blockId": "b8bf5740-b0d1-4a82-8b85-2d616dc2f501",
+              "blockType": "MultiQuestionContainer",
+              "title": "Disclose, at a minimum, the following information for each class of assets and liabilities (see help text) measured at fair value (including measurements based on fair value within the scope of IFRS 13) in the statement of financial position after initial recognition:\n(A) for recurring and non-recurring fair value measurements, the fair value measurement at the end of the reporting period.\n(B) for non-recurring fair value measurements, the reasons for the measurement.\n(C) for recurring and non-recurring fair value measurements, the level of the fair value hierarchy within which the fair value measurements are categorised in their entirety (Level 1, 2 or 3).\n(E) For recurring and non-recurring fair value measurements categorised within Level 2 and Level 3 of the fair value hierarchy disclose:\n\n(i) A description of the valuation technique(s).\n(ii) The inputs used in the fair value measurement.\n(F) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, an entity shall provide quantitative information about the significant unobservable inputs used in the fair value measurement (see help text).\n(G) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:\n\n(i) a reconciliation from the opening balances to the closing balances.\n(ii) Disclose separately in the reconciliation changes during the period attributable to the following:\n\n(I) total gains or losses for the period recognised in profit or loss.\n(II) the line item(s) in profit or loss in which the above gains or losses are recognised.\n(III) total gains or losses for the period recognised in other comprehensive income.\n(IV) the line item(s) in other comprehensive income in which the above gains or losses are recognised.\n(V) purchases, sales, issues and settlements (each of those types of changes disclosed separately).\n(H) for recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:\n\n(i)  the amount of the total gains or losses for the period (as required to be disclosed above) included in profit or loss that is attributable to the change in unrealised gains or losses relating to those assets and liabilities held at the end of the reporting period; and\n(ii) the line item(s) in profit or loss in which those unrealised gains or losses are recognised.\n(I) for recurring and non-recurring fair value measurements categorised within Level 3 of the fair value hierarchy, a description of the valuation processes used by the entity (including, for example, how an entity decides its valuation policies and procedures and analyses changes in fair value measurements from period to period).\n(J) For recurring fair value measurements categorised within Level 3 of the fair value hierarchy disclose:\n\n(i) for all such measurements, a narrative description of the sensitivity of the fair value measurement to changes in unobservable inputs if a change in those inputs to a different amount might result in a significantly higher or lower fair value measurement.\n(ii) If there are interrelationships between those inputs and other unobservable inputs used in the fair value measurement, an entity shall also provide a description of those interrelationships and of how they might magnify or mitigate the effect of changes in the unobservable inputs on the fair value measurement.\n\nNote: To comply with that disclosure requirement, the narrative description of the sensitivity to changes in unobservable inputs shall include, at a minimum, the unobservable inputs disclosed when complying with the question above.\n(K) for financial assets and financial liabilities, if changing one or more of the unobservable inputs to reflect reasonably possible alternative assumptions would change fair value significantly (see help text):\n\n(i) state that fact.\n(ii) disclose the effect of those changes.\n(iii) disclose how the effect of a change to reflect a reasonably possible alternative assumption was calculated.",
+              "responseOptions": [],
+              "guidanceText": "",
+              "blocks": [
+                {
+                  "blockId": "d97602e1-2f87-4e74-bd59-78608e9ba0b0",
+                  "blockType": "RadioQuestion",
+                  "title": "(ii) Disclose separately in the reconciliation changes during the period attributable to the following:_x000D_\n_x000D_\n(I) total gains or losses for the period recognised in profit or loss.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                },
+                {
+                  "blockId": "e3f10cfa-da2f-4e34-89a1-67d78df510c7",
+                  "blockType": "RadioQuestion",
+                  "title": "(III) total gains or losses for the period recognised in other comprehensive income.",
+                  "responseOptions": [
+                    "Yes",
+                    "No",
+                    "NotApplicable"
+                  ],
+                  "guidanceText": "",
+                  "blocks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
