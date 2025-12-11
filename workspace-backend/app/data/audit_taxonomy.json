@@ -1,0 +1,85 @@
+[
+  {
+    "id": "domain-core-mesp",
+    "label": "MESP",
+    "category": "Core Audit",
+    "synonyms": [
+      "material existence substantive procedures",
+      "core audit",
+      "financial statement testing"
+    ],
+    "intentExamples": [
+      "plan engagement",
+      "sample populations",
+      "execute substantive procedures",
+      "draft workpapers"
+    ],
+    "relatedDomains": ["domain-core-workpaper"],
+    "knowledgeRef": "kb-mesp-core"
+  },
+  {
+    "id": "domain-risk-erm",
+    "label": "Enterprise Risk",
+    "category": "Risk Assurance",
+    "synonyms": [
+      "risk assessment",
+      "erm",
+      "residual risk analysis"
+    ],
+    "intentExamples": [
+      "risk scoping",
+      "score inherent risk",
+      "residual risk narrative"
+    ],
+    "relatedDomains": ["domain-fraud"],
+    "knowledgeRef": "kb-risk-fraud"
+  },
+  {
+    "id": "domain-fraud",
+    "label": "Fraud & Investigations",
+    "category": "Specialty",
+    "synonyms": [
+      "fraud review",
+      "investigation",
+      "forensic"
+    ],
+    "intentExamples": [
+      "triage anomalies",
+      "investigate exceptions"
+    ],
+    "relatedDomains": ["domain-risk-erm"]
+  },
+  {
+    "id": "domain-compliance",
+    "label": "Regulatory Compliance",
+    "category": "Specialty",
+    "synonyms": [
+      "compliance testing",
+      "regulatory evidence",
+      "clara compliance"
+    ],
+    "intentExamples": [
+      "collect evidence",
+      "tag citations",
+      "compile compliance memo"
+    ],
+    "relatedDomains": ["domain-core-workpaper"],
+    "knowledgeRef": "kb-compliance-testing"
+  },
+  {
+    "id": "domain-core-workpaper",
+    "label": "Workpaper Production",
+    "category": "Core Audit",
+    "synonyms": [
+      "workpaper authoring",
+      "clara workpaper",
+      "audit documentation"
+    ],
+    "intentExamples": [
+      "draft workpaper",
+      "update conclusions",
+      "prepare review notes"
+    ],
+    "relatedDomains": ["domain-core-mesp"]
+  }
+]

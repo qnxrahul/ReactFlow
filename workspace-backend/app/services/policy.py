@@ -15,9 +15,13 @@ class WorkflowPolicyService:
         workflow: WorkflowDefinition,
         components: Iterable[ComponentDefinition],
         handlers: Iterable[HandlerDefinition],
+        *,
+        allow_small_workflows: bool = False,
     ) -> None:
-        if not (self._min <= len(workflow.nodes) <= self._max):
+        if not allow_small_workflows and not (self._min <= len(workflow.nodes) <= self._max):
             raise ValueError(f"Workflow must contain between {self._min} and {self._max} nodes")
+        if allow_small_workflows and len(workflow.nodes) > self._max:
+            raise ValueError(f"Workflow must contain between 1 and {self._max} nodes")
 
         component_types: Set[str] = {component.type for component in components}
         handler_ids: Set[str] = {handler.handler for handler in handlers}

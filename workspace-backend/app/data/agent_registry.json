@@ -1,11 +1,23 @@
 [
   {
+    "id": "agent-mesp-planner",
+    "name": "MESP Engagement Planner",
+    "handler": "openrouter.mesp.planner",
+    "description": "Designs end-to-end MESP plans covering scope, samples, and initial workpapers.",
+    "domains": ["MESP"],
+    "intentTags": ["plan engagement", "sampling", "scope alignment"],
+    "capabilities": ["planning", "sampling", "mesp"],
+    "mcpTool": "mesp_planner",
+    "defaultParams": {"temperature": 0.15}
+  },
+  {
     "id": "agent-risk-analyst",
-    "name": "Risk Analyst Agent",
+    "name": "Enterprise Risk Analyst",
     "handler": "openrouter.risk",
-    "description": "LLM-powered agent that summarizes inherent and residual risk with recommended next steps.",
-    "domains": ["Risk", "MESP"],
-    "intentTags": ["assessment", "planning"],
+    "description": "Summarizes inherent/residual risk narratives and aligns with ERM heatmaps.",
+    "domains": ["Enterprise Risk"],
+    "intentTags": ["risk assessment", "risk narrative"],
+    "capabilities": ["risk scoring", "residual risk", "erm"],
     "mcpTool": "risk_analyst",
     "defaultParams": {"temperature": 0.1}
   },
@@ -14,8 +26,9 @@
     "name": "Fraud Reviewer",
     "handler": "rules.fraud",
     "description": "Hybrid service that inspects anomalies and proposes escalation paths.",
-    "domains": ["Fraud"],
-    "intentTags": ["investigation"],
+    "domains": ["Fraud & Investigations"],
+    "intentTags": ["investigation", "fraud triage"],
+    "capabilities": ["fraud", "anomaly detection"],
     "mcpTool": "fraud_reviewer",
     "defaultParams": {"threshold": 0.8}
   },
@@ -24,9 +37,22 @@
     "name": "Compliance Evidence Scout",
     "handler": "openrouter.collect",
     "description": "Collects and tags regulatory evidence mapped to citations.",
-    "domains": ["Compliance"],
+    "domains": ["Regulatory Compliance"],
     "intentTags": ["evidence", "collection"],
+    "capabilities": ["compliance", "citations", "evidence"],
     "mcpTool": "compliance_scout",
     "defaultParams": {}
+  },
+  {
+    "id": "agent-workpaper-drafter",
+    "name": "Workpaper Drafter",
+    "handler": "openrouter.workpaper",
+    "description": "Drafts and updates audit workpapers, cascading reviewer notes across components.",
+    "domains": ["Workpaper Production"],
+    "intentTags": ["workpaper", "documentation"],
+    "capabilities": ["workpaper", "documentation"],
+    "mcpTool": "workpaper_drafter",
+    "isGlobal": true,
+    "defaultParams": {"temperature": 0.2}
   }
 ]

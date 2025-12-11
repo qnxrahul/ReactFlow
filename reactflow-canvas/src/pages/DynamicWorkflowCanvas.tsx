@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import '@xyflow/react/dist/base.css'
 import {
   Background,
@@ -12,6 +12,7 @@ import {
   type NodeTypes,
 } from '@xyflow/react'
 import { nanoid } from 'nanoid'
+import { AgentToolbar } from '../components/AgentToolbar'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
@@ -19,8 +20,8 @@ import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { fetchAgents, runAgent } from '../services/agentsApi'
 import { assistWorkflow } from '../services/workflowsApi'
-import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
 import { DynamicWorkflowNode, type DynamicWorkflowNodeType } from '../workflows/components/DynamicWorkflowNode'
+import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
 import type { AgentDefinition, WorkflowNode } from '../workflows/types'
 
 const nodeTypes = { dynamic: DynamicWorkflowNode } satisfies NodeTypes
@@ -46,7 +47,7 @@ function extractKeywords(text: string): string[] {
 }
 
 export default function DynamicWorkflowCanvas() {
-  const { generate, definition, nodes, runNode, loading, error, applyDefinition } = useDynamicWorkflow()
+  const { generate, definition, nodes, edges, runNode, loading, error, applyDefinition } = useDynamicWorkflow()
   const [form, setForm] = useState(defaultPayload)
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<DynamicWorkflowNodeType>([])
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -61,6 +62,9 @@ export default function DynamicWorkflowCanvas() {
   const [assistSuggestions, setAssistSuggestions] = useState<WorkflowNode[]>([])
   const [assistLoading, setAssistLoading] = useState(false)
   const [assistError, setAssistError] = useState<string | null>(null)
+  const [toolbarAgentId, setToolbarAgentId] = useState<string | null>(null)
+  const [toolbarError, setToolbarError] = useState<string | null>(null)
+  const [agentMatchScores, setAgentMatchScores] = useState<Record<string, number>>({})
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
@@ -120,17 +124,68 @@ export default function DynamicWorkflowCanvas() {
     syncNodes(nodes, nodePositions)
   }, [nodes, nodePositions, syncNodes])
 
+  const workflowEdgeSignatureRef = useRef<string>('')
+  useEffect(() => {
+    const nextEdges = (edges ?? []).map((edge) => ({
+      id: edge.id || nanoid(),
+      source: edge.source,
+      target: edge.target,
+      animated: true,
+      label: edge.label ?? undefined,
+    }))
+    const signature = JSON.stringify(nextEdges)
+    if (workflowEdgeSignatureRef.current === signature) return
+    workflowEdgeSignatureRef.current = signature
+    setRfEdges(nextEdges)
+  }, [edges, setRfEdges])
+
   useEffect(() => {
     let cancelled = false
     const loadAgents = async () => {
       setAgentsLoading(true)
       try {
-        const result = await fetchAgents({ domain: form.domain, intent: form.intent, keywords: contextKeywords })
-        if (!cancelled) {
-          setAgents(result)
-          setAgentError(null)
-          setSelectedAgentIds((prev) => prev.filter((id) => result.some((agent) => agent.id === id)))
+        const result = await fetchAgents()
+        if (cancelled) return
+        const deduped = Array.from(new Map(result.map((agent) => [agent.id, agent])).values())
+        const normalizedDomain = form.domain.trim().toLowerCase()
+        const intentTokens = form.intent
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+        const keywordSet = new Set((contextKeywords ?? []).map((keyword) => keyword.toLowerCase()))
+        const scoreAgent = (agent: AgentDefinition) => {
+          let score = 0
+          if (normalizedDomain && agent.domains.some((domain) => domain.toLowerCase().includes(normalizedDomain))) {
+            score += 3
+          }
+          if (intentTokens.length > 0) {
+            const intentMatches = intentTokens.filter((token) =>
+              agent.intentTags.some((tag) => tag.toLowerCase().includes(token)),
+            )
+            score += intentMatches.length * 2
+          }
+          if (keywordSet.size > 0) {
+            keywordSet.forEach((keyword) => {
+              if (
+                agent.capabilities?.some((capability) => capability.toLowerCase().includes(keyword)) ||
+                agent.domains.some((domain) => domain.toLowerCase().includes(keyword)) ||
+                agent.intentTags.some((tag) => tag.toLowerCase().includes(keyword))
+              ) {
+                score += 1
+              }
+            })
+          }
+          return score
         }
+        const scores = deduped.reduce<Record<string, number>>((acc, agent) => {
+          acc[agent.id] = scoreAgent(agent)
+          return acc
+        }, {})
+        deduped.sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0))
+        setAgentMatchScores(scores)
+        setAgents(deduped)
+        setAgentError(null)
+        setSelectedAgentIds((prev) => prev.filter((id) => deduped.some((agent) => agent.id === id)))
       } catch (error) {
         if (!cancelled) setAgentError((error as Error).message)
       } finally {
@@ -163,10 +218,45 @@ export default function DynamicWorkflowCanvas() {
         intent: form.intent,
       })
       setAgentRunOutput(result.output)
+      setToolbarError(null)
     } catch (err) {
       setAgentRunOutput((err as Error).message)
     }
   }
+
+  const handleInsertAgent = useCallback(
+    async (agent: AgentDefinition) => {
+      setToolbarAgentId(agent.id)
+      setToolbarError(null)
+      try {
+        const response = await assistWorkflow({
+          question: `Add agent ${agent.name} (${agent.handler}) to this workflow and highlight its strengths.`,
+          workflowId: definition?.id,
+          domain: form.domain,
+          intent: form.intent,
+          description: form.description,
+          contextKeywords,
+          preferredHandlers: Array.from(new Set([...preferredHandlers, agent.handler])),
+          context: {
+            agentId: agent.id,
+            mcpTool: agent.mcpTool,
+            description: agent.description,
+          },
+        })
+        setAssistAnswer(response.answer)
+        setAssistSuggestions(response.suggestedNodes ?? [])
+        if (response.workflow) {
+          applyDefinition(response.workflow)
+          setNodePositions((prev) => ({ ...prev }))
+        }
+      } catch (err) {
+        setToolbarError((err as Error).message)
+      } finally {
+        setToolbarAgentId(null)
+      }
+    },
+    [definition?.id, form, contextKeywords, preferredHandlers, applyDefinition],
+  )
 
   const handleAssist = useCallback(async () => {
     const question = assistQuestion.trim() || form.description || `Help me reason about ${form.intent}`
@@ -255,68 +345,6 @@ export default function DynamicWorkflowCanvas() {
             </div>
           </div>
         )}
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Agents</CardTitle>
-            <CardDescription>Select MCP-backed agents to prioritize or test runs before generating.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {agentError && <p className="text-sm text-red-600">{agentError}</p>}
-            {agentsLoading ? (
-              <p className="text-sm text-muted-foreground">Loading agents…</p>
-            ) : (
-              <ul className="space-y-3">
-                {agents.map((agent) => {
-                  const selected = selectedAgentIds.includes(agent.id)
-                  return (
-                    <li key={agent.id} className="rounded-xl border border-slate-200 p-3">
-                      <div className="flex items-center justify-between text-sm font-medium">
-                        <span>{agent.name}</span>
-                        <span className="text-xs text-slate-500">{agent.handler}</span>
-                      </div>
-                      {agent.description && <p className="mt-1 text-xs text-slate-500">{agent.description}</p>}
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-                        {agent.domains.map((domain) => (
-                          <span key={domain} className="rounded-full bg-slate-100 px-2 py-0.5">
-                            {domain}
-                          </span>
-                        ))}
-                        {(agent.capabilities ?? []).map((capability) => (
-                          <span key={capability} className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
-                            {capability}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button
-                          type="button"
-                          variant={selected ? 'secondary' : 'outline'}
-                          size="sm"
-                          onClick={() => toggleAgentSelection(agent.id)}
-                        >
-                          {selected ? 'Selected' : 'Prioritize'}
-                        </Button>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => handleRunAgent(agent.id)}>
-                          Run
-                        </Button>
-                      </div>
-                    </li>
-                  )
-                })}
-                {agents.length === 0 && !agentsLoading && <p className="text-sm text-muted-foreground">No agents available for this domain.</p>}
-              </ul>
-            )}
-            <p className="text-xs text-slate-500">Selected agents: {selectedAgentIds.length}</p>
-            {agentRunOutput && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-                <strong>Last run:</strong>
-                <p className="whitespace-pre-wrap">{agentRunOutput}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Ask the AI planner</CardTitle>
@@ -362,26 +390,42 @@ export default function DynamicWorkflowCanvas() {
         </Card>
       </aside>
 
-      <main className="flex-1">
-        <ReactFlow
-          nodes={rfNodes}
-          edges={rfEdges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={(connection) => setRfEdges((eds) => addEdge(connection, eds))}
-          onNodeDragStop={(_, node) =>
-            setNodePositions((prev) => ({
-              ...prev,
-              [node.id]: node.position,
-            }))
-          }
-          fitView
-          nodeTypes={nodeTypes}
-          className="bg-slate-100"
-        >
-          <Background variant={BackgroundVariant.Lines} gap={24} />
-          <Controls position="bottom-right" />
-        </ReactFlow>
+      <main className="flex flex-1 flex-col overflow-hidden">
+        <AgentToolbar
+          agents={agents}
+          selectedAgentIds={selectedAgentIds}
+          onToggleAgent={toggleAgentSelection}
+          onRunAgent={handleRunAgent}
+          onInsertAgent={handleInsertAgent}
+          loading={agentsLoading}
+          busyAgentId={toolbarAgentId}
+          fetchError={agentError}
+          actionError={toolbarError}
+          contextKeywords={contextKeywords}
+          lastRunOutput={agentRunOutput}
+          matchScores={agentMatchScores}
+        />
+        <div className="flex-1">
+          <ReactFlow
+            nodes={rfNodes}
+            edges={rfEdges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={(connection) => setRfEdges((eds) => addEdge(connection, eds))}
+            onNodeDragStop={(_, node) =>
+              setNodePositions((prev) => ({
+                ...prev,
+                [node.id]: node.position,
+              }))
+            }
+            fitView
+            nodeTypes={nodeTypes}
+            className="bg-slate-100"
+          >
+            <Background variant={BackgroundVariant.Lines} gap={24} />
+            <Controls position="bottom-right" />
+          </ReactFlow>
+        </div>
       </main>
     </div>
   )

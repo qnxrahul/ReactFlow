@@ -48,8 +48,14 @@ class OpenRouterClient:
             payload["response_format"] = {"type": "json_schema", "json_schema": response_schema}
 
         with httpx.Client(timeout=self._timeout) as client:
-            response = client.post(f"{self._base_url}/chat/completions", json=payload, headers=headers)
-            response.raise_for_status()
+            try:
+                response = client.post(f"{self._base_url}/chat/completions", json=payload, headers=headers)
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                detail = exc.response.text
+                raise RuntimeError(
+                    f"OpenRouter request failed ({exc.response.status_code}): {detail}"
+                ) from exc
             data = response.json()
 
         content = (

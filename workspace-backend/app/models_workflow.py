@@ -138,6 +138,7 @@ class AgentDefinition(BaseModel):
     mcp_tool: str = Field(alias="mcpTool")
     mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
     default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
+    is_global: bool = Field(default=False, alias="isGlobal")
 
     class Config:
         populate_by_name = True
@@ -153,6 +154,7 @@ class AgentDefinitionRequest(BaseModel):
     mcp_tool: str = Field(alias="mcpTool")
     mcp_server: Optional[str] = Field(default=None, alias="mcpServer")
     default_params: Dict[str, object] = Field(default_factory=dict, alias="defaultParams")
+    is_global: bool = Field(default=False, alias="isGlobal")
 
     class Config:
         populate_by_name = True

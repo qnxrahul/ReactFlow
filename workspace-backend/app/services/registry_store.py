@@ -65,13 +65,24 @@ DEFAULT_HANDLERS = [
 
 DEFAULT_AGENTS = [
     {
+        "id": "agent-mesp-planner",
+        "name": "MESP Engagement Planner",
+        "handler": "openrouter.mesp.planner",
+        "description": "Designs end-to-end MESP plans covering scope, samples, and initial workpapers.",
+        "domains": ["MESP"],
+        "intentTags": ["plan engagement", "sampling", "scope alignment"],
+        "capabilities": ["planning", "sampling", "mesp"],
+        "mcpTool": "mesp_planner",
+        "defaultParams": {"temperature": 0.15},
+    },
+    {
         "id": "agent-risk-analyst",
-        "name": "Risk Analyst Agent",
+        "name": "Enterprise Risk Analyst",
         "handler": "openrouter.risk",
-        "description": "Summarizes inherent/residual risk and suggests mitigation actions.",
-        "domains": ["Risk", "MESP"],
-        "intentTags": ["assessment", "planning"],
-        "capabilities": ["risk", "planning", "analysis"],
+        "description": "Summarizes inherent/residual risk narratives and aligns with ERM heatmaps.",
+        "domains": ["Enterprise Risk"],
+        "intentTags": ["risk assessment", "risk narrative"],
+        "capabilities": ["risk scoring", "residual risk", "erm"],
         "mcpTool": "risk_analyst",
         "defaultParams": {"temperature": 0.1},
     },
@@ -80,8 +91,8 @@ DEFAULT_AGENTS = [
         "name": "Fraud Reviewer",
         "handler": "rules.fraud",
         "description": "Reviews anomalies and flags fraud cases for escalation.",
-        "domains": ["Fraud"],
-        "intentTags": ["investigation"],
+        "domains": ["Fraud & Investigations"],
+        "intentTags": ["investigation", "fraud triage"],
         "capabilities": ["fraud", "investigation", "anomaly"],
         "mcpTool": "fraud_reviewer",
         "defaultParams": {"threshold": 0.8},
@@ -91,11 +102,23 @@ DEFAULT_AGENTS = [
         "name": "Compliance Evidence Scout",
         "handler": "openrouter.collect",
         "description": "Collects and tags regulatory evidence mapped to citations.",
-        "domains": ["Compliance"],
+        "domains": ["Regulatory Compliance"],
         "intentTags": ["evidence", "collection"],
         "capabilities": ["compliance", "evidence", "regulation"],
         "mcpTool": "compliance_scout",
         "defaultParams": {},
+    },
+    {
+        "id": "agent-workpaper-drafter",
+        "name": "Workpaper Drafter",
+        "handler": "openrouter.workpaper",
+        "description": "Drafts and updates audit workpapers, cascading reviewer notes across components.",
+        "domains": ["Workpaper Production"],
+        "intentTags": ["workpaper", "documentation"],
+        "capabilities": ["workpaper", "documentation"],
+        "mcpTool": "workpaper_drafter",
+        "isGlobal": True,
+        "defaultParams": {"temperature": 0.2},
     },
 ]
 
@@ -116,8 +139,13 @@ class ComponentRegistryStore:
 
     def _ensure_defaults(self) -> None:
         data = self._load()
-        existing_types = {item.get("type") for item in data.get("components", [])}
         changed = False
+
+        changed |= self._dedupe_entries(data, "components", key_field="type")
+        changed |= self._dedupe_entries(data, "handlers", key_field="handler")
+        changed |= self._dedupe_entries(data, "agents", key_field=("handler", "mcpTool"))
+
+        existing_types = {item.get("type") for item in data.get("components", [])}
         for default in DEFAULT_COMPONENTS:
             if default["type"] not in existing_types:
                 component = ComponentDefinition(**ComponentDefinitionRequest(**default).model_dump())
@@ -133,16 +161,44 @@ class ComponentRegistryStore:
                 existing_handlers.add(default["handler"])
                 changed = True
 
-        existing_agents = {item.get("id") for item in data.get("agents", [])}
+        agents = data.setdefault("agents", [])
         for default in DEFAULT_AGENTS:
-            if default["id"] not in existing_agents:
-                agent = AgentDefinition(**AgentDefinitionRequest(**default).model_dump())
-                data.setdefault("agents", []).append(agent.model_dump(by_alias=True))
-                existing_agents.add(default["id"])
+            agent_obj = AgentDefinition(**AgentDefinitionRequest(**default).model_dump())
+            serialized = agent_obj.model_dump(by_alias=True)
+            replaced = False
+            for index, existing in enumerate(agents):
+                if existing.get("handler") == serialized["handler"]:
+                    if existing != serialized:
+                        agents[index] = serialized
+                        changed = True
+                    replaced = True
+                    break
+            if not replaced:
+                agents.append(serialized)
                 changed = True
 
         if changed:
             self._save(data)
+
+    def _dedupe_entries(self, data: dict, key: str, *, key_field: str | tuple[str, ...]) -> bool:
+        items = data.get(key, [])
+        if not items:
+            return False
+        seen = set()
+        deduped = []
+        for entry in items:
+            if isinstance(key_field, tuple):
+                identifier = tuple(entry.get(field) for field in key_field)
+            else:
+                identifier = entry.get(key_field)
+            if identifier in seen:
+                continue
+            seen.add(identifier)
+            deduped.append(entry)
+        if len(deduped) == len(items):
+            return False
+        data[key] = deduped
+        return True
 
     def list_components(self) -> List[ComponentDefinition]:
         self._ensure_defaults()

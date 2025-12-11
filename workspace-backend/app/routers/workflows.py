@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..dependencies import (
     get_agent_registry_store,
+    get_audit_taxonomy,
     get_component_registry_store,
     get_llm_client,
     get_mcp_client,
@@ -24,8 +25,12 @@ from ..models_workflow import (
     WorkflowAssistResponse,
     WorkflowDefinition,
     WorkflowGenerateRequest,
+    WorkflowNode,
+    WorkflowNodeBehavior,
+    WorkflowNodeUI,
     WorkflowRunNodeResponse,
 )
+from ..services.audit_taxonomy import AuditTaxonomy
 from ..services.llm_client import OpenRouterClient
 from ..services.mcp_client import MCPClient
 from ..services.policy import WorkflowPolicyService
@@ -59,11 +64,32 @@ def generate_workflow(
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
     policy: WorkflowPolicyService = Depends(get_policy_service),
+    taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowDefinition:
     components = registry.list_components()
     handlers = registry.list_handlers()
     author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
-    workflow = author.generate(payload)
+    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
+    available_agents = registry.list_agents()
+    domain_agents = [
+        agent
+        for agent in available_agents
+        if canonical_domain and canonical_domain in taxonomy.canonicalize_list(agent.domains)
+    ]
+    if not domain_agents:
+        domain_agents = [agent for agent in available_agents if agent.is_global]
+    preferred_handlers = []
+    for handler_id in payload.preferred_handlers + [agent.handler for agent in domain_agents]:
+        if handler_id not in preferred_handlers:
+            preferred_handlers.append(handler_id)
+    workflow = author.generate(
+        payload.model_copy(
+            update={
+                "domain": canonical_domain,
+                "preferred_handlers": preferred_handlers,
+            }
+        )
+    )
     policy.validate(workflow, components, handlers)
     repo.save(workflow)
     return _normalize(workflow)
@@ -138,6 +164,7 @@ def register_handler(
 def assist_workflow(
     payload: WorkflowAssistRequest,
     registry: ComponentRegistryStore = Depends(get_component_registry_store),
+    agent_registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     repo: WorkflowRepository = Depends(get_workflow_repository),
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
@@ -175,7 +202,33 @@ def assist_workflow(
     )
 
     generated = author.generate(request)
-    policy.validate(generated, components, handlers)
+    agent_context = (payload.context or {}).get("agentId")
+    handler_hint = None
+    agent_profile = None
+    if agent_context:
+        agent_profile = agent_registry.find_agent_by_id(str(agent_context))
+        if agent_profile:
+            handler_hint = agent_profile.handler
+
+    if handler_hint:
+        filtered_nodes = [node for node in generated.nodes if node.behavior.handler == handler_hint]
+        filtered_ids = {node.id for node in filtered_nodes}
+        filtered_edges = [edge for edge in generated.edges if edge.source in filtered_ids and edge.target in filtered_ids]
+        if not filtered_nodes and agent_profile:
+            fallback_node = WorkflowNode(
+                type="agentTask",
+                name=agent_profile.name,
+                description=agent_profile.description,
+                ui=WorkflowNodeUI(component_type="agentCard", props={"subtitle": agent_profile.mcp_tool}),
+                behavior=WorkflowNodeBehavior(handler=agent_profile.handler, kind="llm-agent"),
+            )
+            filtered_nodes = [fallback_node]
+            filtered_ids = {fallback_node.id}
+            filtered_edges = []
+
+        if filtered_nodes:
+            generated = generated.model_copy(update={"nodes": filtered_nodes, "edges": filtered_edges})
+    policy.validate(generated, components, handlers, allow_small_workflows=bool(handler_hint))
 
     suggested_nodes = generated.nodes
     result_workflow = generated
