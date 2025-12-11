@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from ..config import get_settings
 from ..dependencies import get_agent_registry_store, get_audit_taxonomy, get_mcp_client
 from ..models_workflow import AgentDefinition, AgentDefinitionRequest, AgentListResponse, AgentRunRequest, AgentRunResponse
 from ..services.audit_taxonomy import AuditTaxonomy
+from ..services.maf_client import MAFClient
 from ..services.mcp_client import MCPClient
 from ..services.registry_store import ComponentRegistryStore
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
+
+logger = logging.getLogger(__name__)
 
 
 def _normalize(value: Optional[str]) -> Optional[str]:
@@ -79,7 +84,38 @@ def list_agents(
     registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> AgentListResponse:
-    agents = _filter_agents(registry.list_agents(), _normalize(domain), _normalize(intent), keywords, taxonomy)
+    base_agents = registry.list_agents()
+
+    settings = get_settings()
+    maf_client = MAFClient(settings)
+    maf_agents: List[AgentDefinition] = []
+    if maf_client.enabled:
+        try:
+            response = maf_client.list_agents()
+            raw_agents = response.get("agents", []) if isinstance(response, dict) else []
+            maf_agents = [
+                AgentDefinition.model_validate(item)
+                for item in raw_agents
+                if isinstance(item, dict)
+            ]
+        except Exception as exc:  # pragma: no cover - network issues
+            logger.warning("Failed to load agents from MAF catalog: %s", exc)
+
+    combined: List[AgentDefinition] = []
+    seen_ids = set()
+
+    def _append(agent: AgentDefinition) -> None:
+        if agent.id in seen_ids:
+            return
+        seen_ids.add(agent.id)
+        combined.append(agent)
+
+    for agent in base_agents:
+        _append(agent)
+    for agent in maf_agents:
+        _append(agent)
+
+    agents = _filter_agents(combined, _normalize(domain), _normalize(intent), keywords, taxonomy)
     return AgentListResponse(agents=agents)
 
 

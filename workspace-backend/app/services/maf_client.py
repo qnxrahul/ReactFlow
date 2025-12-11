@@ -38,3 +38,6 @@ class MAFClient:
 
     def execute_workflow(self, workflow_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         return self._request("POST", f"/workflows/catalog/{workflow_id}/execute", json=payload)
+
+    def list_agents(self) -> Dict[str, Any]:
+        return self._request("GET", "/agents/catalog")
