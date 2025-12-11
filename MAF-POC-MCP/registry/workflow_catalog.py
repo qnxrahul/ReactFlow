@@ -3,10 +3,25 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+import json
 
 from pydantic import BaseModel, Field
 
 from .agent_catalog import CATALOG as AGENT_CATALOG, AgentCatalogItem
+from agents.workflow_initiation_agent import (
+    build_checklist_workflow,
+    build_checklist_workflow_new,
+)
+from agents.supervisor_agent import run_supervisor_agent
+from mcp_swagger.agent import mcp_supervisor_agent
+
+try:
+    from agent_framework import InMemoryCheckpointStorage
+    from agent_framework._workflows._events import AgentRunEvent, ExecutorInvokedEvent
+except ImportError:  # pragma: no cover - dependency optional at import time
+    InMemoryCheckpointStorage = None  # type: ignore
+    AgentRunEvent = None  # type: ignore
+    ExecutorInvokedEvent = None  # type: ignore
 
 
 class WorkflowNodeModel(BaseModel):
@@ -334,6 +349,16 @@ AGENTS_BY_HANDLER: Dict[str, AgentCatalogItem] = {
     agent.handler: agent for agent in AGENT_CATALOG.values()
 }
 
+DEVUI_WORKFLOW_BUILDERS = {
+    "checklist-supervisor": build_checklist_workflow,
+    "checklist-chain-devui": build_checklist_workflow_new,
+}
+
+DEVUI_AGENT_FACTORIES = {
+    "supervisor-agent": run_supervisor_agent,
+    "mcp-supervisor-agent": mcp_supervisor_agent,
+}
+
 
 def list_workflows() -> List[WorkflowCatalogItem]:
     return list(CATALOG.values())
@@ -346,41 +371,146 @@ def get_workflow(workflow_id: str) -> WorkflowCatalogItem:
         raise KeyError(f"Workflow '{workflow_id}' not found") from exc
 
 
-def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) -> WorkflowExecutionResponse:
+def _build_prompt(payload: WorkflowExecutionRequest) -> str:
+    parts: List[str] = []
+    if payload.input:
+        parts.append(str(payload.input))
+    if payload.description:
+        parts.append(f"Description: {payload.description}")
+    if payload.context:
+        try:
+            parts.append(f"Context: {json.dumps(payload.context)}")
+        except Exception:
+            parts.append(f"Context: {payload.context}")
+    if not parts:
+        parts.append("Execute the workflow with default parameters.")
+    return "\n".join(parts)
+
+
+async def _run_devui_agent(agent_factory, payload: WorkflowExecutionRequest, request_id: str) -> List[WorkflowExecutionStep]:
+    if agent_factory is None:
+        raise ValueError("Agent factory not provided.")
+    agent = agent_factory()
+    prompt = _build_prompt(payload)
+    result = await agent.run(prompt)
+    output_text = getattr(result, "text", None) or getattr(result, "output", None) or str(result)
+    finished = datetime.utcnow()
+    step = WorkflowExecutionStep(
+        nodeId=agent.name or "agent",
+        name=agent.name or "Agent",
+        handler=getattr(agent, "handler", None),
+        agentId=getattr(agent, "id", None),
+        agentName=agent.name or "Agent",
+        status="success",
+        output=output_text,
+        startedAt=finished,
+        finishedAt=finished,
+    )
+    return [step]
+
+
+async def _run_devui_workflow(item: WorkflowCatalogItem, payload: WorkflowExecutionRequest) -> List[WorkflowExecutionStep]:
+    if InMemoryCheckpointStorage is None or AgentRunEvent is None:
+        raise RuntimeError("agent_framework runtime is not available in this environment.")
+    builder = DEVUI_WORKFLOW_BUILDERS.get(item.id)
+    if not builder:
+        raise ValueError(f"No Dev UI workflow builder registered for '{item.id}'.")
+    workflow = builder()
+    checkpoint_storage = InMemoryCheckpointStorage()
+    prompt = _build_prompt(payload)
+    steps: List[WorkflowExecutionStep] = []
+    start_times: Dict[str, datetime] = {}
+    node_by_name = {node.name: node for node in item.definition.nodes}
+    handler_by_node = {}
+    for node in item.definition.nodes:
+        handler = None
+        if isinstance(node.behavior, dict):
+            handler = node.behavior.get("handler")
+        handler_by_node[node.name] = handler
+    async for event in workflow.run_stream(prompt, checkpoint_storage=checkpoint_storage):
+        now = datetime.utcnow()
+        if ExecutorInvokedEvent and isinstance(event, ExecutorInvokedEvent):
+            start_times.setdefault(event.executor_id, now)
+            continue
+        if AgentRunEvent and isinstance(event, AgentRunEvent):
+            executor_id = event.executor_id
+            node = node_by_name.get(executor_id)
+            handler = handler_by_node.get(node.name) if node else None
+            agent_meta = AGENTS_BY_HANDLER.get(handler or "")
+            output = ""
+            if event.data:
+                output = getattr(event.data, "text", None) or getattr(event.data, "output", None) or str(event.data)
+            steps.append(
+                WorkflowExecutionStep(
+                    nodeId=node.id if node else executor_id,
+                    name=node.name if node else executor_id,
+                    handler=handler,
+                    agentId=agent_meta.id if agent_meta else None,
+                    agentName=agent_meta.name if agent_meta else (node.name if node else executor_id),
+                    status="success",
+                    output=output,
+                    startedAt=start_times.get(executor_id, now),
+                    finishedAt=now,
+                )
+            )
+    if not steps:
+        raise RuntimeError("Workflow execution did not produce any agent events.")
+    return steps
+
+
+async def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) -> WorkflowExecutionResponse:
     item = get_workflow(workflow_id)
     request_id = payload.request_id or f"req-{uuid4()}"
     started = datetime.utcnow()
     steps: List[WorkflowExecutionStep] = []
-    context_summary = payload.context or {}
-    for node in item.definition.nodes:
-        node_start = datetime.utcnow()
-        handler = None
-        if isinstance(node.behavior, dict):
-            handler = node.behavior.get("handler")
-        agent = AGENTS_BY_HANDLER.get(handler or "")
-        agent_name = agent.name if agent else node.name
-        output = (
-            f"{agent_name} would process input '{(payload.input or 'default request')[:120]}' "
-            f"with context keys {list(context_summary.keys()) or ['none']}."
-        )
-        steps.append(
+    try:
+        if item.id in DEVUI_WORKFLOW_BUILDERS:
+            steps = await _run_devui_workflow(item, payload)
+        elif item.id in DEVUI_AGENT_FACTORIES:
+            steps = await _run_devui_agent(DEVUI_AGENT_FACTORIES[item.id], payload, request_id)
+        else:
+            # Fallback to mock execution for presets that do not have runtime wiring.
+            context_summary = payload.context or {}
+            for node in item.definition.nodes:
+                node_start = datetime.utcnow()
+                handler = None
+                if isinstance(node.behavior, dict):
+                    handler = node.behavior.get("handler")
+                agent = AGENTS_BY_HANDLER.get(handler or "")
+                agent_name = agent.name if agent else node.name
+                output = (
+                    f"{agent_name} processed input '{(payload.input or 'default request')[:120]}' "
+                    f"with context keys {list(context_summary.keys()) or ['none']}."
+                )
+                steps.append(
+                    WorkflowExecutionStep(
+                        nodeId=node.id,
+                        name=node.name,
+                        handler=handler,
+                        agentId=agent.id if agent else None,
+                        agentName=agent.name if agent else None,
+                        status="success",
+                        output=output,
+                        startedAt=node_start,
+                        finishedAt=datetime.utcnow(),
+                    )
+                )
+    except Exception as exc:
+        steps = [
             WorkflowExecutionStep(
-                nodeId=node.id,
-                name=node.name,
-                handler=handler,
-                agentId=agent.id if agent else None,
-                agentName=agent.name if agent else None,
-                status="success",
-                output=output,
-                startedAt=node_start,
+                nodeId=item.definition.nodes[0].id if item.definition.nodes else item.id,
+                name=item.definition.nodes[0].name if item.definition.nodes else item.title,
+                status="error",
+                output=str(exc),
+                startedAt=started,
                 finishedAt=datetime.utcnow(),
             )
-        )
+        ]
     finished = datetime.utcnow()
     return WorkflowExecutionResponse(
         workflowId=item.definition.id,
         requestId=request_id,
-        status="success",
+        status="success" if steps and all(step.status == "success" for step in steps) else "error",
         steps=steps,
         startedAt=started,
         finishedAt=finished,

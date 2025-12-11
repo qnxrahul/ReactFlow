@@ -28,9 +28,9 @@ def get_catalog_item(workflow_id: str):
 
 
 @router.post("/catalog/{workflow_id}/execute")
-def execute_catalog_workflow(workflow_id: str, payload: WorkflowExecutionRequest):
+async def execute_catalog_workflow(workflow_id: str, payload: WorkflowExecutionRequest):
     try:
-        result = execute_workflow(workflow_id, payload)
+        result = await execute_workflow(workflow_id, payload)
     except KeyError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return result.model_dump(by_alias=True)
