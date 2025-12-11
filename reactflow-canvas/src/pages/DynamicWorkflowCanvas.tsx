@@ -488,6 +488,11 @@ export default function DynamicWorkflowCanvas() {
                   <div>
                     <p className="font-medium">{workflow.title}</p>
                     {workflow.description && <p className="text-xs text-slate-500">{workflow.description}</p>}
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                      {[workflow.category, workflow.source === 'devui' ? 'Dev UI' : 'Catalog']
+                        .filter(Boolean)
+                        .join(' • ')}
+                    </p>
                     {workflow.tags && workflow.tags.length > 0 && (
                       <p className="mt-1 text-xs text-slate-400">{workflow.tags.join(' • ')}</p>
                     )}

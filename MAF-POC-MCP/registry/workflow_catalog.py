@@ -45,6 +45,7 @@ class WorkflowCatalogItem(BaseModel):
     description: str
     category: str
     tags: List[str] = Field(default_factory=list)
+    source: str = "preset"
     definition: WorkflowDefinitionModel
 
 
@@ -161,6 +162,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
         description="Multi-agent flow that supervises extraction, ingestion, and checklist answering.",
         category="Checklist Automation",
         tags=["checklist", "multi-agent", "supervisor"],
+        source="devui",
         definition=definition,
     )
 
@@ -203,6 +205,111 @@ def _build_parallel_review_workflow() -> WorkflowCatalogItem:
         description="Lightweight review flow that ingests evidence, analyzes risk, and captures a decision gate.",
         category="Risk",
         tags=["risk", "review"],
+        source="preset",
+        definition=definition,
+    )
+
+
+def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
+    nodes = [
+        _agent_node(
+            "supervisor",
+            "Supervisor Agent",
+            "Coordinates rag extraction/ingestion/checklist fills (sequential builder).",
+            "maf.supervisor.chain",
+            "Coordinator",
+        ),
+        _agent_node(
+            "extraction",
+            "Extraction Agent",
+            "Runs PDF extraction with checkpointing enabled.",
+            "maf.rag.extraction.chain",
+            "Document AI",
+        ),
+        _agent_node(
+            "ingestion",
+            "Ingestion Agent",
+            "Ingests extracted chunks into search index.",
+            "maf.rag.ingestion.chain",
+            "Vector DB",
+        ),
+        _agent_node(
+            "checklist",
+            "Checklist Agent",
+            "Answers checklist sequentially with supervisor oversight.",
+            "maf.checklist.chain",
+            "LLM Reasoner",
+        ),
+    ]
+    definition = WorkflowDefinitionModel(
+        id="maf-checklist-chain",
+        title="Checklist Sequential Builder",
+        domain="Audit",
+        intent="Checklist sequential workflow",
+        nodes=nodes,
+        edges=_workflow_edges([node.id for node in nodes]),
+    )
+    return WorkflowCatalogItem(
+        id="checklist-chain-devui",
+        title="Checklist Sequential Builder",
+        description="Matches build_checklist_workflow_new() from the Dev UI sequential workflow builder.",
+        category="Checklist Automation",
+        tags=["checklist", "devui"],
+        source="devui",
+        definition=definition,
+    )
+
+
+def _build_supervisor_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "supervisor-agent",
+        "Supervisor Agent (Standalone)",
+        "Single-agent coordinator exposed via run_supervisor_agent().",
+        "maf.supervisor.agent",
+        "Orchestrator",
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-supervisor-agent",
+        title="Supervisor Agent",
+        domain="Audit",
+        intent="Agent orchestration",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="supervisor-agent",
+        title="Supervisor Agent (Dev UI)",
+        description="Standalone supervisor agent mirroring run_supervisor_agent() in the Dev UI.",
+        category="Agents",
+        tags=["devui", "agent"],
+        source="devui",
+        definition=definition,
+    )
+
+
+def _build_mcp_supervisor_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "mcp-supervisor",
+        "MCP Supervisor Agent",
+        "Oversees MCP Swagger server + client agents (mcp_supervisor_agent()).",
+        "maf.mcp.supervisor",
+        "MCP",
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-mcp-supervisor",
+        title="MCP Supervisor Agent",
+        domain="Platform",
+        intent="MCP orchestration",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="mcp-supervisor-agent",
+        title="MCP Supervisor Agent",
+        description="Represents mcp_supervisor_agent() from Dev UI coordinating server/client MCP agents.",
+        category="Agents",
+        tags=["devui", "mcp"],
+        source="devui",
         definition=definition,
     )
 
@@ -212,6 +319,9 @@ CATALOG: Dict[str, WorkflowCatalogItem] = {
     for item in [
         _build_checklist_workflow(),
         _build_parallel_review_workflow(),
+        _build_checklist_chain_workflow(),
+        _build_supervisor_agent(),
+        _build_mcp_supervisor_agent(),
     ]
 }
 
