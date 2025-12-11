@@ -6,6 +6,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from .agent_catalog import CATALOG as AGENT_CATALOG, AgentCatalogItem
+
 
 class WorkflowNodeModel(BaseModel):
     id: str
@@ -52,6 +54,9 @@ class WorkflowCatalogItem(BaseModel):
 class WorkflowExecutionStep(BaseModel):
     node_id: str = Field(alias="nodeId")
     name: str
+    handler: Optional[str] = None
+    agent_id: Optional[str] = Field(default=None, alias="agentId")
+    agent_name: Optional[str] = Field(default=None, alias="agentName")
     status: str
     output: str
     started_at: datetime = Field(alias="startedAt")
@@ -325,6 +330,10 @@ CATALOG: Dict[str, WorkflowCatalogItem] = {
     ]
 }
 
+AGENTS_BY_HANDLER: Dict[str, AgentCatalogItem] = {
+    agent.handler: agent for agent in AGENT_CATALOG.values()
+}
+
 
 def list_workflows() -> List[WorkflowCatalogItem]:
     return list(CATALOG.values())
@@ -345,14 +354,22 @@ def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) -> Wor
     context_summary = payload.context or {}
     for node in item.definition.nodes:
         node_start = datetime.utcnow()
+        handler = None
+        if isinstance(node.behavior, dict):
+            handler = node.behavior.get("handler")
+        agent = AGENTS_BY_HANDLER.get(handler or "")
+        agent_name = agent.name if agent else node.name
         output = (
-            f"{node.name} processed input '{(payload.input or 'default request')[:120]}' "
+            f"{agent_name} would process input '{(payload.input or 'default request')[:120]}' "
             f"with context keys {list(context_summary.keys()) or ['none']}."
         )
         steps.append(
             WorkflowExecutionStep(
                 nodeId=node.id,
                 name=node.name,
+                handler=handler,
+                agentId=agent.id if agent else None,
+                agentName=agent.name if agent else None,
                 status="success",
                 output=output,
                 startedAt=node_start,

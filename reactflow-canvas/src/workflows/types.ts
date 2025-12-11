@@ -126,6 +126,9 @@ export type WorkflowCatalogItem = {
 export type WorkflowExecutionStep = {
   nodeId: string
   name: string
+  handler?: string
+  agentId?: string
+  agentName?: string
   status: WorkflowNodeRuntime['status']
   output?: string
   startedAt: string

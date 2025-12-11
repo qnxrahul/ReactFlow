@@ -518,8 +518,11 @@ export default function DynamicWorkflowCanvas() {
                   <ul className="mt-3 space-y-2">
                     {mafExecution.steps.map((step) => (
                       <li key={step.nodeId} className="rounded border border-slate-100 p-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>{step.name}</span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium">{step.agentName ?? step.name}</span>
+                            {step.handler && <span className="text-[11px] uppercase text-slate-400">{step.handler}</span>}
+                          </div>
                           <span className={step.status === 'success' ? 'text-green-600 font-semibold' : 'text-amber-600 font-semibold'}>
                             {step.status}
                           </span>
