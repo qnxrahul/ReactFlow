@@ -91,7 +91,7 @@ class Settings(BaseSettings):
 
     # MAF workflow catalog
     maf_api_base_url: Optional[AnyHttpUrl] = Field(
-        default=None,
+        default="",
         description="Base URL of the MCP-MAF workflow catalog service.",
     )
     maf_api_token: Optional[str] = Field(
