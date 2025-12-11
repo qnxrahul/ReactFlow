@@ -9,7 +9,8 @@ from ..config import Settings
 
 class MAFClient:
     def __init__(self, settings: Settings):
-        self._base_url = (settings.maf_api_base_url or "").rstrip("/")
+        base = settings.maf_api_base_url
+        self._base_url = (str(base) if base else "").rstrip("/")
         self._token = settings.maf_api_token
 
     @property
