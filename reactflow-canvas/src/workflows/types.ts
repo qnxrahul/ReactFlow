@@ -112,3 +112,30 @@ export type WorkflowAssistResponse = {
   suggestedNodes: WorkflowNode[]
   workflow?: WorkflowDefinition
 }
+
+export type WorkflowCatalogItem = {
+  id: string
+  title: string
+  description?: string | null
+  category?: string | null
+  tags?: string[]
+  definition: WorkflowDefinition
+}
+
+export type WorkflowExecutionStep = {
+  nodeId: string
+  name: string
+  status: WorkflowNodeRuntime['status']
+  output?: string
+  startedAt: string
+  finishedAt: string
+}
+
+export type WorkflowExecutionResponse = {
+  workflowId: string
+  requestId: string
+  status: WorkflowNodeRuntime['status']
+  steps: WorkflowExecutionStep[]
+  startedAt: string
+  finishedAt: string
+}

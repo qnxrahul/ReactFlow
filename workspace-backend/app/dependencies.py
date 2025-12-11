@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 
 from .config import Settings, get_settings
 from .services.audit_taxonomy import AuditTaxonomy, load_taxonomy
@@ -12,6 +12,7 @@ from .services.mcp_client import MCPClient
 from .services.policy import WorkflowPolicyService
 from .services.rag import RAGService
 from .services.registry_store import ComponentRegistryStore
+from .services.maf_client import MAFClient
 from .services.workspace_repository import CosmosWorkspaceRepository, FileBackedWorkspaceRepository, WorkspaceRepository
 from .services.workflow_repository import (
     CosmosWorkflowRepository as DynamicCosmosRepository,
@@ -76,6 +77,16 @@ def _cached_mcp(settings_key: str) -> MCPClient:
 def get_mcp_client(settings: Settings = Depends(get_settings)) -> MCPClient:
     # reusing cached instance would require Settings hash; simply instantiate per call (httpx uses per request)
     return MCPClient(settings)
+
+
+def get_maf_client(settings: Settings = Depends(get_settings)) -> MAFClient:
+    client = MAFClient(settings)
+    if not client.enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MAF workflow catalog is not configured.",
+        )
+    return client
 
 
 @lru_cache

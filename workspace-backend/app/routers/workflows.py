@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 
 from ..dependencies import (
     get_agent_registry_store,
     get_audit_taxonomy,
     get_component_registry_store,
+    get_maf_client,
     get_llm_client,
     get_mcp_client,
     get_policy_service,
@@ -32,6 +35,7 @@ from ..models_workflow import (
 )
 from ..services.audit_taxonomy import AuditTaxonomy
 from ..services.llm_client import OpenRouterClient
+from ..services.maf_client import MAFClient
 from ..services.mcp_client import MCPClient
 from ..services.policy import WorkflowPolicyService
 from ..services.rag import RAGService
@@ -40,6 +44,15 @@ from ..services.workflow_authoring import WorkflowAuthoringService
 from ..services.workflow_repository import WorkflowRepository
 
 router = APIRouter(prefix="/workflows", tags=["Dynamic Workflows"])
+
+
+class WorkflowExecutionProxyRequest(BaseModel):
+    request_id: Optional[str] = Field(default=None, alias="requestId")
+    input: Optional[str] = None
+    context: Dict[str, object] = Field(default_factory=dict)
+
+    class Config:
+        populate_by_name = True
 
 
 def _normalize(workflow: WorkflowDefinition) -> WorkflowDefinition:
@@ -248,6 +261,31 @@ def assist_workflow(
 
     answer = _build_assist_answer(llm, payload, result_workflow)
     return WorkflowAssistResponse(answer=answer, suggested_nodes=suggested_nodes, workflow=result_workflow)
+
+
+@router.get("/catalog/maf")
+def list_maf_workflow_catalog(maf: MAFClient = Depends(get_maf_client)):
+    return maf.list_catalog()
+
+
+@router.get("/catalog/maf/{workflow_id}")
+def get_maf_workflow_catalog_item(workflow_id: str, maf: MAFClient = Depends(get_maf_client)):
+    try:
+        return maf.get_workflow(workflow_id)
+    except Exception as exc:  # httpx errors already include status; fall back to 502
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+
+@router.post("/catalog/maf/{workflow_id}/execute")
+def execute_maf_workflow_catalog_item(
+    workflow_id: str,
+    payload: WorkflowExecutionProxyRequest,
+    maf: MAFClient = Depends(get_maf_client),
+):
+    try:
+        return maf.execute_workflow(workflow_id, payload.model_dump(by_alias=True, exclude_none=True))
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
 
 def _build_assist_answer(llm: OpenRouterClient, payload: WorkflowAssistRequest, workflow: WorkflowDefinition) -> str:
