@@ -29,6 +29,7 @@ import type {
   WorkflowExecutionResponse,
   WorkflowNode,
 } from '../workflows/types'
+import { mergeWorkflowDefinitions } from '../workflows/utils/mergeWorkflowDefinitions'
 
 const nodeTypes = { dynamic: DynamicWorkflowNode } satisfies NodeTypes
 
@@ -289,8 +290,17 @@ export default function DynamicWorkflowCanvas() {
         setAssistAnswer(response.answer)
         setAssistSuggestions(response.suggestedNodes ?? [])
         if (response.workflow) {
-          applyDefinition(response.workflow)
-          setNodePositions((prev) => ({ ...prev }))
+          const nextWorkflow = definition ? mergeWorkflowDefinitions(definition, response.workflow) : response.workflow
+          applyDefinition(nextWorkflow)
+          setNodePositions((prev) => {
+            const updated = { ...prev }
+            nextWorkflow.nodes.forEach((node, index) => {
+              if (!updated[node.id]) {
+                updated[node.id] = gridPosition(index)
+              }
+            })
+            return updated
+          })
         }
       } catch (err) {
         setToolbarError((err as Error).message)
@@ -322,8 +332,17 @@ export default function DynamicWorkflowCanvas() {
       setAssistAnswer(response.answer)
       setAssistSuggestions(response.suggestedNodes ?? [])
       if (response.workflow) {
-        applyDefinition(response.workflow)
-        setNodePositions((prev) => ({ ...prev }))
+        const nextWorkflow = definition ? mergeWorkflowDefinitions(definition, response.workflow) : response.workflow
+        applyDefinition(nextWorkflow)
+        setNodePositions((prev) => {
+          const updated = { ...prev }
+          nextWorkflow.nodes.forEach((node, index) => {
+            if (!updated[node.id]) {
+              updated[node.id] = gridPosition(index)
+            }
+          })
+          return updated
+        })
       }
       setAssistQuestion('')
     } catch (err) {
