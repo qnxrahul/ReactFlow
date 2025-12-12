@@ -42,6 +42,8 @@ class WorkflowNodeModel(BaseModel):
     description: Optional[str] = None
     ui: Dict[str, Any] = Field(default_factory=dict)
     behavior: Dict[str, Any] = Field(default_factory=dict)
+    inputs: List[str] = Field(default_factory=list)
+    outputs: List[str] = Field(default_factory=list)
 
 
 class WorkflowEdgeModel(BaseModel):
@@ -115,7 +117,16 @@ class WorkflowExecutionRequest(BaseModel):
         populate_by_name = True
 
 
-def _agent_node(node_id: str, name: str, description: str, handler: str, subtitle: str) -> WorkflowNodeModel:
+def _agent_node(
+    node_id: str,
+    name: str,
+    description: str,
+    handler: str,
+    subtitle: str,
+    *,
+    inputs: Optional[List[str]] = None,
+    outputs: Optional[List[str]] = None,
+) -> WorkflowNodeModel:
     return WorkflowNodeModel(
         id=node_id,
         type="agentTask",
@@ -131,6 +142,8 @@ def _agent_node(node_id: str, name: str, description: str, handler: str, subtitl
             "kind": "llm-agent",
             "handler": handler,
         },
+        inputs=inputs or [],
+        outputs=outputs or [],
     )
 
 
@@ -158,6 +171,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
             "Routes checklist requests and tracks progress.",
             "maf.supervisor",
             "Coordinator",
+            inputs=["requestId"],
         ),
         _agent_node(
             "extraction",
@@ -165,6 +179,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
             "Runs Azure Document Intelligence to structure evidence.",
             "maf.rag.extraction",
             "Document AI",
+            inputs=["documentUrl"],
         ),
         _agent_node(
             "ingestion",
@@ -172,6 +187,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
             "Chunks, embeds, and indexes extracted text.",
             "maf.rag.ingestion",
             "Vector DB",
+            inputs=["searchIndex", "documentUrl"],
         ),
         _agent_node(
             "checklist",
@@ -179,6 +195,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
             "Fills controls checklist with citations.",
             "maf.checklist.processor",
             "LLM Reasoner",
+            inputs=["requestId"],
         ),
     ]
     definition = WorkflowDefinitionModel(
@@ -195,7 +212,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
         description="Multi-agent flow that supervises extraction, ingestion, and checklist answering.",
         category="Checklist Automation",
         tags=["checklist", "multi-agent", "supervisor"],
-        domains=["Audit", "Checklist", "Supervisor"],
+        domains=["Audit", "Checklist", "Supervisor", "MESP"],
         source="devui",
         inputs=[
             WorkflowInputField(
@@ -273,6 +290,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
             "Coordinates rag extraction/ingestion/checklist fills (sequential builder).",
             "maf.supervisor.chain",
             "Coordinator",
+            inputs=["requestId"],
         ),
         _agent_node(
             "extraction",
@@ -280,6 +298,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
             "Runs PDF extraction with checkpointing enabled.",
             "maf.rag.extraction.chain",
             "Document AI",
+            inputs=["documentUrl"],
         ),
         _agent_node(
             "ingestion",
@@ -287,6 +306,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
             "Ingests extracted chunks into search index.",
             "maf.rag.ingestion.chain",
             "Vector DB",
+            inputs=["documentUrl", "searchIndex"],
         ),
         _agent_node(
             "checklist",
@@ -294,6 +314,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
             "Answers checklist sequentially with supervisor oversight.",
             "maf.checklist.chain",
             "LLM Reasoner",
+            inputs=["requestId"],
         ),
     ]
     definition = WorkflowDefinitionModel(
@@ -310,7 +331,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
         description="Matches build_checklist_workflow_new() from the Dev UI sequential workflow builder.",
         category="Checklist Automation",
         tags=["checklist", "devui"],
-        domains=["Audit", "Checklist", "Sequential"],
+        domains=["Audit", "Checklist", "Sequential", "MESP"],
         source="devui",
         inputs=[
             WorkflowInputField(
@@ -324,6 +345,11 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
                 label="Document URL",
                 placeholder="https://storage/account/container/file.pdf",
             ),
+            WorkflowInputField(
+                id="searchIndex",
+                label="Search Index Name",
+                placeholder="sequential-index",
+            ),
         ],
         definition=definition,
     )
@@ -336,6 +362,7 @@ def _build_supervisor_agent() -> WorkflowCatalogItem:
         "Single-agent coordinator exposed via run_supervisor_agent().",
         "maf.supervisor.agent",
         "Orchestrator",
+        inputs=["question"],
     )
     definition = WorkflowDefinitionModel(
         id="maf-supervisor-agent",
@@ -351,7 +378,7 @@ def _build_supervisor_agent() -> WorkflowCatalogItem:
         description="Standalone supervisor agent mirroring run_supervisor_agent() in the Dev UI.",
         category="Agents",
         tags=["devui", "agent"],
-        domains=["Audit", "Supervisor", "Checklist"],
+        domains=["Audit", "Supervisor", "Checklist", "MESP"],
         source="devui",
         inputs=[
             WorkflowInputField(
@@ -371,6 +398,7 @@ def _build_mcp_supervisor_agent() -> WorkflowCatalogItem:
         "Oversees MCP Swagger server + client agents (mcp_supervisor_agent()).",
         "maf.mcp.supervisor",
         "MCP",
+        inputs=["serverName", "operation"],
     )
     definition = WorkflowDefinitionModel(
         id="maf-mcp-supervisor",
@@ -448,6 +476,7 @@ def filter_workflows(
     domain_lower = domain.strip().lower() if domain else None
     intent_lower = intent.strip().lower() if intent else None
     query_lower = query.strip().lower() if query else None
+    filters_applied = any([domain_lower, intent_lower, query_lower])
 
     def matches(item: WorkflowCatalogItem) -> bool:
         if domain_lower:
@@ -472,7 +501,10 @@ def filter_workflows(
                 return False
         return True
 
-    return [item for item in workflows if matches(item)]
+    filtered = [item for item in workflows if matches(item)]
+    if not filtered and filters_applied:
+        return workflows
+    return filtered
 
 
 def get_workflow(workflow_id: str) -> WorkflowCatalogItem:

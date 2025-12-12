@@ -103,19 +103,33 @@ export default function DynamicWorkflowCanvas() {
 
   const loadMafWorkflowDefinition = useCallback(
     (workflow: WorkflowCatalogItem) => {
+      const workflowInputs = workflow.inputs ?? []
+      const workflowInputMap = workflowInputs.reduce<Record<string, WorkflowInputField>>((acc, field) => {
+        acc[field.id] = field
+        return acc
+      }, {})
       const enrichedDefinition = {
         ...workflow.definition,
-        nodes: workflow.definition.nodes.map((node, index) => ({
-          ...node,
-          runtime: { status: 'idle' as const },
-          ui: {
-            ...node.ui,
-            props: {
-              ...node.ui?.props,
-              __mafInputs: workflow.inputs ?? [],
+        nodes: workflow.definition.nodes.map((node, index) => {
+          const explicitInputs =
+            (node.inputs ?? [])
+              .map((inputId) => workflowInputMap[inputId])
+              .filter((field): field is WorkflowInputField => Boolean(field)) ?? []
+          const fallbackInputs =
+            ((node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? workflowInputs)
+          const mafInputs = explicitInputs.length > 0 ? explicitInputs : fallbackInputs
+          return {
+            ...node,
+            runtime: { status: 'idle' as const },
+            ui: {
+              ...node.ui,
+              props: {
+                ...(node.ui?.props ?? {}),
+                __mafInputs: mafInputs,
+              },
             },
-          },
-        })),
+          }
+        }),
       }
       applyDefinition(enrichedDefinition)
       const positions = enrichedDefinition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {

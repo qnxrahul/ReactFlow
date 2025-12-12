@@ -24,6 +24,8 @@ export type WorkflowNode = {
   ui: WorkflowNodeUI
   behavior: WorkflowNodeBehavior
   runtime?: WorkflowNodeRuntime
+  inputs?: string[]
+  outputs?: string[]
 }
 
 export type WorkflowEdge = {
