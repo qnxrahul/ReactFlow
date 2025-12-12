@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -50,28 +50,81 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workflows", tags=["Dynamic Workflows"])
 
 
-def _load_maf_workflow_for_domain(domain: Optional[str], intent: Optional[str]) -> Optional[WorkflowDefinition]:
-    if not domain:
-        return None
+def _load_maf_workflow_from_catalog(
+    domain: Optional[str],
+    intent: Optional[str],
+    *,
+    keywords: Optional[Sequence[str]] = None,
+    preferred_handlers: Optional[Sequence[str]] = None,
+) -> Optional[WorkflowDefinition]:
     settings = get_settings()
     client = MAFClient(settings)
     if not client.enabled:
         return None
-    params: Dict[str, str] = {"domain": domain}
-    if intent:
-        params["intent"] = intent
-    try:
-        response = client.list_catalog(params=params)
-        workflows = response.get("workflows", []) if isinstance(response, dict) else []
+    search_params: List[Dict[str, str]] = []
+
+    def enqueue(params: Dict[str, Optional[str]]) -> None:
+        normalized = {key: value for key, value in params.items() if value}
+        if normalized not in search_params:
+            search_params.append(normalized)
+
+    enqueue({"domain": domain, "intent": intent})
+    enqueue({"domain": domain})
+    enqueue({"intent": intent})
+    if keywords:
+        enqueue({"query": " ".join(keywords)})
+    if domain or intent:
+        enqueue({"query": " ".join(filter(None, [domain, intent]))})
+    enqueue({})
+
+    preferred = {handler.lower() for handler in (preferred_handlers or []) if handler}
+
+    for params in search_params:
+        try:
+            response = client.list_catalog(params=params or None)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to query MAF catalog with params %s: %s", params, exc)
+            continue
+        workflows: List[Dict[str, Any]] = response.get("workflows", []) if isinstance(response, dict) else []
         if not workflows:
+            continue
+
+        def pick_best(predicate) -> Optional[WorkflowDefinition]:
+            for item in workflows:
+                definition_payload = item.get("definition")
+                if not definition_payload:
+                    continue
+                if predicate(item):
+                    try:
+                        return WorkflowDefinition.model_validate(definition_payload)
+                    except Exception as exc:  # pragma: no cover
+                        logger.warning("Skipping invalid catalog workflow '%s': %s", item.get("id"), exc)
             return None
-        definition_payload = workflows[0].get("definition")
-        if not definition_payload:
-            return None
-        return WorkflowDefinition.model_validate(definition_payload)
-    except Exception as exc:  # pragma: no cover
-        logger.warning("Failed to load MAF workflow for domain '%s': %s", domain, exc)
-        return None
+
+        if preferred:
+            match = pick_best(
+                lambda workflow: any(
+                    (node.get("behavior") or {}).get("handler", "").lower() in preferred
+                    for node in (workflow.get("definition") or {}).get("nodes", [])
+                )
+            )
+            if match:
+                return match
+
+        if domain:
+            normalized_domain = domain.lower()
+            match = pick_best(
+                lambda workflow: normalized_domain
+                in {str(value).lower() for value in (workflow.get("domains") or [])}
+            )
+            if match:
+                return match
+
+        fallback = pick_best(lambda _: True)
+        if fallback:
+            return fallback
+
+    return None
 
 
 class WorkflowExecutionProxyRequest(BaseModel):
@@ -109,7 +162,12 @@ def generate_workflow(
 ) -> WorkflowDefinition:
     canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
 
-    maf_workflow = _load_maf_workflow_for_domain(canonical_domain, payload.intent)
+    maf_workflow = _load_maf_workflow_from_catalog(
+        canonical_domain,
+        payload.intent,
+        keywords=getattr(payload, "context_keywords", None),
+        preferred_handlers=payload.preferred_handlers,
+    )
     if maf_workflow:
         repo.save(maf_workflow)
         return _normalize(maf_workflow)
@@ -236,7 +294,15 @@ def assist_workflow(
         or (existing_workflow.domain if existing_workflow else None)
     )
     canonical_candidate = taxonomy.canonicalize(candidate_domain) or candidate_domain
-    maf_assist_workflow = _load_maf_workflow_for_domain(canonical_candidate, payload.intent or (existing_workflow.intent if existing_workflow else None))
+    candidate_keywords: List[str] = list(payload.context_keywords or [])
+    if payload.question:
+        candidate_keywords.extend(payload.question.split())
+    maf_assist_workflow = _load_maf_workflow_from_catalog(
+        canonical_candidate,
+        payload.intent or (existing_workflow.intent if existing_workflow else None),
+        keywords=candidate_keywords or None,
+        preferred_handlers=payload.preferred_handlers,
+    )
     if maf_assist_workflow:
         repo.save(maf_assist_workflow)
         return WorkflowAssistResponse(

@@ -13,6 +13,7 @@ import {
 } from '@xyflow/react'
 import { nanoid } from 'nanoid'
 import { AgentToolbar } from '../components/AgentToolbar'
+import { MafWorkflowToolbar } from '../components/MafWorkflowToolbar'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
@@ -79,9 +80,10 @@ export default function DynamicWorkflowCanvas() {
   const [mafCatalog, setMafCatalog] = useState<WorkflowCatalogItem[]>([])
   const [mafCatalogLoading, setMafCatalogLoading] = useState(false)
   const [mafCatalogError, setMafCatalogError] = useState<string | null>(null)
-  const [mafExecutionLoading, setMafExecutionLoading] = useState(false)
   const [mafExecutionError, setMafExecutionError] = useState<string | null>(null)
   const [nodeInputs, setNodeInputs] = useState<Record<string, Record<string, string>>>({})
+  const [activeCatalogWorkflowId, setActiveCatalogWorkflowId] = useState<string | null>(null)
+  const [executingWorkflowId, setExecutingWorkflowId] = useState<string | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const gridPosition = useCallback(
@@ -134,11 +136,13 @@ export default function DynamicWorkflowCanvas() {
       )
       setSelectedAgentIds([])
       setMafExecutionError(null)
+      setActiveCatalogWorkflowId(workflow.id)
     },
-    [applyDefinition, gridPosition],
+    [applyDefinition, gridPosition, setActiveCatalogWorkflowId],
   )
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
+  const hasMafCatalog = mafCatalog.length > 0
 
   useEffect(() => {
     return () => {
@@ -215,6 +219,14 @@ export default function DynamicWorkflowCanvas() {
   }, [edges, setRfEdges])
 
   useEffect(() => {
+    if (hasMafCatalog) {
+      setAgents([])
+      setAgentsLoading(false)
+      setAgentError(null)
+      setAgentMatchScores({})
+      setSelectedAgentIds([])
+      return
+    }
     let cancelled = false
     const loadAgents = async () => {
       setAgentsLoading(true)
@@ -271,7 +283,7 @@ export default function DynamicWorkflowCanvas() {
     return () => {
       cancelled = true
     }
-  }, [form.domain, form.intent, contextKeywords])
+  }, [form.domain, form.intent, contextKeywords, hasMafCatalog])
 
   useEffect(() => {
     let cancelled = false
@@ -460,7 +472,7 @@ export default function DynamicWorkflowCanvas() {
       streamControllerRef.current?.abort()
       const controller = new AbortController()
       streamControllerRef.current = controller
-      setMafExecutionLoading(true)
+      setExecutingWorkflowId(workflowId)
       setMafExecutionError(null)
       try {
         await streamMafWorkflowExecution(
@@ -487,11 +499,17 @@ export default function DynamicWorkflowCanvas() {
         if (streamControllerRef.current === controller) {
           streamControllerRef.current = null
         }
-        setMafExecutionLoading(false)
+        setExecutingWorkflowId((current) => (current === workflowId ? null : current))
       }
     },
-    [form, nodeInputs, applyRuntimeStep],
+    [form, nodeInputs, applyRuntimeStep, setExecutingWorkflowId],
   )
+
+  useEffect(() => {
+    if (activeCatalogWorkflowId && !mafCatalog.some((workflow) => workflow.id === activeCatalogWorkflowId)) {
+      setActiveCatalogWorkflowId(null)
+    }
+  }, [activeCatalogWorkflowId, mafCatalog])
 
   return (
     <div className="flex h-full w-full bg-slate-50">
@@ -591,66 +609,84 @@ export default function DynamicWorkflowCanvas() {
             )}
           </CardContent>
         </Card>
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>MAF Workflow Catalog</CardTitle>
-            <CardDescription>Import curated MCP workflows and replay their executions.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mafCatalogLoading && <p className="text-sm text-slate-500">Loading workflows…</p>}
-            {mafCatalogError && <p className="text-sm text-red-600">{mafCatalogError}</p>}
-            {!mafCatalogLoading && mafCatalog.length === 0 && (
-              <p className="text-sm text-slate-500">No workflows published yet.</p>
-            )}
-            {mafCatalog.map((workflow) => (
-              <div key={workflow.id} className="rounded-lg border border-slate-200 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{workflow.title}</p>
-                    {workflow.description && <p className="text-xs text-slate-500">{workflow.description}</p>}
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">
-                      {[workflow.category, workflow.source === 'devui' ? 'Dev UI' : 'Catalog']
-                        .filter(Boolean)
-                        .join(' • ')}
-                    </p>
-                    {workflow.domains && workflow.domains.length > 0 && (
-                      <p className="text-xs text-slate-400">Domains: {workflow.domains.join(', ')}</p>
-                    )}
-                    {workflow.tags && workflow.tags.length > 0 && (
-                      <p className="mt-1 text-xs text-slate-400">{workflow.tags.join(' • ')}</p>
-                    )}
-                  </div>
-                </div>
+        {!hasMafCatalog && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>MAF Workflow Catalog</CardTitle>
+              <CardDescription>Import curated MCP workflows and replay their executions.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mafCatalogLoading && <p className="text-sm text-slate-500">Loading workflows…</p>}
+              {mafCatalogError && <p className="text-sm text-red-600">{mafCatalogError}</p>}
+              {!mafCatalogLoading && mafCatalog.length === 0 && (
+                <p className="text-sm text-slate-500">No workflows published yet.</p>
+              )}
+              {mafCatalog.map((workflow) => {
+                const isRunning = executingWorkflowId === workflow.id
+                return (
+                  <div key={workflow.id} className="rounded-lg border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{workflow.title}</p>
+                        {workflow.description && <p className="text-xs text-slate-500">{workflow.description}</p>}
+                        <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                          {[workflow.category, workflow.source === 'devui' ? 'Dev UI' : 'Catalog']
+                            .filter(Boolean)
+                            .join(' • ')}
+                        </p>
+                        {workflow.domains && workflow.domains.length > 0 && (
+                          <p className="text-xs text-slate-400">Domains: {workflow.domains.join(', ')}</p>
+                        )}
+                        {workflow.tags && workflow.tags.length > 0 && (
+                          <p className="mt-1 text-xs text-slate-400">{workflow.tags.join(' • ')}</p>
+                        )}
+                      </div>
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => handleLoadMafWorkflow(workflow.id)}>
-                    Load diagram
-                  </Button>
-                  <Button size="sm" onClick={() => handleExecuteMafWorkflow(workflow.id)} disabled={mafExecutionLoading}>
-                    {mafExecutionLoading ? 'Running…' : 'Run in MCP'}
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {mafExecutionError && <p className="text-sm text-red-600">{mafExecutionError}</p>}
-          </CardContent>
-        </Card>
+                      <Button variant="secondary" size="sm" onClick={() => handleLoadMafWorkflow(workflow.id)}>
+                        Load diagram
+                      </Button>
+                      <Button size="sm" onClick={() => handleExecuteMafWorkflow(workflow.id)} disabled={isRunning}>
+                        {isRunning ? 'Running…' : 'Run in MCP'}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+              {mafExecutionError && <p className="text-sm text-red-600">{mafExecutionError}</p>}
+            </CardContent>
+          </Card>
+        )}
       </aside>
 
       <main className="flex flex-1 flex-col overflow-hidden">
-        <AgentToolbar
-          agents={agents}
-          selectedAgentIds={selectedAgentIds}
-          onToggleAgent={toggleAgentSelection}
-          onRunAgent={handleRunAgent}
-          onInsertAgent={handleInsertAgent}
-          loading={agentsLoading}
-          busyAgentId={toolbarAgentId}
-          fetchError={agentError}
-          actionError={toolbarError}
-          contextKeywords={contextKeywords}
-          lastRunOutput={agentRunOutput}
-          matchScores={agentMatchScores}
-        />
+        {hasMafCatalog ? (
+          <MafWorkflowToolbar
+            workflows={mafCatalog}
+            loading={mafCatalogLoading}
+            fetchError={mafCatalogError}
+            contextKeywords={contextKeywords}
+            activeWorkflowId={activeCatalogWorkflowId}
+            runningWorkflowId={executingWorkflowId}
+            onLoadWorkflow={handleLoadMafWorkflow}
+            onRunWorkflow={handleExecuteMafWorkflow}
+          />
+        ) : (
+          <AgentToolbar
+            agents={agents}
+            selectedAgentIds={selectedAgentIds}
+            onToggleAgent={toggleAgentSelection}
+            onRunAgent={handleRunAgent}
+            onInsertAgent={handleInsertAgent}
+            loading={agentsLoading}
+            busyAgentId={toolbarAgentId}
+            fetchError={agentError}
+            actionError={toolbarError}
+            contextKeywords={contextKeywords}
+            lastRunOutput={agentRunOutput}
+            matchScores={agentMatchScores}
+          />
+        )}
         <div className="flex-1">
           <ReactFlow
             nodes={rfNodes}
