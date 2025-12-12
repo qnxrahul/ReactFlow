@@ -28,6 +28,7 @@ import type {
   WorkflowCatalogItem,
   WorkflowExecutionResponse,
   WorkflowNode,
+  WorkflowNodeRuntime,
 } from '../workflows/types'
 import { mergeWorkflowDefinitions } from '../workflows/utils/mergeWorkflowDefinitions'
 
@@ -54,7 +55,8 @@ function extractKeywords(text: string): string[] {
 }
 
 export default function DynamicWorkflowCanvas() {
-  const { generate, definition, nodes, edges, runNode, loading, error, applyDefinition } = useDynamicWorkflow()
+  const { generate, definition, nodes, edges, runNode, loading, error, applyDefinition, applyRuntimeOverrides } =
+    useDynamicWorkflow()
   const [form, setForm] = useState(defaultPayload)
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<DynamicWorkflowNodeType>([])
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -396,6 +398,22 @@ export default function DynamicWorkflowCanvas() {
           },
         })
         setMafExecution(execution)
+        const runtimeUpdates = execution.steps.reduce<Record<string, WorkflowNodeRuntime>>(
+          (acc, step) => {
+            const status =
+              step.status === 'error' || step.status === 'running'
+                ? (step.status as 'error' | 'running')
+                : ('success' as const)
+            acc[step.nodeId] = {
+              status,
+              output: step.output ?? '',
+              lastRunAt: step.finishedAt,
+            }
+            return acc
+          },
+          {},
+        )
+        applyRuntimeOverrides(runtimeUpdates)
       } catch (error) {
         setMafExecutionError((error as Error).message)
       } finally {

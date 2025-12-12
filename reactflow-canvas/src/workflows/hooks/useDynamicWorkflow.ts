@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { generateWorkflow, runWorkflowNode } from '../../services/workflowsApi'
-import type { GenerateWorkflowPayload, WorkflowDefinition, WorkflowNode } from '../types'
+import type { GenerateWorkflowPayload, WorkflowDefinition, WorkflowNode, WorkflowNodeRuntime } from '../types'
 
 type WorkflowState = {
   definition: WorkflowDefinition | null
   nodes: WorkflowNode[]
 }
 
-type RuntimeMap = Record<string, WorkflowNode['runtime']>
+type RuntimeMap = Record<string, WorkflowNodeRuntime>
 
 export function useDynamicWorkflow() {
   const [loading, setLoading] = useState(false)
@@ -81,6 +81,13 @@ export function useDynamicWorkflow() {
     [state.definition],
   )
 
+  const applyRuntimeOverrides = useCallback((updates: RuntimeMap) => {
+    setRuntime((prev) => ({
+      ...prev,
+      ...updates,
+    }))
+  }, [])
+
   const nodesWithRuntime = useMemo(() => {
     return state.nodes.map((node) => ({
       ...node,
@@ -97,5 +104,6 @@ export function useDynamicWorkflow() {
     generate,
     runNode,
     applyDefinition,
+    applyRuntimeOverrides,
   }
 }

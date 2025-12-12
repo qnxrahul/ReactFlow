@@ -17,29 +17,39 @@ const baseRenderers: Record<string, NodeRenderer> = {
   agentCard: ({ node, onRun }) => {
     const status = node.runtime?.status ?? 'idle'
     const variant = status === 'success' ? 'success' : status === 'error' ? 'destructive' : 'default'
+    const subtitle = (node.ui?.props?.subtitle as string) || ''
+    const actions = Array.isArray(node.ui?.props?.actions) ? (node.ui?.props?.actions as Array<{ label: string }>) : []
     return (
       <Card className="w-[240px] border-l-4 border-l-accent">
         <CardHeader className="space-y-2">
           <CardTitle className="text-base">{node.name}</CardTitle>
-          <CardDescription>{node.description}</CardDescription>
+          <CardDescription>{subtitle || node.description}</CardDescription>
           <Badge variant={variant}>{status}</Badge>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">{(node.runtime?.output as string) || 'Awaiting execution...'}</p>
-          <Button size="sm" className="w-full" onClick={onRun}>
-            Run Agent
-          </Button>
+          <div className="space-y-2">
+            <Button size="sm" className="w-full" onClick={onRun}>
+              Run Agent
+            </Button>
+            {actions.map((action) => (
+              <Button key={action.label} variant="outline" size="sm" className="w-full">
+                {action.label}
+              </Button>
+            ))}
+          </div>
         </CardContent>
       </Card>
     )
   },
   evidenceCard: ({ node, onRun }) => {
     const progress = typeof node.runtime?.output === 'string' ? Math.min(node.runtime.output.length * 3, 100) : 0
+    const subtitle = (node.ui?.props?.subtitle as string) || node.description
     return (
       <Card className="w-[260px]">
         <CardHeader>
           <CardTitle className="text-base">{node.name}</CardTitle>
-          <CardDescription>{node.ui.props?.subtitle as string}</CardDescription>
+          <CardDescription>{subtitle}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Progress value={progress} />
