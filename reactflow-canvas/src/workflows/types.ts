@@ -121,7 +121,16 @@ export type WorkflowCatalogItem = {
   tags?: string[]
   domains?: string[]
   source?: string | null
+  inputs?: WorkflowInputField[]
   definition: WorkflowDefinition
+}
+
+export type WorkflowInputField = {
+  id: string
+  label: string
+  placeholder?: string
+  required?: boolean
+  helperText?: string
 }
 
 export type WorkflowExecutionStep = {

@@ -24,6 +24,14 @@ except ImportError:  # pragma: no cover - dependency optional at import time
     ExecutorInvokedEvent = None  # type: ignore
 
 
+class WorkflowInputField(BaseModel):
+    id: str
+    label: str
+    placeholder: Optional[str] = None
+    required: bool = False
+    helper_text: Optional[str] = Field(default=None, alias="helperText")
+
+
 class WorkflowNodeModel(BaseModel):
     id: str
     type: str = "agentTask"
@@ -64,6 +72,7 @@ class WorkflowCatalogItem(BaseModel):
     tags: List[str] = Field(default_factory=list)
     domains: List[str] = Field(default_factory=list)
     source: str = "preset"
+    inputs: List[WorkflowInputField] = Field(default_factory=list)
     definition: WorkflowDefinitionModel
 
 
@@ -185,6 +194,26 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
         tags=["checklist", "multi-agent", "supervisor"],
         domains=["Audit", "Checklist", "Supervisor"],
         source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+                helperText="Used to correlate checklist processing across agents.",
+            ),
+            WorkflowInputField(
+                id="documentUrl",
+                label="Document URL",
+                placeholder="https://storage/account/container/file.pdf",
+                helperText="PDF to extract before ingestion.",
+            ),
+            WorkflowInputField(
+                id="searchIndex",
+                label="Search Index Name",
+                placeholder="checklist-index",
+                helperText="Target index for RAG ingestion.",
+            ),
+        ],
         definition=definition,
     )
 
@@ -280,6 +309,19 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
         tags=["checklist", "devui"],
         domains=["Audit", "Checklist", "Sequential"],
         source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+                helperText="Sequential run identifier.",
+            ),
+            WorkflowInputField(
+                id="documentUrl",
+                label="Document URL",
+                placeholder="https://storage/account/container/file.pdf",
+            ),
+        ],
         definition=definition,
     )
 
@@ -308,6 +350,13 @@ def _build_supervisor_agent() -> WorkflowCatalogItem:
         tags=["devui", "agent"],
         domains=["Audit", "Supervisor", "Checklist"],
         source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="question",
+                label="Supervisor Prompt",
+                placeholder="Describe the workflow decision needed",
+            )
+        ],
         definition=definition,
     )
 
@@ -336,6 +385,18 @@ def _build_mcp_supervisor_agent() -> WorkflowCatalogItem:
         tags=["devui", "mcp"],
         domains=["Platform", "MCP", "Supervisor"],
         source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="serverName",
+                label="Server Name",
+                placeholder="Swagger Server 1",
+            ),
+            WorkflowInputField(
+                id="operation",
+                label="Operation",
+                placeholder="Describe the MCP task",
+            ),
+        ],
         definition=definition,
     )
 
@@ -425,6 +486,12 @@ def _build_prompt(payload: WorkflowExecutionRequest) -> str:
             parts.append(f"Context: {json.dumps(payload.context)}")
         except Exception:
             parts.append(f"Context: {payload.context}")
+        inputs = payload.context.get("inputs") if isinstance(payload.context, dict) else None  # type: ignore[arg-type]
+        if inputs:
+            try:
+                parts.append(f"Inputs: {json.dumps(inputs)}")
+            except Exception:
+                parts.append(f"Inputs: {inputs}")
     if not parts:
         parts.append("Execute the workflow with default parameters.")
     return "\n".join(parts)

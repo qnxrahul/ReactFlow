@@ -77,6 +77,7 @@ export default function DynamicWorkflowCanvas() {
   const [mafExecution, setMafExecution] = useState<WorkflowExecutionResponse | null>(null)
   const [mafExecutionLoading, setMafExecutionLoading] = useState(false)
   const [mafExecutionError, setMafExecutionError] = useState<string | null>(null)
+  const [mafInputs, setMafInputs] = useState<Record<string, Record<string, string>>>({})
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
@@ -218,6 +219,7 @@ export default function DynamicWorkflowCanvas() {
         const workflows = await fetchMafWorkflowCatalog({
           domain: form.domain,
           intent: form.intent,
+          query: form.description,
         })
         if (!cancelled) {
           setMafCatalog(workflows)
@@ -338,6 +340,13 @@ export default function DynamicWorkflowCanvas() {
     return `req-${Date.now()}`
   }
 
+  const updateMafInput = (workflowId: string, fieldId: string, value: string) => {
+    setMafInputs((prev) => ({
+      ...prev,
+      [workflowId]: { ...(prev[workflowId] ?? {}), [fieldId]: value },
+    }))
+  }
+
   const handleLoadMafWorkflow = useCallback(
     (workflowId: string) => {
       const selected = mafCatalog.find((workflow) => workflow.id === workflowId)
@@ -364,6 +373,7 @@ export default function DynamicWorkflowCanvas() {
           context: {
             domain: form.domain,
             intent: form.intent,
+            inputs: mafInputs[workflowId] ?? {},
           },
         })
         setMafExecution(execution)
@@ -504,7 +514,22 @@ export default function DynamicWorkflowCanvas() {
                     )}
                   </div>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
+                    {workflow.inputs && workflow.inputs.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {workflow.inputs.map((field) => (
+                          <div key={`${workflow.id}-${field.id}`}>
+                            <Label className="text-xs text-slate-500">{field.label}</Label>
+                            <Input
+                              value={mafInputs[workflow.id]?.[field.id] ?? ''}
+                              placeholder={field.placeholder}
+                              onChange={(event) => updateMafInput(workflow.id, field.id, event.target.value)}
+                            />
+                            {field.helperText && <p className="text-[11px] text-slate-400">{field.helperText}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
                   <Button variant="secondary" size="sm" onClick={() => handleLoadMafWorkflow(workflow.id)}>
                     Load diagram
                   </Button>
