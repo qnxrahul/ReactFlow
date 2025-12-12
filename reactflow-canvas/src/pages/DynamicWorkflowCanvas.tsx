@@ -295,6 +295,15 @@ export default function DynamicWorkflowCanvas() {
       setToolbarAgentId(agent.id)
       setToolbarError(null)
       try {
+        const matchingMaf = mafCatalog.find((workflow) =>
+          workflow.definition.nodes.some((node) => node.behavior?.handler === agent.handler),
+        )
+        if (matchingMaf) {
+          loadMafWorkflowDefinition(matchingMaf)
+          setAssistAnswer(`Loaded ${matchingMaf.title} from catalog.`)
+          setAssistSuggestions(matchingMaf.definition.nodes)
+          return
+        }
         const response = await assistWorkflow({
           question: `Add agent ${agent.name} (${agent.handler}) to this workflow and highlight its strengths.`,
           workflowId: definition?.id,
@@ -330,7 +339,7 @@ export default function DynamicWorkflowCanvas() {
         setToolbarAgentId(null)
       }
     },
-    [definition?.id, form, contextKeywords, preferredHandlers, applyDefinition],
+    [definition?.id, form, contextKeywords, preferredHandlers, applyDefinition, mafCatalog, loadMafWorkflowDefinition],
   )
 
   const handleAssist = useCallback(async () => {
@@ -398,32 +407,29 @@ export default function DynamicWorkflowCanvas() {
     [applyRuntimeOverrides],
   )
 
-  const handleLoadMafWorkflow = useCallback(
-    (workflowId: string) => {
-      const selected = mafCatalog.find((workflow) => workflow.id === workflowId)
-      if (!selected) return
+  const loadMafWorkflowDefinition = useCallback(
+    (workflow: WorkflowCatalogItem) => {
       const enrichedDefinition = {
-        ...selected.definition,
-        nodes: selected.definition.nodes.map((node, index) => ({
+        ...workflow.definition,
+        nodes: workflow.definition.nodes.map((node) => ({
           ...node,
           runtime: { status: 'idle' as const },
           ui: {
             ...node.ui,
             props: {
               ...node.ui?.props,
-              __mafInputs: selected.inputs ?? [],
+              __mafInputs: workflow.inputs ?? [],
             },
           },
         })),
       }
       applyDefinition(enrichedDefinition)
-      const positions = selected.definition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
+      const positions = enrichedDefinition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
         acc[node.id] = gridPosition(index)
         return acc
       }, {})
       setNodePositions(positions)
-      setSelectedAgentIds([])
-      setNodeInputs(() =>
+      setNodeInputs(
         enrichedDefinition.nodes.reduce<Record<string, Record<string, string>>>((acc, node) => {
           const fields = (node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? []
           acc[node.id] = fields.reduce<Record<string, string>>((fieldAcc, field) => {
@@ -433,9 +439,19 @@ export default function DynamicWorkflowCanvas() {
           return acc
         }, {}),
       )
+      setSelectedAgentIds([])
       setMafExecutionError(null)
     },
-    [mafCatalog, applyDefinition, gridPosition],
+    [applyDefinition, gridPosition],
+  )
+
+  const handleLoadMafWorkflow = useCallback(
+    (workflowId: string) => {
+      const selected = mafCatalog.find((workflow) => workflow.id === workflowId)
+      if (!selected) return
+      loadMafWorkflowDefinition(selected)
+    },
+    [mafCatalog, loadMafWorkflowDefinition],
   )
 
   const handleExecuteMafWorkflow = useCallback(
