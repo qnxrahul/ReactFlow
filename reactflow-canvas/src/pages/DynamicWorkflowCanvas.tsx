@@ -19,7 +19,7 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { fetchAgents, runAgent } from '../services/agentsApi'
-import { fetchMafWorkflowCatalog, executeMafWorkflow } from '../services/mafWorkflowsApi'
+import { fetchMafWorkflowCatalog, streamMafWorkflowExecution } from '../services/mafWorkflowsApi'
 import { assistWorkflow } from '../services/workflowsApi'
 import { DynamicWorkflowNode, type DynamicWorkflowNodeType } from '../workflows/components/DynamicWorkflowNode'
 import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
@@ -29,6 +29,8 @@ import type {
   WorkflowExecutionResponse,
   WorkflowNode,
   WorkflowNodeRuntime,
+  WorkflowInputField,
+  WorkflowExecutionStep,
 } from '../workflows/types'
 import { mergeWorkflowDefinitions } from '../workflows/utils/mergeWorkflowDefinitions'
 
@@ -77,12 +79,18 @@ export default function DynamicWorkflowCanvas() {
   const [mafCatalog, setMafCatalog] = useState<WorkflowCatalogItem[]>([])
   const [mafCatalogLoading, setMafCatalogLoading] = useState(false)
   const [mafCatalogError, setMafCatalogError] = useState<string | null>(null)
-  const [mafExecution, setMafExecution] = useState<WorkflowExecutionResponse | null>(null)
   const [mafExecutionLoading, setMafExecutionLoading] = useState(false)
   const [mafExecutionError, setMafExecutionError] = useState<string | null>(null)
-  const [mafInputs, setMafInputs] = useState<Record<string, Record<string, string>>>({})
+  const [nodeInputs, setNodeInputs] = useState<Record<string, Record<string, string>>>({})
+  const streamControllerRef = useRef<AbortController | null>(null)
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
+
+  useEffect(() => {
+    return () => {
+      streamControllerRef.current?.abort()
+    }
+  }, [])
 
   const gridPosition = useCallback(
     (index: number) => ({
@@ -101,12 +109,17 @@ export default function DynamicWorkflowCanvas() {
             id: node.id,
             type: 'dynamic',
             position,
-            data: { node, onRun: (nodeId: string) => runNode(nodeId) },
+            data: {
+              node,
+              inputs: nodeInputs[node.id] ?? {},
+              onInputChange: (fieldId: string, value: string) => handleNodeInputChange(node.id, fieldId, value),
+              onRun: (nodeId: string) => runNode(nodeId),
+            },
           } satisfies DynamicWorkflowNodeType
         }),
       )
     },
-    [gridPosition, runNode, setRfNodes],
+    [gridPosition, runNode, setRfNodes, nodeInputs, handleNodeInputChange],
   )
 
   const canGenerate = form.intent.trim().length > 3 && form.domain.trim().length > 0
@@ -361,66 +374,106 @@ export default function DynamicWorkflowCanvas() {
     return `req-${Date.now()}`
   }
 
-  const updateMafInput = (workflowId: string, fieldId: string, value: string) => {
-    setMafInputs((prev) => ({
+  const handleNodeInputChange = useCallback((nodeId: string, fieldId: string, value: string) => {
+    setNodeInputs((prev) => ({
       ...prev,
-      [workflowId]: { ...(prev[workflowId] ?? {}), [fieldId]: value },
+      [nodeId]: { ...(prev[nodeId] ?? {}), [fieldId]: value },
     }))
-  }
+  }, [])
+
+  const applyRuntimeStep = useCallback(
+    (step: WorkflowExecutionStep) => {
+      const status =
+        step.status === 'error' || step.status === 'running'
+          ? (step.status as WorkflowNodeRuntime['status'])
+          : ('success' as WorkflowNodeRuntime['status'])
+      applyRuntimeOverrides({
+        [step.nodeId]: {
+          status,
+          output: step.output ?? '',
+          lastRunAt: step.finishedAt,
+        },
+      })
+    },
+    [applyRuntimeOverrides],
+  )
 
   const handleLoadMafWorkflow = useCallback(
     (workflowId: string) => {
       const selected = mafCatalog.find((workflow) => workflow.id === workflowId)
       if (!selected) return
-      applyDefinition(selected.definition)
+      const enrichedDefinition = {
+        ...selected.definition,
+        nodes: selected.definition.nodes.map((node, index) => ({
+          ...node,
+          runtime: { status: 'idle' as const },
+          ui: {
+            ...node.ui,
+            props: {
+              ...node.ui?.props,
+              __mafInputs: selected.inputs ?? [],
+            },
+          },
+        })),
+      }
+      applyDefinition(enrichedDefinition)
       const positions = selected.definition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
         acc[node.id] = gridPosition(index)
         return acc
       }, {})
       setNodePositions(positions)
       setSelectedAgentIds([])
+      setNodeInputs(() =>
+        enrichedDefinition.nodes.reduce<Record<string, Record<string, string>>>((acc, node) => {
+          const fields = (node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? []
+          acc[node.id] = fields.reduce<Record<string, string>>((fieldAcc, field) => {
+            fieldAcc[field.id] = ''
+            return fieldAcc
+          }, {})
+          return acc
+        }, {}),
+      )
+      setMafExecutionError(null)
     },
     [mafCatalog, applyDefinition, gridPosition],
   )
 
   const handleExecuteMafWorkflow = useCallback(
     async (workflowId: string) => {
+      streamControllerRef.current?.abort()
+      const controller = new AbortController()
+      streamControllerRef.current = controller
       setMafExecutionLoading(true)
       setMafExecutionError(null)
       try {
-        const execution = await executeMafWorkflow(workflowId, {
-          requestId: getRequestId(),
-          input: form.description || form.intent,
-          context: {
-            domain: form.domain,
-            intent: form.intent,
-            inputs: mafInputs[workflowId] ?? {},
+        await streamMafWorkflowExecution(
+          workflowId,
+          {
+            requestId: getRequestId(),
+            input: form.description || form.intent,
+            context: {
+              domain: form.domain,
+              intent: form.intent,
+              inputs: nodeInputs,
+            },
           },
-        })
-        setMafExecution(execution)
-        const runtimeUpdates = execution.steps.reduce<Record<string, WorkflowNodeRuntime>>(
-          (acc, step) => {
-            const status =
-              step.status === 'error' || step.status === 'running'
-                ? (step.status as 'error' | 'running')
-                : ('success' as const)
-            acc[step.nodeId] = {
-              status,
-              output: step.output ?? '',
-              lastRunAt: step.finishedAt,
-            }
-            return acc
+          {
+            signal: controller.signal,
+            onStep: applyRuntimeStep,
           },
-          {},
         )
-        applyRuntimeOverrides(runtimeUpdates)
       } catch (error) {
-        setMafExecutionError((error as Error).message)
+        if ((error as DOMException).name !== 'AbortError') {
+          setMafExecutionError((error as Error).message)
+        }
       } finally {
+        if (streamControllerRef.current === controller) {
+          streamControllerRef.current = null
+        }
         setMafExecutionLoading(false)
       }
     },
-    [form],
+    [form, nodeInputs, applyRuntimeStep],
   )
 
   return (
@@ -551,21 +604,6 @@ export default function DynamicWorkflowCanvas() {
                     )}
                   </div>
                 </div>
-                    {workflow.inputs && workflow.inputs.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {workflow.inputs.map((field) => (
-                          <div key={`${workflow.id}-${field.id}`}>
-                            <Label className="text-xs text-slate-500">{field.label}</Label>
-                            <Input
-                              value={mafInputs[workflow.id]?.[field.id] ?? ''}
-                              placeholder={field.placeholder}
-                              onChange={(event) => updateMafInput(workflow.id, field.id, event.target.value)}
-                            />
-                            {field.helperText && <p className="text-[11px] text-slate-400">{field.helperText}</p>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     <div className="mt-3 flex flex-wrap gap-2">
                   <Button variant="secondary" size="sm" onClick={() => handleLoadMafWorkflow(workflow.id)}>
                     Load diagram
@@ -577,31 +615,6 @@ export default function DynamicWorkflowCanvas() {
               </div>
             ))}
             {mafExecutionError && <p className="text-sm text-red-600">{mafExecutionError}</p>}
-            {mafExecution && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Last execution</p>
-                <div className="rounded-lg border border-slate-200 p-3">
-                  <p className="text-sm font-medium">Request {mafExecution.requestId}</p>
-                  <p className="text-xs text-slate-500">Status: {mafExecution.status}</p>
-                  <ul className="mt-3 space-y-2">
-                    {mafExecution.steps.map((step) => (
-                      <li key={step.nodeId} className="rounded border border-slate-100 p-2">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium">{step.agentName ?? step.name}</span>
-                            {step.handler && <span className="text-[11px] uppercase text-slate-400">{step.handler}</span>}
-                          </div>
-                          <span className={step.status === 'success' ? 'text-green-600 font-semibold' : 'text-amber-600 font-semibold'}>
-                            {step.status}
-                          </span>
-                        </div>
-                        {step.output && <p className="text-xs text-slate-500">{step.output}</p>}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       </aside>

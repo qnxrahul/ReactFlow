@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-from uuid import uuid4
+import asyncio
 import json
+from datetime import datetime
+from typing import Any, Awaitable, Callable, Dict, List, Optional
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from .agent_catalog import CATALOG as AGENT_CATALOG, AgentCatalogItem
+
+StepCallback = Optional[Callable[["WorkflowExecutionStep"], Awaitable[None]]]
 from agents.workflow_initiation_agent import (
     build_checklist_workflow,
     build_checklist_workflow_new,
@@ -426,6 +429,10 @@ DEVUI_AGENT_FACTORIES = {
     "mcp-supervisor-agent": mcp_supervisor_agent,
 }
 
+async def _emit_step(callback: StepCallback, step: "WorkflowExecutionStep") -> None:
+    if callback:
+        await callback(step)
+
 
 def list_workflows() -> List[WorkflowCatalogItem]:
     return list(CATALOG.values())
@@ -497,11 +504,29 @@ def _build_prompt(payload: WorkflowExecutionRequest) -> str:
     return "\n".join(parts)
 
 
-async def _run_devui_agent(agent_factory, payload: WorkflowExecutionRequest, request_id: str) -> List[WorkflowExecutionStep]:
+async def _run_devui_agent(
+    agent_factory,
+    payload: WorkflowExecutionRequest,
+    request_id: str,
+    event_callback: StepCallback = None,
+) -> List[WorkflowExecutionStep]:
     if agent_factory is None:
         raise ValueError("Agent factory not provided.")
     agent = agent_factory()
     prompt = _build_prompt(payload)
+    start_time = datetime.utcnow()
+    running_step = WorkflowExecutionStep(
+        nodeId=agent.name or "agent",
+        name=agent.name or "Agent",
+        handler=getattr(agent, "handler", None),
+        agentId=getattr(agent, "id", None),
+        agentName=agent.name or "Agent",
+        status="running",
+        output="",
+        startedAt=start_time,
+        finishedAt=start_time,
+    )
+    await _emit_step(event_callback, running_step)
     result = await agent.run(prompt)
     output_text = getattr(result, "text", None) or getattr(result, "output", None) or str(result)
     finished = datetime.utcnow()
@@ -513,13 +538,18 @@ async def _run_devui_agent(agent_factory, payload: WorkflowExecutionRequest, req
         agentName=agent.name or "Agent",
         status="success",
         output=output_text,
-        startedAt=finished,
+        startedAt=start_time,
         finishedAt=finished,
     )
+    await _emit_step(event_callback, step)
     return [step]
 
 
-async def _run_devui_workflow(item: WorkflowCatalogItem, payload: WorkflowExecutionRequest) -> List[WorkflowExecutionStep]:
+async def _run_devui_workflow(
+    item: WorkflowCatalogItem,
+    payload: WorkflowExecutionRequest,
+    event_callback: StepCallback = None,
+) -> List[WorkflowExecutionStep]:
     if InMemoryCheckpointStorage is None or AgentRunEvent is None:
         raise RuntimeError("agent_framework runtime is not available in this environment.")
     builder = DEVUI_WORKFLOW_BUILDERS.get(item.id)
@@ -541,6 +571,22 @@ async def _run_devui_workflow(item: WorkflowCatalogItem, payload: WorkflowExecut
         now = datetime.utcnow()
         if ExecutorInvokedEvent and isinstance(event, ExecutorInvokedEvent):
             start_times.setdefault(event.executor_id, now)
+            node = node_by_name.get(event.executor_id)
+            if node:
+                handler = handler_by_node.get(node.name)
+                agent_meta = AGENTS_BY_HANDLER.get(handler or "")
+                running_step = WorkflowExecutionStep(
+                    nodeId=node.id,
+                    name=node.name,
+                    handler=handler,
+                    agentId=agent_meta.id if agent_meta else None,
+                    agentName=agent_meta.name if agent_meta else node.name,
+                    status="running",
+                    output="",
+                    startedAt=now,
+                    finishedAt=now,
+                )
+                await _emit_step(event_callback, running_step)
             continue
         if AgentRunEvent and isinstance(event, AgentRunEvent):
             executor_id = event.executor_id
@@ -550,34 +596,41 @@ async def _run_devui_workflow(item: WorkflowCatalogItem, payload: WorkflowExecut
             output = ""
             if event.data:
                 output = getattr(event.data, "text", None) or getattr(event.data, "output", None) or str(event.data)
-            steps.append(
-                WorkflowExecutionStep(
-                    nodeId=node.id if node else executor_id,
-                    name=node.name if node else executor_id,
-                    handler=handler,
-                    agentId=agent_meta.id if agent_meta else None,
-                    agentName=agent_meta.name if agent_meta else (node.name if node else executor_id),
-                    status="success",
-                    output=output,
-                    startedAt=start_times.get(executor_id, now),
-                    finishedAt=now,
-                )
+            step = WorkflowExecutionStep(
+                nodeId=node.id if node else executor_id,
+                name=node.name if node else executor_id,
+                handler=handler,
+                agentId=agent_meta.id if agent_meta else None,
+                agentName=agent_meta.name if agent_meta else (node.name if node else executor_id),
+                status="success",
+                output=output,
+                startedAt=start_times.get(executor_id, now),
+                finishedAt=now,
             )
+            steps.append(step)
+            await _emit_step(event_callback, step)
     if not steps:
         raise RuntimeError("Workflow execution did not produce any agent events.")
     return steps
 
 
-async def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) -> WorkflowExecutionResponse:
+async def execute_workflow(
+    workflow_id: str,
+    payload: WorkflowExecutionRequest,
+    *,
+    event_callback: StepCallback = None,
+) -> WorkflowExecutionResponse:
     item = get_workflow(workflow_id)
     request_id = payload.request_id or f"req-{uuid4()}"
     started = datetime.utcnow()
     steps: List[WorkflowExecutionStep] = []
     try:
         if item.id in DEVUI_WORKFLOW_BUILDERS:
-            steps = await _run_devui_workflow(item, payload)
+            steps = await _run_devui_workflow(item, payload, event_callback=event_callback)
         elif item.id in DEVUI_AGENT_FACTORIES:
-            steps = await _run_devui_agent(DEVUI_AGENT_FACTORIES[item.id], payload, request_id)
+            steps = await _run_devui_agent(
+                DEVUI_AGENT_FACTORIES[item.id], payload, request_id, event_callback=event_callback
+            )
         else:
             # Fallback to mock execution for presets that do not have runtime wiring.
             context_summary = payload.context or {}
@@ -605,6 +658,7 @@ async def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) 
                         finishedAt=datetime.utcnow(),
                     )
                 )
+                await _emit_step(event_callback, steps[-1])
     except Exception as exc:
         steps = [
             WorkflowExecutionStep(
@@ -616,6 +670,7 @@ async def execute_workflow(workflow_id: str, payload: WorkflowExecutionRequest) 
                 finishedAt=datetime.utcnow(),
             )
         ]
+        await _emit_step(event_callback, steps[0])
     finished = datetime.utcnow()
     return WorkflowExecutionResponse(
         workflowId=item.definition.id,

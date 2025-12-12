@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..dependencies import (
@@ -298,6 +299,24 @@ def execute_maf_workflow_catalog_item(
         return maf.execute_workflow(workflow_id, payload.model_dump(by_alias=True, exclude_none=True))
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+
+@router.post("/catalog/maf/{workflow_id}/events")
+async def stream_maf_workflow_events(
+    workflow_id: str,
+    payload: WorkflowExecutionProxyRequest,
+    maf: MAFClient = Depends(get_maf_client),
+):
+    payload_dict = payload.model_dump(by_alias=True, exclude_none=True)
+
+    async def event_iterator():
+        try:
+            async for chunk in maf.stream_workflow_events(workflow_id, payload_dict):
+                yield chunk
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+    return StreamingResponse(event_iterator(), media_type="text/event-stream")
 
 
 def _build_assist_answer(llm: OpenRouterClient, payload: WorkflowAssistRequest, workflow: WorkflowDefinition) -> str:

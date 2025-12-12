@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, AsyncIterator, Dict
 
 import httpx
 
@@ -48,3 +48,21 @@ class MAFClient:
 
     def list_agents(self) -> Dict[str, Any]:
         return self._request("GET", "/agents/catalog/")
+
+    async def stream_workflow_events(
+        self,
+        workflow_id: str,
+        payload: Dict[str, Any],
+        params: Optional[Dict[str, Any]] = None,
+    ) -> AsyncIterator[bytes]:
+        if not self.enabled:
+            raise RuntimeError("MAF API is not configured.")
+        headers: Dict[str, str] = {"Content-Type": "application/json", "Accept": "text/event-stream"}
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}" if not self._token.startswith("Bearer") else self._token
+        url = f"{self._base_url}/workflows/catalog/{workflow_id}/events"
+        async with httpx.AsyncClient(timeout=None) as client:
+            async with client.stream("POST", url, headers=headers, params=params, json=payload) as response:
+                response.raise_for_status()
+                async for chunk in response.aiter_raw():
+                    yield chunk

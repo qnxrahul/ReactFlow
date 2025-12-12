@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+import json
+
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 
 from registry.workflow_catalog import (
     WorkflowExecutionRequest,
@@ -40,3 +44,35 @@ async def execute_catalog_workflow(workflow_id: str, payload: WorkflowExecutionR
     except KeyError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return result.model_dump(by_alias=True)
+
+
+@router.post("/catalog/{workflow_id}/events")
+async def stream_catalog_workflow(workflow_id: str, payload: WorkflowExecutionRequest):
+    async def event_generator():
+        queue: asyncio.Queue = asyncio.Queue()
+
+        async def on_step(step):
+            await queue.put(step)
+
+        async def runner():
+            try:
+                await execute_workflow(workflow_id, payload, event_callback=on_step)
+                await queue.put(None)
+            except Exception as exc:
+                await queue.put(exc)
+
+        task = asyncio.create_task(runner())
+        try:
+            while True:
+                item = await queue.get()
+                if item is None:
+                    yield "event:complete\ndata={}\n\n".encode("utf-8")
+                    break
+                if isinstance(item, Exception):
+                    yield f"event:error\ndata={json.dumps({'message': str(item)})}\n\n".encode("utf-8")
+                    break
+                yield f"data:{json.dumps(item.model_dump(by_alias=True))}\n\n".encode("utf-8")
+        finally:
+            task.cancel()
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
