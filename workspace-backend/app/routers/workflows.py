@@ -216,6 +216,7 @@ def assist_workflow(
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
     policy: WorkflowPolicyService = Depends(get_policy_service),
+    taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowAssistResponse:
     components = registry.list_components()
     handlers = registry.list_handlers()
