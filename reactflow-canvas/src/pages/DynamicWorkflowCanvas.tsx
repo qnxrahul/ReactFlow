@@ -83,6 +83,13 @@ export default function DynamicWorkflowCanvas() {
   const [mafExecutionError, setMafExecutionError] = useState<string | null>(null)
   const [nodeInputs, setNodeInputs] = useState<Record<string, Record<string, string>>>({})
   const streamControllerRef = useRef<AbortController | null>(null)
+
+  const handleNodeInputChange = useCallback((nodeId: string, fieldId: string, value: string) => {
+    setNodeInputs((prev) => ({
+      ...prev,
+      [nodeId]: { ...(prev[nodeId] ?? {}), [fieldId]: value },
+    }))
+  }, [])
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
@@ -373,13 +380,6 @@ export default function DynamicWorkflowCanvas() {
     }
     return `req-${Date.now()}`
   }
-
-  const handleNodeInputChange = useCallback((nodeId: string, fieldId: string, value: string) => {
-    setNodeInputs((prev) => ({
-      ...prev,
-      [nodeId]: { ...(prev[nodeId] ?? {}), [fieldId]: value },
-    }))
-  }, [])
 
   const applyRuntimeStep = useCallback(
     (step: WorkflowExecutionStep) => {
