@@ -84,12 +84,59 @@ export default function DynamicWorkflowCanvas() {
   const [nodeInputs, setNodeInputs] = useState<Record<string, Record<string, string>>>({})
   const streamControllerRef = useRef<AbortController | null>(null)
 
+  const gridPosition = useCallback(
+    (index: number) => ({
+      x: 120 + (index % 4) * 260,
+      y: 80 + Math.floor(index / 4) * 240,
+    }),
+    [],
+  )
+
   const handleNodeInputChange = useCallback((nodeId: string, fieldId: string, value: string) => {
     setNodeInputs((prev) => ({
       ...prev,
       [nodeId]: { ...(prev[nodeId] ?? {}), [fieldId]: value },
     }))
   }, [])
+
+  const loadMafWorkflowDefinition = useCallback(
+    (workflow: WorkflowCatalogItem) => {
+      const enrichedDefinition = {
+        ...workflow.definition,
+        nodes: workflow.definition.nodes.map((node, index) => ({
+          ...node,
+          runtime: { status: 'idle' as const },
+          ui: {
+            ...node.ui,
+            props: {
+              ...node.ui?.props,
+              __mafInputs: workflow.inputs ?? [],
+            },
+          },
+        })),
+      }
+      applyDefinition(enrichedDefinition)
+      const positions = enrichedDefinition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
+        acc[node.id] = gridPosition(index)
+        return acc
+      }, {})
+      setNodePositions(positions)
+      setNodeInputs(
+        enrichedDefinition.nodes.reduce<Record<string, Record<string, string>>>((acc, node) => {
+          const fields = (node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? []
+          const initial: Record<string, string> = {}
+          fields.forEach((field) => {
+            initial[field.id] = ''
+          })
+          acc[node.id] = initial
+          return acc
+        }, {}),
+      )
+      setSelectedAgentIds([])
+      setMafExecutionError(null)
+    },
+    [applyDefinition, gridPosition],
+  )
   const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
   const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
 
@@ -98,14 +145,6 @@ export default function DynamicWorkflowCanvas() {
       streamControllerRef.current?.abort()
     }
   }, [])
-
-  const gridPosition = useCallback(
-    (index: number) => ({
-      x: 120 + (index % 4) * 260,
-      y: 80 + Math.floor(index / 4) * 240,
-    }),
-    [],
-  )
 
   const syncNodes = useCallback(
     (workflowNodes: WorkflowNode[], positions: Record<string, { x: number; y: number }>) => {
@@ -405,44 +444,6 @@ export default function DynamicWorkflowCanvas() {
       })
     },
     [applyRuntimeOverrides],
-  )
-
-  const loadMafWorkflowDefinition = useCallback(
-    (workflow: WorkflowCatalogItem) => {
-      const enrichedDefinition = {
-        ...workflow.definition,
-        nodes: workflow.definition.nodes.map((node) => ({
-          ...node,
-          runtime: { status: 'idle' as const },
-          ui: {
-            ...node.ui,
-            props: {
-              ...node.ui?.props,
-              __mafInputs: workflow.inputs ?? [],
-            },
-          },
-        })),
-      }
-      applyDefinition(enrichedDefinition)
-      const positions = enrichedDefinition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
-        acc[node.id] = gridPosition(index)
-        return acc
-      }, {})
-      setNodePositions(positions)
-      setNodeInputs(
-        enrichedDefinition.nodes.reduce<Record<string, Record<string, string>>>((acc, node) => {
-          const fields = (node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? []
-          acc[node.id] = fields.reduce<Record<string, string>>((fieldAcc, field) => {
-            fieldAcc[field.id] = ''
-            return fieldAcc
-          }, {})
-          return acc
-        }, {}),
-      )
-      setSelectedAgentIds([])
-      setMafExecutionError(null)
-    },
-    [applyDefinition, gridPosition],
   )
 
   const handleLoadMafWorkflow = useCallback(
