@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Dict, Optional
 
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from ..config import get_settings
 from ..dependencies import (
     get_agent_registry_store,
     get_audit_taxonomy,
@@ -44,7 +46,32 @@ from ..services.registry_store import ComponentRegistryStore
 from ..services.workflow_authoring import WorkflowAuthoringService
 from ..services.workflow_repository import WorkflowRepository
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workflows", tags=["Dynamic Workflows"])
+
+
+def _load_maf_workflow_for_domain(domain: Optional[str], intent: Optional[str]) -> Optional[WorkflowDefinition]:
+    if not domain:
+        return None
+    settings = get_settings()
+    client = MAFClient(settings)
+    if not client.enabled:
+        return None
+    params: Dict[str, str] = {"domain": domain}
+    if intent:
+        params["intent"] = intent
+    try:
+        response = client.list_catalog(params=params)
+        workflows = response.get("workflows", []) if isinstance(response, dict) else []
+        if not workflows:
+            return None
+        definition_payload = workflows[0].get("definition")
+        if not definition_payload:
+            return None
+        return WorkflowDefinition.model_validate(definition_payload)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Failed to load MAF workflow for domain '%s': %s", domain, exc)
+        return None
 
 
 class WorkflowExecutionProxyRequest(BaseModel):
@@ -80,10 +107,16 @@ def generate_workflow(
     policy: WorkflowPolicyService = Depends(get_policy_service),
     taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowDefinition:
+    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
+
+    maf_workflow = _load_maf_workflow_for_domain(canonical_domain, payload.intent)
+    if maf_workflow:
+        repo.save(maf_workflow)
+        return _normalize(maf_workflow)
+
     components = registry.list_components()
     handlers = registry.list_handlers()
     author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
-    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
     available_agents = registry.list_agents()
     domain_agents = [
         agent
@@ -195,6 +228,21 @@ def assist_workflow(
             existing_workflow = repo.get(payload.workflow_id)
         except KeyError:
             existing_workflow = None
+
+    candidate_domain = (
+        payload.domain
+        or context.get("domain")
+        or (existing_workflow.domain if existing_workflow else None)
+    )
+    canonical_candidate = taxonomy.canonicalize(candidate_domain) or candidate_domain
+    maf_assist_workflow = _load_maf_workflow_for_domain(canonical_candidate, payload.intent or (existing_workflow.intent if existing_workflow else None))
+    if maf_assist_workflow:
+        repo.save(maf_assist_workflow)
+        return WorkflowAssistResponse(
+            answer=f"Loaded {maf_assist_workflow.title} from catalog.",
+            suggested_nodes=maf_assist_workflow.nodes,
+            workflow=maf_assist_workflow,
+        )
 
     domain = payload.domain or context.get("domain") or (existing_workflow.domain if existing_workflow else "General")
     intent = payload.intent or context.get("intent") or (existing_workflow.intent if existing_workflow else "analysis")
