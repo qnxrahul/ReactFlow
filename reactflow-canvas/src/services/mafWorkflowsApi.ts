@@ -10,8 +10,19 @@ async function handle<T>(response: Response): Promise<T> {
   return (await response.json()) as T
 }
 
-export async function fetchMafWorkflowCatalog(): Promise<WorkflowCatalogItem[]> {
-  const res = await fetch(`${API_BASE}/workflows/catalog/maf`)
+type WorkflowCatalogFilters = {
+  domain?: string
+  intent?: string
+  query?: string
+}
+
+export async function fetchMafWorkflowCatalog(filters: WorkflowCatalogFilters = {}): Promise<WorkflowCatalogItem[]> {
+  const params = new URLSearchParams()
+  if (filters.domain?.trim()) params.set('domain', filters.domain.trim())
+  if (filters.intent?.trim()) params.set('intent', filters.intent.trim())
+  if (filters.query?.trim()) params.set('query', filters.query.trim())
+  const qs = params.toString()
+  const res = await fetch(`${API_BASE}/workflows/catalog/maf${qs ? `?${qs}` : ''}`)
   const data = await handle<{ workflows?: WorkflowCatalogItem[] }>(res)
   return data.workflows ?? []
 }

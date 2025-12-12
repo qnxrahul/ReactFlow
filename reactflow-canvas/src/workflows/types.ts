@@ -119,6 +119,7 @@ export type WorkflowCatalogItem = {
   description?: string | null
   category?: string | null
   tags?: string[]
+  domains?: string[]
   source?: string | null
   definition: WorkflowDefinition
 }

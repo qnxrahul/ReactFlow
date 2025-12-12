@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from ..dependencies import (
@@ -264,8 +264,20 @@ def assist_workflow(
 
 
 @router.get("/catalog/maf")
-def list_maf_workflow_catalog(maf: MAFClient = Depends(get_maf_client)):
-    return maf.list_catalog()
+def list_maf_workflow_catalog(
+    domain: Optional[str] = Query(default=None),
+    intent: Optional[str] = Query(default=None),
+    query: Optional[str] = Query(default=None),
+    maf: MAFClient = Depends(get_maf_client),
+):
+    params = {}
+    if domain:
+        params["domain"] = domain
+    if intent:
+        params["intent"] = intent
+    if query:
+        params["query"] = query
+    return maf.list_catalog(params=params or None)
 
 
 @router.get("/catalog/maf/{workflow_id}")

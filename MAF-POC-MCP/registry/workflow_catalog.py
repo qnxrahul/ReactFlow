@@ -62,6 +62,7 @@ class WorkflowCatalogItem(BaseModel):
     description: str
     category: str
     tags: List[str] = Field(default_factory=list)
+    domains: List[str] = Field(default_factory=list)
     source: str = "preset"
     definition: WorkflowDefinitionModel
 
@@ -182,6 +183,7 @@ def _build_checklist_workflow() -> WorkflowCatalogItem:
         description="Multi-agent flow that supervises extraction, ingestion, and checklist answering.",
         category="Checklist Automation",
         tags=["checklist", "multi-agent", "supervisor"],
+        domains=["Audit", "Checklist", "Supervisor"],
         source="devui",
         definition=definition,
     )
@@ -225,6 +227,7 @@ def _build_parallel_review_workflow() -> WorkflowCatalogItem:
         description="Lightweight review flow that ingests evidence, analyzes risk, and captures a decision gate.",
         category="Risk",
         tags=["risk", "review"],
+        domains=["Enterprise Risk", "Audit"],
         source="preset",
         definition=definition,
     )
@@ -275,6 +278,7 @@ def _build_checklist_chain_workflow() -> WorkflowCatalogItem:
         description="Matches build_checklist_workflow_new() from the Dev UI sequential workflow builder.",
         category="Checklist Automation",
         tags=["checklist", "devui"],
+        domains=["Audit", "Checklist", "Sequential"],
         source="devui",
         definition=definition,
     )
@@ -302,6 +306,7 @@ def _build_supervisor_agent() -> WorkflowCatalogItem:
         description="Standalone supervisor agent mirroring run_supervisor_agent() in the Dev UI.",
         category="Agents",
         tags=["devui", "agent"],
+        domains=["Audit", "Supervisor", "Checklist"],
         source="devui",
         definition=definition,
     )
@@ -329,6 +334,7 @@ def _build_mcp_supervisor_agent() -> WorkflowCatalogItem:
         description="Represents mcp_supervisor_agent() from Dev UI coordinating server/client MCP agents.",
         category="Agents",
         tags=["devui", "mcp"],
+        domains=["Platform", "MCP", "Supervisor"],
         source="devui",
         definition=definition,
     )
@@ -362,6 +368,43 @@ DEVUI_AGENT_FACTORIES = {
 
 def list_workflows() -> List[WorkflowCatalogItem]:
     return list(CATALOG.values())
+
+
+def filter_workflows(
+    workflows: List[WorkflowCatalogItem],
+    *,
+    domain: Optional[str] = None,
+    intent: Optional[str] = None,
+    query: Optional[str] = None,
+) -> List[WorkflowCatalogItem]:
+    domain_lower = domain.strip().lower() if domain else None
+    intent_lower = intent.strip().lower() if intent else None
+    query_lower = query.strip().lower() if query else None
+
+    def matches(item: WorkflowCatalogItem) -> bool:
+        if domain_lower:
+            domain_hit = any(domain_lower in d.lower() for d in item.domains or [])
+            tag_hit = any(domain_lower in tag.lower() for tag in item.tags or [])
+            if not (domain_hit or tag_hit):
+                return False
+        if intent_lower:
+            intent_value = (item.definition.intent or "").lower()
+            title_value = (item.title or "").lower()
+            if intent_lower not in intent_value and intent_lower not in title_value:
+                return False
+        if query_lower:
+            haystack = [
+                item.title or "",
+                item.description or "",
+                " ".join(item.tags or []),
+                " ".join(item.domains or []),
+                item.definition.intent or "",
+            ]
+            if not any(query_lower in part.lower() for part in haystack):
+                return False
+        return True
+
+    return [item for item in workflows if matches(item)]
 
 
 def get_workflow(workflow_id: str) -> WorkflowCatalogItem:

@@ -215,7 +215,10 @@ export default function DynamicWorkflowCanvas() {
     const loadCatalog = async () => {
       setMafCatalogLoading(true)
       try {
-        const workflows = await fetchMafWorkflowCatalog()
+        const workflows = await fetchMafWorkflowCatalog({
+          domain: form.domain,
+          intent: form.intent,
+        })
         if (!cancelled) {
           setMafCatalog(workflows)
           setMafCatalogError(null)
@@ -234,7 +237,7 @@ export default function DynamicWorkflowCanvas() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [form.domain, form.intent])
 
   const stats = useMemo(() => {
     if (!definition) return null
@@ -493,6 +496,9 @@ export default function DynamicWorkflowCanvas() {
                         .filter(Boolean)
                         .join(' • ')}
                     </p>
+                    {workflow.domains && workflow.domains.length > 0 && (
+                      <p className="text-xs text-slate-400">Domains: {workflow.domains.join(', ')}</p>
+                    )}
                     {workflow.tags && workflow.tags.length > 0 && (
                       <p className="mt-1 text-xs text-slate-400">{workflow.tags.join(' • ')}</p>
                     )}

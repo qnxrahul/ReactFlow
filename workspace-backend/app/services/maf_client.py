@@ -17,7 +17,14 @@ class MAFClient:
     def enabled(self) -> bool:
         return bool(self._base_url)
 
-    def _request(self, method: str, path: str, *, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         if not self.enabled:
             raise RuntimeError("MAF API is not configured.")
         headers: Dict[str, str] = {"Content-Type": "application/json"}
@@ -26,12 +33,12 @@ class MAFClient:
 
         url = f"{self._base_url}{path}"
         with httpx.Client(timeout=30) as client:
-            response = client.request(method, url, headers=headers, json=json)
+            response = client.request(method, url, headers=headers, json=json, params=params)
             response.raise_for_status()
             return response.json()
 
-    def list_catalog(self) -> Dict[str, Any]:
-        return self._request("GET", "/workflows/catalog")
+    def list_catalog(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return self._request("GET", "/workflows/catalog", params=params)
 
     def get_workflow(self, workflow_id: str) -> Dict[str, Any]:
         return self._request("GET", f"/workflows/catalog/{workflow_id}")
