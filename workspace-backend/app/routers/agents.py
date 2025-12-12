@@ -98,39 +98,25 @@ def list_agents(
     registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> AgentListResponse:
-    base_agents = registry.list_agents()
-
     settings = get_settings()
     maf_client = MAFClient(settings)
-    maf_agents: List[AgentDefinition] = []
+    agents: List[AgentDefinition] = []
     if maf_client.enabled:
         try:
             response = maf_client.list_agents()
             raw_agents = response.get("agents", []) if isinstance(response, dict) else []
-            maf_agents = [
+            agents = [
                 AgentDefinition.model_validate(item)
                 for item in raw_agents
                 if isinstance(item, dict)
             ]
-        except Exception as exc:  # pragma: no cover - network issues
+        except Exception as exc:  # pragma: no cover
             logger.warning("Failed to load agents from MAF catalog: %s", exc)
+    else:
+        agents = registry.list_agents()
 
-    combined: List[AgentDefinition] = []
-    seen_ids = set()
-
-    def _append(agent: AgentDefinition) -> None:
-        if agent.id in seen_ids:
-            return
-        seen_ids.add(agent.id)
-        combined.append(agent)
-
-    for agent in base_agents:
-        _append(agent)
-    for agent in maf_agents:
-        _append(agent)
-
-    agents = _filter_agents(combined, _normalize(domain), _normalize(intent), keywords, taxonomy)
-    return AgentListResponse(agents=agents)
+    filtered = _filter_agents(agents, _normalize(domain), _normalize(intent), keywords, taxonomy)
+    return AgentListResponse(agents=filtered)
 
 
 @router.post("/", response_model=AgentDefinition, status_code=status.HTTP_201_CREATED)
