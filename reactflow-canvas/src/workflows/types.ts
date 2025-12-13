@@ -24,6 +24,8 @@ export type WorkflowNode = {
   ui: WorkflowNodeUI
   behavior: WorkflowNodeBehavior
   runtime?: WorkflowNodeRuntime
+  inputs?: string[]
+  outputs?: string[]
 }
 
 export type WorkflowEdge = {
@@ -111,4 +113,45 @@ export type WorkflowAssistResponse = {
   answer: string
   suggestedNodes: WorkflowNode[]
   workflow?: WorkflowDefinition
+}
+
+export type WorkflowCatalogItem = {
+  id: string
+  title: string
+  description?: string | null
+  category?: string | null
+  tags?: string[]
+  domains?: string[]
+  source?: string | null
+  inputs?: WorkflowInputField[]
+  definition: WorkflowDefinition
+}
+
+export type WorkflowInputField = {
+  id: string
+  label: string
+  placeholder?: string
+  required?: boolean
+  helperText?: string
+}
+
+export type WorkflowExecutionStep = {
+  nodeId: string
+  name: string
+  handler?: string
+  agentId?: string
+  agentName?: string
+  status: WorkflowNodeRuntime['status']
+  output?: string
+  startedAt: string
+  finishedAt: string
+}
+
+export type WorkflowExecutionResponse = {
+  workflowId: string
+  requestId: string
+  status: WorkflowNodeRuntime['status']
+  steps: WorkflowExecutionStep[]
+  startedAt: string
+  finishedAt: string
 }

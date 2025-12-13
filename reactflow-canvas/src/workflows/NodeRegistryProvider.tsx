@@ -19,7 +19,7 @@ function buildRendererMap(definitions: ComponentDefinition[]): Map<string, NodeR
 
   definitions.forEach((definition) => {
     const base = getBaseRenderer(definition.baseRenderer) ?? getFallbackRenderer(definition.type)
-    const wrapped: NodeRenderer = ({ node, onRun }) => {
+    const wrapped: NodeRenderer = ({ node, onRun, inputs, onInputChange }) => {
       const mergedNode = {
         ...node,
         ui: {
@@ -30,7 +30,7 @@ function buildRendererMap(definitions: ComponentDefinition[]): Map<string, NodeR
           },
         },
       }
-      return base({ node: mergedNode, onRun })
+      return base({ node: mergedNode, onRun, inputs, onInputChange })
     }
     map.set(definition.type, wrapped)
   })

@@ -15,7 +15,7 @@ from agent_framework.devui import DevServer
 from agent_framework import WorkflowAgent
 
 from tools.checklist_process import ChecklistProcessor
-from apis import checklist_router, ui_config_router
+from apis import agent_catalog_router, checklist_router, ui_config_router, workflows_router
 
 logger = get_logger(__name__)
 app = FastAPI(title="Microsoft Agent Framework POC API")
@@ -28,6 +28,8 @@ app.add_middleware(
 )
 app.include_router(checklist_router)
 app.include_router(ui_config_router)
+app.include_router(agent_catalog_router)
+app.include_router(workflows_router)
 
 def run_api():
     import uvicorn

@@ -13,16 +13,27 @@ import {
 } from '@xyflow/react'
 import { nanoid } from 'nanoid'
 import { AgentToolbar } from '../components/AgentToolbar'
+import { MafWorkflowToolbar } from '../components/MafWorkflowToolbar'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { fetchAgents, runAgent } from '../services/agentsApi'
+import { fetchMafWorkflowCatalog, streamMafWorkflowExecution } from '../services/mafWorkflowsApi'
 import { assistWorkflow } from '../services/workflowsApi'
 import { DynamicWorkflowNode, type DynamicWorkflowNodeType } from '../workflows/components/DynamicWorkflowNode'
 import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
-import type { AgentDefinition, WorkflowNode } from '../workflows/types'
+import type {
+  AgentDefinition,
+  WorkflowCatalogItem,
+  WorkflowExecutionResponse,
+  WorkflowNode,
+  WorkflowNodeRuntime,
+  WorkflowInputField,
+  WorkflowExecutionStep,
+} from '../workflows/types'
+import { mergeWorkflowDefinitions } from '../workflows/utils/mergeWorkflowDefinitions'
 
 const nodeTypes = { dynamic: DynamicWorkflowNode } satisfies NodeTypes
 
@@ -47,7 +58,8 @@ function extractKeywords(text: string): string[] {
 }
 
 export default function DynamicWorkflowCanvas() {
-  const { generate, definition, nodes, edges, runNode, loading, error, applyDefinition } = useDynamicWorkflow()
+  const { generate, definition, nodes, edges, runNode, loading, error, applyDefinition, applyRuntimeOverrides } =
+    useDynamicWorkflow()
   const [form, setForm] = useState(defaultPayload)
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<DynamicWorkflowNodeType>([])
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -65,8 +77,14 @@ export default function DynamicWorkflowCanvas() {
   const [toolbarAgentId, setToolbarAgentId] = useState<string | null>(null)
   const [toolbarError, setToolbarError] = useState<string | null>(null)
   const [agentMatchScores, setAgentMatchScores] = useState<Record<string, number>>({})
-  const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
-  const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
+  const [mafCatalog, setMafCatalog] = useState<WorkflowCatalogItem[]>([])
+  const [mafCatalogLoading, setMafCatalogLoading] = useState(false)
+  const [mafCatalogError, setMafCatalogError] = useState<string | null>(null)
+  const [mafExecutionError, setMafExecutionError] = useState<string | null>(null)
+  const [nodeInputs, setNodeInputs] = useState<Record<string, Record<string, string>>>({})
+  const [activeCatalogWorkflowId, setActiveCatalogWorkflowId] = useState<string | null>(null)
+  const [executingWorkflowId, setExecutingWorkflowId] = useState<string | null>(null)
+  const streamControllerRef = useRef<AbortController | null>(null)
 
   const gridPosition = useCallback(
     (index: number) => ({
@@ -75,6 +93,76 @@ export default function DynamicWorkflowCanvas() {
     }),
     [],
   )
+
+  const handleNodeInputChange = useCallback((nodeId: string, fieldId: string, value: string) => {
+    setNodeInputs((prev) => ({
+      ...prev,
+      [nodeId]: { ...(prev[nodeId] ?? {}), [fieldId]: value },
+    }))
+  }, [])
+
+  const loadMafWorkflowDefinition = useCallback(
+    (workflow: WorkflowCatalogItem) => {
+      const workflowInputs = workflow.inputs ?? []
+      const workflowInputMap = workflowInputs.reduce<Record<string, WorkflowInputField>>((acc, field) => {
+        acc[field.id] = field
+        return acc
+      }, {})
+      const enrichedDefinition = {
+        ...workflow.definition,
+        nodes: workflow.definition.nodes.map((node, index) => {
+          const explicitInputs =
+            (node.inputs ?? [])
+              .map((inputId) => workflowInputMap[inputId])
+              .filter((field): field is WorkflowInputField => Boolean(field)) ?? []
+          const fallbackInputs =
+            ((node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? workflowInputs)
+          const mafInputs = explicitInputs.length > 0 ? explicitInputs : fallbackInputs
+          return {
+            ...node,
+            runtime: { status: 'idle' as const },
+            ui: {
+              ...node.ui,
+              props: {
+                ...(node.ui?.props ?? {}),
+                __mafInputs: mafInputs,
+              },
+            },
+          }
+        }),
+      }
+      applyDefinition(enrichedDefinition)
+      const positions = enrichedDefinition.nodes.reduce<Record<string, { x: number; y: number }>>((acc, node, index) => {
+        acc[node.id] = gridPosition(index)
+        return acc
+      }, {})
+      setNodePositions(positions)
+      setNodeInputs(
+        enrichedDefinition.nodes.reduce<Record<string, Record<string, string>>>((acc, node) => {
+          const fields = (node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined) ?? []
+          const initial: Record<string, string> = {}
+          fields.forEach((field) => {
+            initial[field.id] = ''
+          })
+          acc[node.id] = initial
+          return acc
+        }, {}),
+      )
+      setSelectedAgentIds([])
+      setMafExecutionError(null)
+      setActiveCatalogWorkflowId(workflow.id)
+    },
+    [applyDefinition, gridPosition, setActiveCatalogWorkflowId],
+  )
+  const keywordSource = `${form.domain} ${form.intent} ${form.description ?? ''} ${assistQuestion}`
+  const contextKeywords = useMemo(() => extractKeywords(keywordSource), [keywordSource])
+  const hasMafCatalog = mafCatalog.length > 0
+
+  useEffect(() => {
+    return () => {
+      streamControllerRef.current?.abort()
+    }
+  }, [])
 
   const syncNodes = useCallback(
     (workflowNodes: WorkflowNode[], positions: Record<string, { x: number; y: number }>) => {
@@ -85,12 +173,17 @@ export default function DynamicWorkflowCanvas() {
             id: node.id,
             type: 'dynamic',
             position,
-            data: { node, onRun: (nodeId: string) => runNode(nodeId) },
+            data: {
+              node,
+              inputs: nodeInputs[node.id] ?? {},
+              onInputChange: (fieldId: string, value: string) => handleNodeInputChange(node.id, fieldId, value),
+              onRun: (nodeId: string) => runNode(nodeId),
+            },
           } satisfies DynamicWorkflowNodeType
         }),
       )
     },
-    [gridPosition, runNode, setRfNodes],
+    [gridPosition, runNode, setRfNodes, nodeInputs, handleNodeInputChange],
   )
 
   const canGenerate = form.intent.trim().length > 3 && form.domain.trim().length > 0
@@ -140,6 +233,14 @@ export default function DynamicWorkflowCanvas() {
   }, [edges, setRfEdges])
 
   useEffect(() => {
+    if (hasMafCatalog) {
+      setAgents([])
+      setAgentsLoading(false)
+      setAgentError(null)
+      setAgentMatchScores({})
+      setSelectedAgentIds([])
+      return
+    }
     let cancelled = false
     const loadAgents = async () => {
       setAgentsLoading(true)
@@ -196,7 +297,37 @@ export default function DynamicWorkflowCanvas() {
     return () => {
       cancelled = true
     }
-  }, [form.domain, form.intent, contextKeywords])
+  }, [form.domain, form.intent, contextKeywords, hasMafCatalog])
+
+  useEffect(() => {
+    let cancelled = false
+    const loadCatalog = async () => {
+      setMafCatalogLoading(true)
+      try {
+        const workflows = await fetchMafWorkflowCatalog({
+          domain: form.domain,
+          intent: form.intent,
+          query: form.description,
+        })
+        if (!cancelled) {
+          setMafCatalog(workflows)
+          setMafCatalogError(null)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setMafCatalogError((error as Error).message)
+        }
+      } finally {
+        if (!cancelled) {
+          setMafCatalogLoading(false)
+        }
+      }
+    }
+    void loadCatalog()
+    return () => {
+      cancelled = true
+    }
+  }, [form.domain, form.intent])
 
   const stats = useMemo(() => {
     if (!definition) return null
@@ -229,6 +360,15 @@ export default function DynamicWorkflowCanvas() {
       setToolbarAgentId(agent.id)
       setToolbarError(null)
       try {
+        const matchingMaf = mafCatalog.find((workflow) =>
+          workflow.definition.nodes.some((node) => node.behavior?.handler === agent.handler),
+        )
+        if (matchingMaf) {
+          loadMafWorkflowDefinition(matchingMaf)
+          setAssistAnswer(`Loaded ${matchingMaf.title} from catalog.`)
+          setAssistSuggestions(matchingMaf.definition.nodes)
+          return
+        }
         const response = await assistWorkflow({
           question: `Add agent ${agent.name} (${agent.handler}) to this workflow and highlight its strengths.`,
           workflowId: definition?.id,
@@ -246,8 +386,17 @@ export default function DynamicWorkflowCanvas() {
         setAssistAnswer(response.answer)
         setAssistSuggestions(response.suggestedNodes ?? [])
         if (response.workflow) {
-          applyDefinition(response.workflow)
-          setNodePositions((prev) => ({ ...prev }))
+          const nextWorkflow = definition ? mergeWorkflowDefinitions(definition, response.workflow) : response.workflow
+          applyDefinition(nextWorkflow)
+          setNodePositions((prev) => {
+            const updated = { ...prev }
+            nextWorkflow.nodes.forEach((node, index) => {
+              if (!updated[node.id]) {
+                updated[node.id] = gridPosition(index)
+              }
+            })
+            return updated
+          })
         }
       } catch (err) {
         setToolbarError((err as Error).message)
@@ -255,7 +404,7 @@ export default function DynamicWorkflowCanvas() {
         setToolbarAgentId(null)
       }
     },
-    [definition?.id, form, contextKeywords, preferredHandlers, applyDefinition],
+    [definition?.id, form, contextKeywords, preferredHandlers, applyDefinition, mafCatalog, loadMafWorkflowDefinition],
   )
 
   const handleAssist = useCallback(async () => {
@@ -279,8 +428,17 @@ export default function DynamicWorkflowCanvas() {
       setAssistAnswer(response.answer)
       setAssistSuggestions(response.suggestedNodes ?? [])
       if (response.workflow) {
-        applyDefinition(response.workflow)
-        setNodePositions((prev) => ({ ...prev }))
+        const nextWorkflow = definition ? mergeWorkflowDefinitions(definition, response.workflow) : response.workflow
+        applyDefinition(nextWorkflow)
+        setNodePositions((prev) => {
+          const updated = { ...prev }
+          nextWorkflow.nodes.forEach((node, index) => {
+            if (!updated[node.id]) {
+              updated[node.id] = gridPosition(index)
+            }
+          })
+          return updated
+        })
       }
       setAssistQuestion('')
     } catch (err) {
@@ -289,6 +447,83 @@ export default function DynamicWorkflowCanvas() {
       setAssistLoading(false)
     }
   }, [assistQuestion, definition?.id, form, contextKeywords, preferredHandlers, applyDefinition])
+
+  const getRequestId = () => {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return crypto.randomUUID()
+    }
+    return `req-${Date.now()}`
+  }
+
+  const applyRuntimeStep = useCallback(
+    (step: WorkflowExecutionStep) => {
+      const status =
+        step.status === 'error' || step.status === 'running'
+          ? (step.status as WorkflowNodeRuntime['status'])
+          : ('success' as WorkflowNodeRuntime['status'])
+      applyRuntimeOverrides({
+        [step.nodeId]: {
+          status,
+          output: step.output ?? '',
+          lastRunAt: step.finishedAt,
+        },
+      })
+    },
+    [applyRuntimeOverrides],
+  )
+
+  const handleLoadMafWorkflow = useCallback(
+    (workflowId: string) => {
+      const selected = mafCatalog.find((workflow) => workflow.id === workflowId)
+      if (!selected) return
+      loadMafWorkflowDefinition(selected)
+    },
+    [mafCatalog, loadMafWorkflowDefinition],
+  )
+
+  const handleExecuteMafWorkflow = useCallback(
+    async (workflowId: string) => {
+      streamControllerRef.current?.abort()
+      const controller = new AbortController()
+      streamControllerRef.current = controller
+      setExecutingWorkflowId(workflowId)
+      setMafExecutionError(null)
+      try {
+        await streamMafWorkflowExecution(
+          workflowId,
+          {
+            requestId: getRequestId(),
+            input: form.description || form.intent,
+            context: {
+              domain: form.domain,
+              intent: form.intent,
+              inputs: nodeInputs,
+            },
+          },
+          {
+            signal: controller.signal,
+            onStep: applyRuntimeStep,
+          },
+        )
+      } catch (error) {
+        if ((error as DOMException).name !== 'AbortError') {
+          setMafExecutionError((error as Error).message)
+        }
+      } finally {
+        if (streamControllerRef.current === controller) {
+          streamControllerRef.current = null
+        }
+        setExecutingWorkflowId((current) => (current === workflowId ? null : current))
+      }
+    },
+    [form, nodeInputs, applyRuntimeStep, setExecutingWorkflowId],
+  )
+
+  useEffect(() => {
+    if (activeCatalogWorkflowId && !mafCatalog.some((workflow) => workflow.id === activeCatalogWorkflowId)) {
+      setActiveCatalogWorkflowId(null)
+    }
+  }, [activeCatalogWorkflowId, mafCatalog])
 
   return (
     <div className="flex h-full w-full bg-slate-50">
@@ -388,23 +623,84 @@ export default function DynamicWorkflowCanvas() {
             )}
           </CardContent>
         </Card>
+        {!hasMafCatalog && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>MAF Workflow Catalog</CardTitle>
+              <CardDescription>Import curated MCP workflows and replay their executions.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mafCatalogLoading && <p className="text-sm text-slate-500">Loading workflows…</p>}
+              {mafCatalogError && <p className="text-sm text-red-600">{mafCatalogError}</p>}
+              {!mafCatalogLoading && mafCatalog.length === 0 && (
+                <p className="text-sm text-slate-500">No workflows published yet.</p>
+              )}
+              {mafCatalog.map((workflow) => {
+                const isRunning = executingWorkflowId === workflow.id
+                return (
+                  <div key={workflow.id} className="rounded-lg border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{workflow.title}</p>
+                        {workflow.description && <p className="text-xs text-slate-500">{workflow.description}</p>}
+                        <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                          {[workflow.category, workflow.source === 'devui' ? 'Dev UI' : 'Catalog']
+                            .filter(Boolean)
+                            .join(' • ')}
+                        </p>
+                        {workflow.domains && workflow.domains.length > 0 && (
+                          <p className="text-xs text-slate-400">Domains: {workflow.domains.join(', ')}</p>
+                        )}
+                        {workflow.tags && workflow.tags.length > 0 && (
+                          <p className="mt-1 text-xs text-slate-400">{workflow.tags.join(' • ')}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button variant="secondary" size="sm" onClick={() => handleLoadMafWorkflow(workflow.id)}>
+                        Load diagram
+                      </Button>
+                      <Button size="sm" onClick={() => handleExecuteMafWorkflow(workflow.id)} disabled={isRunning}>
+                        {isRunning ? 'Running…' : 'Run in MCP'}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+              {mafExecutionError && <p className="text-sm text-red-600">{mafExecutionError}</p>}
+            </CardContent>
+          </Card>
+        )}
       </aside>
 
       <main className="flex flex-1 flex-col overflow-hidden">
-        <AgentToolbar
-          agents={agents}
-          selectedAgentIds={selectedAgentIds}
-          onToggleAgent={toggleAgentSelection}
-          onRunAgent={handleRunAgent}
-          onInsertAgent={handleInsertAgent}
-          loading={agentsLoading}
-          busyAgentId={toolbarAgentId}
-          fetchError={agentError}
-          actionError={toolbarError}
-          contextKeywords={contextKeywords}
-          lastRunOutput={agentRunOutput}
-          matchScores={agentMatchScores}
-        />
+        {hasMafCatalog ? (
+          <MafWorkflowToolbar
+            workflows={mafCatalog}
+            loading={mafCatalogLoading}
+            fetchError={mafCatalogError}
+            contextKeywords={contextKeywords}
+            activeWorkflowId={activeCatalogWorkflowId}
+            runningWorkflowId={executingWorkflowId}
+            onLoadWorkflow={handleLoadMafWorkflow}
+            onRunWorkflow={handleExecuteMafWorkflow}
+          />
+        ) : (
+          <AgentToolbar
+            agents={agents}
+            selectedAgentIds={selectedAgentIds}
+            onToggleAgent={toggleAgentSelection}
+            onRunAgent={handleRunAgent}
+            onInsertAgent={handleInsertAgent}
+            loading={agentsLoading}
+            busyAgentId={toolbarAgentId}
+            fetchError={agentError}
+            actionError={toolbarError}
+            contextKeywords={contextKeywords}
+            lastRunOutput={agentRunOutput}
+            matchScores={agentMatchScores}
+          />
+        )}
         <div className="flex-1">
           <ReactFlow
             nodes={rfNodes}

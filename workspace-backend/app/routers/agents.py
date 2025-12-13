@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from ..config import get_settings
 from ..dependencies import get_agent_registry_store, get_audit_taxonomy, get_mcp_client
 from ..models_workflow import AgentDefinition, AgentDefinitionRequest, AgentListResponse, AgentRunRequest, AgentRunResponse
 from ..services.audit_taxonomy import AuditTaxonomy
+from ..services.maf_client import MAFClient
 from ..services.mcp_client import MCPClient
 from ..services.registry_store import ComponentRegistryStore
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
+
+logger = logging.getLogger(__name__)
 
 
 def _normalize(value: Optional[str]) -> Optional[str]:
@@ -29,16 +34,30 @@ def _filter_agents(
     normalized_keywords = [kw.strip().lower() for kw in keywords or [] if kw.strip()]
     intent_tokens = [token.strip().lower() for token in (intent or "").split() if token.strip()]
     canonical_domain = taxonomy.canonicalize(domain)
+    fallback_domain = domain.strip().lower() if domain and not canonical_domain else None
     keyword_domains = taxonomy.canonicalize_list(keywords or [])
+    if fallback_domain:
+        normalized_keywords.append(fallback_domain)
 
     def score_agent(agent: AgentDefinition) -> Optional[int]:
         canonical_agent_domains = taxonomy.canonicalize_list(agent.domains)
-        domain_match = not canonical_domain or canonical_domain in canonical_agent_domains or agent.is_global
-        if canonical_domain and not domain_match:
+        lowercase_agent_domains = [(dom or "").lower() for dom in (agent.domains or [])]
+        fallback_domain_match = bool(
+            fallback_domain and any(fallback_domain in domain_value for domain_value in lowercase_agent_domains)
+        )
+        if canonical_domain:
+            domain_match = canonical_domain in canonical_agent_domains or agent.is_global
+        elif fallback_domain:
+            domain_match = fallback_domain_match or agent.is_global
+        else:
+            domain_match = True
+        if (canonical_domain or fallback_domain) and not domain_match:
             return None
 
         score = 0
         if canonical_domain and canonical_domain in canonical_agent_domains:
+            score += 6
+        elif fallback_domain and fallback_domain_match:
             score += 6
         if agent.is_global:
             score += 2
@@ -79,8 +98,25 @@ def list_agents(
     registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> AgentListResponse:
-    agents = _filter_agents(registry.list_agents(), _normalize(domain), _normalize(intent), keywords, taxonomy)
-    return AgentListResponse(agents=agents)
+    settings = get_settings()
+    maf_client = MAFClient(settings)
+    agents: List[AgentDefinition] = []
+    if maf_client.enabled:
+        try:
+            response = maf_client.list_agents()
+            raw_agents = response.get("agents", []) if isinstance(response, dict) else []
+            agents = [
+                AgentDefinition.model_validate(item)
+                for item in raw_agents
+                if isinstance(item, dict)
+            ]
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to load agents from MAF catalog: %s", exc)
+    else:
+        agents = registry.list_agents()
+
+    filtered = _filter_agents(agents, _normalize(domain), _normalize(intent), keywords, taxonomy)
+    return AgentListResponse(agents=filtered)
 
 
 @router.post("/", response_model=AgentDefinition, status_code=status.HTTP_201_CREATED)

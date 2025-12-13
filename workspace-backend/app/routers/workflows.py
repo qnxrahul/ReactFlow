@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Sequence
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 
+from ..config import get_settings
 from ..dependencies import (
     get_agent_registry_store,
     get_audit_taxonomy,
     get_component_registry_store,
+    get_maf_client,
     get_llm_client,
     get_mcp_client,
     get_policy_service,
@@ -32,6 +38,7 @@ from ..models_workflow import (
 )
 from ..services.audit_taxonomy import AuditTaxonomy
 from ..services.llm_client import OpenRouterClient
+from ..services.maf_client import MAFClient
 from ..services.mcp_client import MCPClient
 from ..services.policy import WorkflowPolicyService
 from ..services.rag import RAGService
@@ -39,7 +46,94 @@ from ..services.registry_store import ComponentRegistryStore
 from ..services.workflow_authoring import WorkflowAuthoringService
 from ..services.workflow_repository import WorkflowRepository
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workflows", tags=["Dynamic Workflows"])
+
+
+def _load_maf_workflow_from_catalog(
+    domain: Optional[str],
+    intent: Optional[str],
+    *,
+    keywords: Optional[Sequence[str]] = None,
+    preferred_handlers: Optional[Sequence[str]] = None,
+) -> Optional[WorkflowDefinition]:
+    settings = get_settings()
+    client = MAFClient(settings)
+    if not client.enabled:
+        return None
+    search_params: List[Dict[str, str]] = []
+
+    def enqueue(params: Dict[str, Optional[str]]) -> None:
+        normalized = {key: value for key, value in params.items() if value}
+        if normalized not in search_params:
+            search_params.append(normalized)
+
+    enqueue({"domain": domain, "intent": intent})
+    enqueue({"domain": domain})
+    enqueue({"intent": intent})
+    if keywords:
+        enqueue({"query": " ".join(keywords)})
+    if domain or intent:
+        enqueue({"query": " ".join(filter(None, [domain, intent]))})
+    enqueue({})
+
+    preferred = {handler.lower() for handler in (preferred_handlers or []) if handler}
+
+    for params in search_params:
+        try:
+            response = client.list_catalog(params=params or None)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to query MAF catalog with params %s: %s", params, exc)
+            continue
+        workflows: List[Dict[str, Any]] = response.get("workflows", []) if isinstance(response, dict) else []
+        if not workflows:
+            continue
+
+        def pick_best(predicate) -> Optional[WorkflowDefinition]:
+            for item in workflows:
+                definition_payload = item.get("definition")
+                if not definition_payload:
+                    continue
+                if predicate(item):
+                    try:
+                        return WorkflowDefinition.model_validate(definition_payload)
+                    except Exception as exc:  # pragma: no cover
+                        logger.warning("Skipping invalid catalog workflow '%s': %s", item.get("id"), exc)
+            return None
+
+        if preferred:
+            match = pick_best(
+                lambda workflow: any(
+                    (node.get("behavior") or {}).get("handler", "").lower() in preferred
+                    for node in (workflow.get("definition") or {}).get("nodes", [])
+                )
+            )
+            if match:
+                return match
+
+        if domain:
+            normalized_domain = domain.lower()
+            match = pick_best(
+                lambda workflow: normalized_domain
+                in {str(value).lower() for value in (workflow.get("domains") or [])}
+            )
+            if match:
+                return match
+
+        fallback = pick_best(lambda _: True)
+        if fallback:
+            return fallback
+
+    return None
+
+
+class WorkflowExecutionProxyRequest(BaseModel):
+    request_id: Optional[str] = Field(default=None, alias="requestId")
+    input: Optional[str] = None
+    context: Dict[str, object] = Field(default_factory=dict)
+
+    class Config:
+        populate_by_name = True
 
 
 def _normalize(workflow: WorkflowDefinition) -> WorkflowDefinition:
@@ -66,10 +160,21 @@ def generate_workflow(
     policy: WorkflowPolicyService = Depends(get_policy_service),
     taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowDefinition:
+    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
+
+    maf_workflow = _load_maf_workflow_from_catalog(
+        canonical_domain,
+        payload.intent,
+        keywords=getattr(payload, "context_keywords", None),
+        preferred_handlers=payload.preferred_handlers,
+    )
+    if maf_workflow:
+        repo.save(maf_workflow)
+        return _normalize(maf_workflow)
+
     components = registry.list_components()
     handlers = registry.list_handlers()
     author = WorkflowAuthoringService(components, handlers, rag_service=rag, llm_client=llm)
-    canonical_domain = taxonomy.canonicalize(payload.domain) or payload.domain
     available_agents = registry.list_agents()
     domain_agents = [
         agent
@@ -169,6 +274,7 @@ def assist_workflow(
     rag: RAGService = Depends(get_rag_service),
     llm: OpenRouterClient = Depends(get_llm_client),
     policy: WorkflowPolicyService = Depends(get_policy_service),
+    taxonomy: AuditTaxonomy = Depends(get_audit_taxonomy),
 ) -> WorkflowAssistResponse:
     components = registry.list_components()
     handlers = registry.list_handlers()
@@ -181,6 +287,29 @@ def assist_workflow(
             existing_workflow = repo.get(payload.workflow_id)
         except KeyError:
             existing_workflow = None
+
+    candidate_domain = (
+        payload.domain
+        or context.get("domain")
+        or (existing_workflow.domain if existing_workflow else None)
+    )
+    canonical_candidate = taxonomy.canonicalize(candidate_domain) or candidate_domain
+    candidate_keywords: List[str] = list(payload.context_keywords or [])
+    if payload.question:
+        candidate_keywords.extend(payload.question.split())
+    maf_assist_workflow = _load_maf_workflow_from_catalog(
+        canonical_candidate,
+        payload.intent or (existing_workflow.intent if existing_workflow else None),
+        keywords=candidate_keywords or None,
+        preferred_handlers=payload.preferred_handlers,
+    )
+    if maf_assist_workflow:
+        repo.save(maf_assist_workflow)
+        return WorkflowAssistResponse(
+            answer=f"Loaded {maf_assist_workflow.title} from catalog.",
+            suggested_nodes=maf_assist_workflow.nodes,
+            workflow=maf_assist_workflow,
+        )
 
     domain = payload.domain or context.get("domain") or (existing_workflow.domain if existing_workflow else "General")
     intent = payload.intent or context.get("intent") or (existing_workflow.intent if existing_workflow else "analysis")
@@ -248,6 +377,61 @@ def assist_workflow(
 
     answer = _build_assist_answer(llm, payload, result_workflow)
     return WorkflowAssistResponse(answer=answer, suggested_nodes=suggested_nodes, workflow=result_workflow)
+
+
+@router.get("/catalog/maf")
+def list_maf_workflow_catalog(
+    domain: Optional[str] = Query(default=None),
+    intent: Optional[str] = Query(default=None),
+    query: Optional[str] = Query(default=None),
+    maf: MAFClient = Depends(get_maf_client),
+):
+    params = {}
+    if domain:
+        params["domain"] = domain
+    if intent:
+        params["intent"] = intent
+    if query:
+        params["query"] = query
+    return maf.list_catalog(params=params or None)
+
+
+@router.get("/catalog/maf/{workflow_id}")
+def get_maf_workflow_catalog_item(workflow_id: str, maf: MAFClient = Depends(get_maf_client)):
+    try:
+        return maf.get_workflow(workflow_id)
+    except Exception as exc:  # httpx errors already include status; fall back to 502
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+
+@router.post("/catalog/maf/{workflow_id}/execute")
+def execute_maf_workflow_catalog_item(
+    workflow_id: str,
+    payload: WorkflowExecutionProxyRequest,
+    maf: MAFClient = Depends(get_maf_client),
+):
+    try:
+        return maf.execute_workflow(workflow_id, payload.model_dump(by_alias=True, exclude_none=True))
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+
+@router.post("/catalog/maf/{workflow_id}/events")
+async def stream_maf_workflow_events(
+    workflow_id: str,
+    payload: WorkflowExecutionProxyRequest,
+    maf: MAFClient = Depends(get_maf_client),
+):
+    payload_dict = payload.model_dump(by_alias=True, exclude_none=True)
+
+    async def event_iterator():
+        try:
+            async for chunk in maf.stream_workflow_events(workflow_id, payload_dict):
+                yield chunk
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+    return StreamingResponse(event_iterator(), media_type="text/event-stream")
 
 
 def _build_assist_answer(llm: OpenRouterClient, payload: WorkflowAssistRequest, workflow: WorkflowDefinition) -> str:

@@ -89,6 +89,16 @@ class Settings(BaseSettings):
     )
     mcp_api_key: Optional[str] = Field(default=None, description="Optional API key when calling the MCP gateway.")
 
+    # MAF workflow catalog
+    maf_api_base_url: Optional[AnyHttpUrl] = Field(
+        default="",
+        description="Base URL of the MCP-MAF workflow catalog service.",
+    )
+    maf_api_token: Optional[str] = Field(
+        default=None,
+        description="Optional bearer token when calling the MCP-MAF workflow catalog.",
+    )
+
     # Policy
     workflow_policy_min_nodes: int = Field(default=3, description="Minimum number of nodes enforced during validation.")
     workflow_policy_max_nodes: int = Field(default=24, description="Maximum number of nodes enforced during validation.")

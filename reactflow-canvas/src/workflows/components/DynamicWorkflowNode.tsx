@@ -6,6 +6,8 @@ import type { WorkflowNode } from '../types'
 export type DynamicNodeData = {
   node: WorkflowNode
   onRun?: (id: string) => void
+  inputs?: Record<string, string>
+  onInputChange?: (fieldId: string, value: string) => void
 }
 
 export type DynamicWorkflowNodeType = Node<DynamicNodeData>
@@ -15,7 +17,12 @@ function DynamicWorkflowNodeComponent({ data }: NodeProps<DynamicWorkflowNodeTyp
   const Renderer = registry.resolve(data.node.ui.componentType)
   return (
     <div className="rounded-2xl bg-white p-2 shadow-lg">
-      <Renderer node={data.node} onRun={() => data.onRun?.(data.node.id)} />
+      <Renderer
+        node={data.node}
+        onRun={() => data.onRun?.(data.node.id)}
+        inputs={data.inputs}
+        onInputChange={(fieldId, value) => data.onInputChange?.(fieldId, value)}
+      />
       <Handle type="target" position={Position.Top} className="h-2 w-2 rounded-full bg-slate-400" />
       <Handle type="source" position={Position.Bottom} className="h-2 w-2 rounded-full bg-slate-400" />
     </div>

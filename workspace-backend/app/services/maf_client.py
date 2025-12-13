@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+from typing import Any, AsyncIterator, Dict
+
+import httpx
+
+from ..config import Settings
+
+
+class MAFClient:
+    def __init__(self, settings: Settings):
+        base = settings.maf_api_base_url
+        self._base_url = (str(base) if base else "").rstrip("/")
+        self._token = settings.maf_api_token
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self._base_url)
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        if not self.enabled:
+            raise RuntimeError("MAF API is not configured.")
+        headers: Dict[str, str] = {"Content-Type": "application/json"}
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}" if not self._token.startswith("Bearer") else self._token
+
+        url = f"{self._base_url}{path}"
+        with httpx.Client(timeout=30) as client:
+            response = client.request(method, url, headers=headers, json=json, params=params)
+            response.raise_for_status()
+            return response.json()
+
+    def list_catalog(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return self._request("GET", "/workflows/catalog", params=params)
+
+    def get_workflow(self, workflow_id: str) -> Dict[str, Any]:
+        return self._request("GET", f"/workflows/catalog/{workflow_id}")
+
+    def execute_workflow(self, workflow_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return self._request("POST", f"/workflows/catalog/{workflow_id}/execute", json=payload)
+
+    def list_agents(self) -> Dict[str, Any]:
+        return self._request("GET", "/agents/catalog/")
+
+    async def stream_workflow_events(
+        self,
+        workflow_id: str,
+        payload: Dict[str, Any],
+        params: Optional[Dict[str, Any]] = None,
+    ) -> AsyncIterator[bytes]:
+        if not self.enabled:
+            raise RuntimeError("MAF API is not configured.")
+        headers: Dict[str, str] = {"Content-Type": "application/json", "Accept": "text/event-stream"}
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}" if not self._token.startswith("Bearer") else self._token
+        url = f"{self._base_url}/workflows/catalog/{workflow_id}/events"
+        async with httpx.AsyncClient(timeout=None) as client:
+            async with client.stream("POST", url, headers=headers, params=params, json=payload) as response:
+                response.raise_for_status()
+                async for chunk in response.aiter_raw():
+                    yield chunk

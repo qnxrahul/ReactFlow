@@ -4,46 +4,87 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
 import { Progress } from '../components/ui/progress'
 import { cn } from '../lib/utils'
-import type { WorkflowNode } from './types'
+import type { WorkflowInputField, WorkflowNode } from './types'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 
 export type NodeRendererProps = {
   node: WorkflowNode
   onRun?: () => void
+  inputs?: Record<string, string>
+  onInputChange?: (fieldId: string, value: string) => void
 }
 
 export type NodeRenderer = (props: NodeRendererProps) => ReactNode
 
+function renderInputFields(
+  fields: WorkflowInputField[] | undefined,
+  inputs: Record<string, string> | undefined,
+  onInputChange?: (fieldId: string, value: string) => void,
+) {
+  if (!fields || fields.length === 0) return null
+  return (
+    <div className="space-y-2">
+      {fields.map((field) => (
+        <div key={field.id} className="space-y-1">
+          <Label className="text-[11px] uppercase tracking-wide text-slate-500">{field.label}</Label>
+          <Input
+            value={inputs?.[field.id] ?? ''}
+            placeholder={field.placeholder}
+            onChange={(event) => onInputChange?.(field.id, event.target.value)}
+          />
+          {field.helperText && <p className="text-[11px] text-slate-400">{field.helperText}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const baseRenderers: Record<string, NodeRenderer> = {
-  agentCard: ({ node, onRun }) => {
+  agentCard: ({ node, onRun, inputs, onInputChange }) => {
     const status = node.runtime?.status ?? 'idle'
     const variant = status === 'success' ? 'success' : status === 'error' ? 'destructive' : 'default'
+    const subtitle = (node.ui?.props?.subtitle as string) || ''
+    const actions = Array.isArray(node.ui?.props?.actions) ? (node.ui?.props?.actions as Array<{ label: string }>) : []
+    const fieldDefs = node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined
     return (
       <Card className="w-[240px] border-l-4 border-l-accent">
         <CardHeader className="space-y-2">
           <CardTitle className="text-base">{node.name}</CardTitle>
-          <CardDescription>{node.description}</CardDescription>
+          <CardDescription>{subtitle || node.description}</CardDescription>
           <Badge variant={variant}>{status}</Badge>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">{(node.runtime?.output as string) || 'Awaiting execution...'}</p>
-          <Button size="sm" className="w-full" onClick={onRun}>
-            Run Agent
-          </Button>
+          <div className="space-y-2">
+            <Button size="sm" className="w-full" onClick={onRun}>
+              Run Agent
+            </Button>
+            {actions.map((action) => (
+              <Button key={action.label} variant="outline" size="sm" className="w-full">
+                {action.label}
+              </Button>
+            ))}
+            {renderInputFields(fieldDefs, inputs, onInputChange)}
+          </div>
         </CardContent>
       </Card>
     )
   },
-  evidenceCard: ({ node, onRun }) => {
+  evidenceCard: ({ node, onRun, inputs, onInputChange }) => {
     const progress = typeof node.runtime?.output === 'string' ? Math.min(node.runtime.output.length * 3, 100) : 0
+    const subtitle = (node.ui?.props?.subtitle as string) || node.description
+    const fieldDefs = node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined
     return (
       <Card className="w-[260px]">
         <CardHeader>
           <CardTitle className="text-base">{node.name}</CardTitle>
-          <CardDescription>{node.ui.props?.subtitle as string}</CardDescription>
+          <CardDescription>{subtitle}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Progress value={progress} />
           <p className="text-xs text-muted-foreground">{node.description}</p>
+          {renderInputFields(fieldDefs, inputs, onInputChange)}
         </CardContent>
         <CardFooter>
           <Button variant="outline" size="sm" className="w-full" onClick={onRun}>
@@ -53,33 +94,41 @@ const baseRenderers: Record<string, NodeRenderer> = {
       </Card>
     )
   },
-  decisionCard: ({ node, onRun }) => (
-    <Card className="w-[220px] border-dashed border-2">
-      <CardHeader>
-        <CardTitle className="text-base">{node.name}</CardTitle>
-        <CardDescription>{node.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Badge variant="warning">Decision</Badge>
-      </CardContent>
-      <CardFooter>
-        <Button size="sm" className="w-full" onClick={onRun}>
-          Evaluate
-        </Button>
-      </CardFooter>
-    </Card>
-  ),
-  reportCard: ({ node }) => (
-    <Card className="w-[260px]">
-      <CardHeader>
-        <CardTitle className="text-base">{node.name}</CardTitle>
-        <CardDescription>{node.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <pre className="text-xs whitespace-pre-wrap">{node.runtime?.output || 'Report output will appear after execution.'}</pre>
-      </CardContent>
-    </Card>
-  ),
+  decisionCard: ({ node, onRun, inputs, onInputChange }) => {
+    const fieldDefs = node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined
+    return (
+      <Card className="w-[220px] border-dashed border-2">
+        <CardHeader>
+          <CardTitle className="text-base">{node.name}</CardTitle>
+          <CardDescription>{node.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Badge variant="warning">Decision</Badge>
+          {renderInputFields(fieldDefs, inputs, onInputChange)}
+        </CardContent>
+        <CardFooter>
+          <Button size="sm" className="w-full" onClick={onRun}>
+            Evaluate
+          </Button>
+        </CardFooter>
+      </Card>
+    )
+  },
+  reportCard: ({ node, inputs, onInputChange }) => {
+    const fieldDefs = node.ui?.props?.__mafInputs as WorkflowInputField[] | undefined
+    return (
+      <Card className="w-[260px]">
+        <CardHeader>
+          <CardTitle className="text-base">{node.name}</CardTitle>
+          <CardDescription>{node.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-xs whitespace-pre-wrap">{node.runtime?.output || 'Report output will appear after execution.'}</pre>
+          {renderInputFields(fieldDefs, inputs, onInputChange)}
+        </CardContent>
+      </Card>
+    )
+  },
 }
 
 const fallbackRenderer: NodeRenderer = ({ node }) => (
@@ -99,13 +148,15 @@ export function getBaseRenderer(rendererType: string): NodeRenderer {
 }
 
 export function getFallbackRenderer(componentType: string): NodeRenderer {
-  return ({ node, onRun }: NodeRendererProps) =>
+  return ({ node, onRun, inputs, onInputChange }: NodeRendererProps) =>
     fallbackRenderer({
       node: {
         ...node,
         name: node.name || componentType,
       },
       onRun,
+      inputs,
+      onInputChange,
     })
 }
 
