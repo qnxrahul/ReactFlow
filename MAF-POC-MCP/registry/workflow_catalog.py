@@ -582,6 +582,187 @@ def _build_maf_supervisor_standalone_agent() -> WorkflowCatalogItem:
     )
 
 
+def _build_maf_supervisor_agent() -> WorkflowCatalogItem:
+    """Runnable wrapper for agent_catalog id `maf-supervisor` (handler `maf.supervisor`)."""
+    node = _agent_node(
+        "maf-supervisor",
+        "Checklist Supervisor",
+        "Coordinates extraction, ingestion, and checklist answering.",
+        "maf.supervisor",
+        "Coordinator",
+        inputs=["question"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-supervisor",
+        title="Checklist Supervisor",
+        domain="Audit",
+        intent="Workflow coordination",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-supervisor",
+        title="Checklist Supervisor",
+        description="Runnable agent wrapper for handler maf.supervisor (used by workflow nodes).",
+        category="Agents",
+        tags=["agent", "supervisor", "checklist"],
+        domains=["Audit", "Checklist", "Supervisor"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="question",
+                label="Supervisor Prompt",
+                placeholder="Describe the workflow decision needed",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_supervisor_chain_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-supervisor-chain",
+        "Checklist Supervisor (Sequential)",
+        "Sequential workflow coordinator.",
+        "maf.supervisor.chain",
+        "Coordinator",
+        inputs=["question"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-supervisor-chain",
+        title="Checklist Supervisor (Sequential)",
+        domain="Audit",
+        intent="Workflow coordination (sequential)",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-supervisor-chain",
+        title="Checklist Supervisor (Sequential)",
+        description="Runnable agent wrapper for handler maf.supervisor.chain.",
+        category="Agents",
+        tags=["agent", "supervisor", "sequential"],
+        domains=["Audit", "Checklist", "Supervisor"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="question",
+                label="Supervisor Prompt",
+                placeholder="Describe the workflow decision needed",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_rag_extraction_chain_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-rag-extraction-chain",
+        "Sequential RAG Extraction",
+        "Extraction agent used by sequential workflow.",
+        "maf.rag.extraction.chain",
+        "Document AI",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-rag-extraction-chain",
+        title="Sequential RAG Extraction",
+        domain="Audit",
+        intent="Extraction (sequential)",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-rag-extraction-chain",
+        title="Sequential RAG Extraction",
+        description="Runnable agent wrapper for handler maf.rag.extraction.chain.",
+        category="Agents",
+        tags=["agent", "extraction", "sequential"],
+        domains=["Audit", "Extraction"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_rag_ingestion_chain_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-rag-ingestion-chain",
+        "Sequential RAG Ingestion",
+        "Ingestion agent used by sequential workflow.",
+        "maf.rag.ingestion.chain",
+        "Vector DB",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-rag-ingestion-chain",
+        title="Sequential RAG Ingestion",
+        domain="Audit",
+        intent="Ingestion (sequential)",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-rag-ingestion-chain",
+        title="Sequential RAG Ingestion",
+        description="Runnable agent wrapper for handler maf.rag.ingestion.chain.",
+        category="Agents",
+        tags=["agent", "ingestion", "sequential"],
+        domains=["Audit", "Ingestion"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_checklist_chain_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-checklist-chain",
+        "Sequential Checklist Agent",
+        "Checklist answering agent used by sequential workflow.",
+        "maf.checklist.chain",
+        "LLM Reasoner",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-checklist-chain",
+        title="Sequential Checklist Agent",
+        domain="Audit",
+        intent="Checklist (sequential)",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-checklist-chain",
+        title="Sequential Checklist Agent",
+        description="Runnable agent wrapper for handler maf.checklist.chain.",
+        category="Agents",
+        tags=["agent", "checklist", "sequential"],
+        domains=["Audit", "Checklist"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+            )
+        ],
+        definition=definition,
+    )
+
+
 def _build_maf_mcp_supervisor_agent() -> WorkflowCatalogItem:
     node = _agent_node(
         "maf-mcp-supervisor",
@@ -629,6 +810,11 @@ CATALOG: Dict[str, WorkflowCatalogItem] = {
         _build_maf_rag_extraction_agent(),
         _build_maf_rag_ingestion_agent(),
         _build_maf_checklist_processor_agent(),
+        _build_maf_supervisor_agent(),
+        _build_maf_supervisor_chain_agent(),
+        _build_maf_rag_extraction_chain_agent(),
+        _build_maf_rag_ingestion_chain_agent(),
+        _build_maf_checklist_chain_agent(),
         _build_maf_supervisor_standalone_agent(),
         _build_maf_mcp_supervisor_agent(),
     ]
@@ -649,6 +835,11 @@ DEVUI_AGENT_FACTORIES = {
     "maf-rag-extraction": run_rag_extraction_agent,
     "maf-rag-ingestion": run_rag_ingestion_agent,
     "maf-checklist-processor": run_checklist_loading_agent,
+    "maf-supervisor": run_supervisor_agent,
+    "maf-supervisor-chain": run_supervisor_agent,
+    "maf-rag-extraction-chain": run_rag_extraction_agent,
+    "maf-rag-ingestion-chain": run_rag_ingestion_agent,
+    "maf-checklist-chain": run_checklist_loading_agent,
     "maf-supervisor-standalone": run_supervisor_agent,
     "maf-mcp-supervisor": mcp_supervisor_agent,
 }
@@ -714,8 +905,6 @@ def _build_prompt(payload: WorkflowExecutionRequest) -> str:
     parts: List[str] = []
     if payload.input:
         parts.append(str(payload.input))
-    if payload.description:
-        parts.append(f"Description: {payload.description}")
     if payload.context:
         try:
             parts.append(f"Context: {json.dumps(payload.context)}")
