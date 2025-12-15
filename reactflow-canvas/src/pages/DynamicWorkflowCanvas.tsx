@@ -73,6 +73,9 @@ export default function DynamicWorkflowCanvas() {
   const [assistSuggestions, setAssistSuggestions] = useState<WorkflowNode[]>([])
   const [assistLoading, setAssistLoading] = useState(false)
   const [assistError, setAssistError] = useState<string | null>(null)
+  const [plannerMode, setPlannerMode] = useState<'llm' | 'maf-agent'>('llm')
+  const [plannerAgentId, setPlannerAgentId] = useState<string | null>(null)
+  const [plannerChat, setPlannerChat] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
   const [toolbarAgentId, setToolbarAgentId] = useState<string | null>(null)
   const [toolbarError, setToolbarError] = useState<string | null>(null)
   const [agentMatchScores, setAgentMatchScores] = useState<Record<string, number>>({})
@@ -232,14 +235,6 @@ export default function DynamicWorkflowCanvas() {
   }, [edges, setRfEdges])
 
   useEffect(() => {
-    if (hasMafCatalog) {
-      setAgents([])
-      setAgentsLoading(false)
-      setAgentError(null)
-      setAgentMatchScores({})
-      setSelectedAgentIds([])
-      return
-    }
     let cancelled = false
     const loadAgents = async () => {
       setAgentsLoading(true)
@@ -296,7 +291,31 @@ export default function DynamicWorkflowCanvas() {
     return () => {
       cancelled = true
     }
-  }, [form.domain, form.intent, contextKeywords, hasMafCatalog])
+  }, [form.domain, form.intent, contextKeywords])
+
+  const mafChatAgents = useMemo(() => {
+    // Heuristic filter: keep “chatty” orchestrators/supervisors first.
+    const isChatLike = (agent: AgentDefinition) => {
+      const handler = (agent.handler || '').toLowerCase()
+      const name = (agent.name || '').toLowerCase()
+      const tags = (agent.intentTags ?? []).map((t) => t.toLowerCase())
+      const caps = (agent.capabilities ?? []).map((c) => c.toLowerCase())
+      return (
+        handler.includes('supervisor') ||
+        handler.includes('orchestr') ||
+        handler.includes('mcp') ||
+        name.includes('supervisor') ||
+        tags.some((t) => t.includes('orchestr') || t.includes('coordination')) ||
+        caps.some((c) => c.includes('coordination') || c.includes('handoff') || c.includes('mcp'))
+      )
+    }
+    const sorted = [...agents].sort((a, b) => {
+      const aChat = isChatLike(a) ? 1 : 0
+      const bChat = isChatLike(b) ? 1 : 0
+      return bChat - aChat
+    })
+    return sorted
+  }, [agents])
 
   useEffect(() => {
     let cancelled = false
@@ -414,6 +433,27 @@ export default function DynamicWorkflowCanvas() {
     setAssistLoading(true)
     setAssistError(null)
     try {
+      if (plannerMode === 'maf-agent') {
+        if (!plannerAgentId) {
+          throw new Error('Select a MAF agent to chat with.')
+        }
+        setPlannerChat((prev) => [...prev, { role: 'user', content: question }])
+        const result = await runAgent(plannerAgentId, question, {
+          domain: form.domain,
+          intent: form.intent,
+          workflowId: definition?.id,
+          description: form.description,
+          contextKeywords,
+          preferredHandlers,
+          chatHistory: plannerChat,
+        })
+        setAssistAnswer(result.output)
+        setAssistSuggestions([])
+        setPlannerChat((prev) => [...prev, { role: 'assistant', content: result.output }])
+        setAssistQuestion('')
+        return
+      }
+
       const response = await assistWorkflow({
         question,
         workflowId: definition?.id,
@@ -445,7 +485,18 @@ export default function DynamicWorkflowCanvas() {
     } finally {
       setAssistLoading(false)
     }
-  }, [assistQuestion, definition?.id, form, contextKeywords, preferredHandlers, applyDefinition])
+  }, [
+    assistQuestion,
+    definition?.id,
+    form,
+    contextKeywords,
+    preferredHandlers,
+    applyDefinition,
+    plannerMode,
+    plannerAgentId,
+    plannerChat,
+    gridPosition,
+  ])
 
   const getRequestId = () => {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -582,9 +633,72 @@ export default function DynamicWorkflowCanvas() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Ask the AI planner</CardTitle>
-            <CardDescription>Use the LLM to refine your workflow or request new steps.</CardDescription>
+            <CardDescription>
+              Use the built-in planner (LLM) or chat with a MAF agent (Supervisor / MCP Supervisor).
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="grid gap-2">
+              <Label>Planner mode</Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={plannerMode === 'llm' ? 'secondary' : 'outline'}
+                  onClick={() => setPlannerMode('llm')}
+                >
+                  LLM planner
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={plannerMode === 'maf-agent' ? 'secondary' : 'outline'}
+                  onClick={() => setPlannerMode('maf-agent')}
+                >
+                  MAF chat agent
+                </Button>
+              </div>
+              {plannerMode === 'maf-agent' && (
+                <div className="mt-2 grid gap-2">
+                  <Label htmlFor="maf-agent-select">MAF agent</Label>
+                  <select
+                    id="maf-agent-select"
+                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                    value={plannerAgentId ?? ''}
+                    onChange={(e) => setPlannerAgentId(e.target.value || null)}
+                  >
+                    <option value="">Select agent…</option>
+                    {mafChatAgents.map((agent) => (
+                      <option key={agent.id} value={agent.id}>
+                        {agent.name} ({agent.handler})
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500">Runs via `POST /agents/:id/run` (MAF-backed).</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPlannerChat([])}
+                      disabled={plannerChat.length === 0}
+                    >
+                      Clear chat
+                    </Button>
+                  </div>
+                  {plannerChat.length > 0 && (
+                    <div className="max-h-44 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-2 text-xs text-slate-700">
+                      {plannerChat.map((msg, idx) => (
+                        <div key={`${msg.role}-${idx}`} className="mb-2">
+                          <div className="font-semibold uppercase tracking-wide text-slate-500">{msg.role}</div>
+                          <div className="whitespace-pre-wrap">{msg.content}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <Textarea
               value={assistQuestion}
               onChange={(event) => setAssistQuestion(event.target.value)}
