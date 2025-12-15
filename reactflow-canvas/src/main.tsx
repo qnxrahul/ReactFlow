@@ -13,6 +13,7 @@ import { BoardsProvider } from './state/BoardsProvider'
 import NewBoard from './pages/NewBoard/NewBoard'
 import DataExtraction from './pages/DataExtraction/DataExtraction'
 import DynamicWorkflowCanvas from './pages/DynamicWorkflowCanvas'
+import DevUiWorkflowCanvas from './pages/DevUiWorkflowCanvas'
 import RegistryAdmin from './pages/RegistryAdmin'
 import { registerLicense } from '@syncfusion/ej2-base';
 import { NodeRegistryProvider } from './workflows/NodeRegistryProvider'
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
       { path: '/workpaper', element: <WorkpaperPage /> },
       { path: '/workpaper-detail', element: <WorkpaperDetailPage /> },
       { path: '/dynamic', element: <DynamicWorkflowCanvas /> },
+      { path: '/devui', element: <DevUiWorkflowCanvas /> },
       { path: '/registry', element: <RegistryAdmin /> },
     ],
   },

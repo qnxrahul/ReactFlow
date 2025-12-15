@@ -27,7 +27,6 @@ import { useDynamicWorkflow } from '../workflows/hooks/useDynamicWorkflow'
 import type {
   AgentDefinition,
   WorkflowCatalogItem,
-  WorkflowExecutionResponse,
   WorkflowNode,
   WorkflowNodeRuntime,
   WorkflowInputField,
@@ -110,7 +109,7 @@ export default function DynamicWorkflowCanvas() {
       }, {})
       const enrichedDefinition = {
         ...workflow.definition,
-        nodes: workflow.definition.nodes.map((node, index) => {
+        nodes: workflow.definition.nodes.map((node) => {
           const explicitInputs =
             (node.inputs ?? [])
               .map((inputId) => workflowInputMap[inputId])

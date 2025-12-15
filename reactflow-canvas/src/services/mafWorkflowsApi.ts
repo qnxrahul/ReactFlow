@@ -1,4 +1,4 @@
-import type { WorkflowCatalogItem, WorkflowExecutionResponse, WorkflowExecutionStep } from '../workflows/types'
+import type { WorkflowCatalogItem, WorkflowExecutionStep } from '../workflows/types'
 
 const API_BASE = (import.meta.env.VITE_WORKSPACE_API_URL as string | undefined)?.replace(/\/+$/, '') || 'http://localhost:9000'
 
