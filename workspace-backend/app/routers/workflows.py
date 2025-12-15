@@ -201,17 +201,44 @@ def generate_workflow(
 
 
 @router.post("/{workflow_id}/nodes/{node_id}/run", response_model=WorkflowRunNodeResponse)
+def _import_maf_workflow_by_id(
+    workflow_id: str,
+    repo: WorkflowRepository,
+    maf: MAFClient,
+) -> Optional[WorkflowDefinition]:
+    if not maf.enabled:
+        return None
+    try:
+        item = maf.get_workflow(workflow_id)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Failed to fetch workflow '%s' from MAF: %s", workflow_id, exc)
+        return None
+    definition_payload = item.get("definition")
+    if not definition_payload:
+        return None
+    try:
+        workflow = WorkflowDefinition.model_validate(definition_payload)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Invalid workflow payload for '%s': %s", workflow_id, exc)
+        return None
+    repo.save(workflow)
+    return workflow
+
+
 def run_workflow_node(
     workflow_id: str,
     node_id: str,
     repo: WorkflowRepository = Depends(get_workflow_repository),
     registry: ComponentRegistryStore = Depends(get_agent_registry_store),
     mcp: MCPClient = Depends(get_mcp_client),
+    maf: MAFClient = Depends(get_maf_client),
 ) -> WorkflowRunNodeResponse:
     try:
         workflow = repo.get(workflow_id)
-    except KeyError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found") from exc
+    except KeyError:
+        workflow = _import_maf_workflow_by_id(workflow_id, repo, maf)
+        if not workflow:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
 
     node_exists = any(node.id == node_id for node in workflow.nodes)
     if not node_exists:
