@@ -120,8 +120,16 @@ function handleSseChunk(raw: string, callbacks: StreamCallbacks) {
   const type = typeof envelope.type === 'string' ? envelope.type : undefined
   if (type === 'response.output_item.added' || type === 'response.output_item.done') {
     const item = envelope.item as unknown
-    if (item && typeof item === 'object' && (item as Record<string, unknown>).type === 'executor_action') {
-      callbacks.onExecutorAction?.(item)
+    if (item && typeof item === 'object') {
+      const record = item as Record<string, unknown>
+      if (
+        record.type === 'executor_action' &&
+        typeof record.id === 'string' &&
+        typeof record.executor_id === 'string' &&
+        typeof record.status === 'string'
+      ) {
+        callbacks.onExecutorAction?.(record as unknown as DevUiExecutorActionItem)
+      }
     }
     return
   }

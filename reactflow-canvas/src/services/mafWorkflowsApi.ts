@@ -6,14 +6,6 @@ const API_BASE = (import.meta.env.VITE_WORKSPACE_API_URL as string | undefined)?
 // server mounts it under `/workflows/catalog/*`. We support both for compatibility.
 const MAF_CATALOG_PREFIXES = ['/workflows/catalog/maf', '/workflows/catalog'] as const
 
-async function handle<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `Request failed with status ${response.status}`)
-  }
-  return (await response.json()) as T
-}
-
 type WorkflowCatalogFilters = {
   domain?: string
   intent?: string

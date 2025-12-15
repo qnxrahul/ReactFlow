@@ -15,6 +15,9 @@ from agents.workflow_initiation_agent import (
     build_checklist_workflow,
     build_checklist_workflow_new,
 )
+from agents.extraction_agent import run_rag_extraction_agent
+from agents.ingestion_agent import run_rag_ingestion_agent
+from agents.checklist_agent import run_checklist_loading_agent
 from agents.supervisor_agent import run_supervisor_agent
 from mcp_swagger.agent import mcp_supervisor_agent
 
@@ -432,6 +435,189 @@ def _build_mcp_supervisor_agent() -> WorkflowCatalogItem:
     )
 
 
+def _build_maf_rag_extraction_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-rag-extraction",
+        "RAG Extraction Agent",
+        "Standalone extraction agent (wraps run_rag_extraction_agent()).",
+        "maf.rag.extraction",
+        "Document AI",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-rag-extraction",
+        title="RAG Extraction Agent",
+        domain="Audit",
+        intent="Extraction",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-rag-extraction",
+        title="RAG Extraction Agent",
+        description="Standalone extraction agent executable via /workflows/catalog/maf-rag-extraction/*.",
+        category="Agents",
+        tags=["agent", "extraction", "rag"],
+        domains=["Audit", "Extraction", "RAG"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+                helperText="Correlates extraction output blob {requestId}.json.",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_rag_ingestion_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-rag-ingestion",
+        "RAG Ingestion Agent",
+        "Standalone ingestion agent (wraps run_rag_ingestion_agent()).",
+        "maf.rag.ingestion",
+        "Vector DB",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-rag-ingestion",
+        title="RAG Ingestion Agent",
+        domain="Audit",
+        intent="Ingestion",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-rag-ingestion",
+        title="RAG Ingestion Agent",
+        description="Standalone ingestion agent executable via /workflows/catalog/maf-rag-ingestion/*.",
+        category="Agents",
+        tags=["agent", "ingestion", "rag"],
+        domains=["Audit", "Ingestion", "RAG"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+                helperText="Should match an existing extraction output blob {requestId}.json.",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_checklist_processor_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-checklist-processor",
+        "Checklist Processor",
+        "Standalone checklist answering agent (wraps run_checklist_loading_agent()).",
+        "maf.checklist.processor",
+        "LLM Reasoner",
+        inputs=["requestId"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-checklist-processor",
+        title="Checklist Processor",
+        domain="Audit",
+        intent="Checklist",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-checklist-processor",
+        title="Checklist Processor",
+        description="Standalone checklist answering agent executable via /workflows/catalog/maf-checklist-processor/*.",
+        category="Agents",
+        tags=["agent", "checklist"],
+        domains=["Audit", "Checklist"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="requestId",
+                label="Request ID",
+                placeholder="e.g., req-12345",
+                helperText="Used to write checklist output to blob under {requestId}/.",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_supervisor_standalone_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-supervisor-standalone",
+        "Supervisor Agent (Standalone)",
+        "Standalone supervisor agent (wraps run_supervisor_agent()).",
+        "maf.supervisor.agent",
+        "Orchestrator",
+        inputs=["question"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-supervisor-standalone",
+        title="Supervisor Agent (Standalone)",
+        domain="Audit",
+        intent="Supervisor",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-supervisor-standalone",
+        title="Supervisor Agent (Standalone)",
+        description="Runnable agent wrapper for the MAF supervisor (agent catalog id aligned).",
+        category="Agents",
+        tags=["agent", "supervisor"],
+        domains=["Audit", "Supervisor", "Checklist"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="question",
+                label="Supervisor Prompt",
+                placeholder="Describe what you want the supervisor to do",
+            )
+        ],
+        definition=definition,
+    )
+
+
+def _build_maf_mcp_supervisor_agent() -> WorkflowCatalogItem:
+    node = _agent_node(
+        "maf-mcp-supervisor",
+        "MCP Supervisor",
+        "Runnable agent wrapper for MCP supervisor (agent catalog id aligned).",
+        "maf.mcp.supervisor",
+        "MCP",
+        inputs=["operation"],
+    )
+    definition = WorkflowDefinitionModel(
+        id="maf-mcp-supervisor",
+        title="MCP Supervisor",
+        domain="Platform",
+        intent="MCP orchestration",
+        nodes=[node],
+        edges=[],
+    )
+    return WorkflowCatalogItem(
+        id="maf-mcp-supervisor",
+        title="MCP Supervisor",
+        description="Runnable agent wrapper for MCP supervisor (agent catalog id aligned).",
+        category="Agents",
+        tags=["agent", "mcp", "supervisor"],
+        domains=["Platform", "MCP", "Supervisor"],
+        source="devui",
+        inputs=[
+            WorkflowInputField(
+                id="operation",
+                label="Operation",
+                placeholder="Describe the MCP task",
+            )
+        ],
+        definition=definition,
+    )
+
+
 CATALOG: Dict[str, WorkflowCatalogItem] = {
     item.id: item
     for item in [
@@ -440,6 +626,11 @@ CATALOG: Dict[str, WorkflowCatalogItem] = {
         _build_checklist_chain_workflow(),
         _build_supervisor_agent(),
         _build_mcp_supervisor_agent(),
+        _build_maf_rag_extraction_agent(),
+        _build_maf_rag_ingestion_agent(),
+        _build_maf_checklist_processor_agent(),
+        _build_maf_supervisor_standalone_agent(),
+        _build_maf_mcp_supervisor_agent(),
     ]
 }
 
@@ -455,6 +646,11 @@ DEVUI_WORKFLOW_BUILDERS = {
 DEVUI_AGENT_FACTORIES = {
     "supervisor-agent": run_supervisor_agent,
     "mcp-supervisor-agent": mcp_supervisor_agent,
+    "maf-rag-extraction": run_rag_extraction_agent,
+    "maf-rag-ingestion": run_rag_ingestion_agent,
+    "maf-checklist-processor": run_checklist_loading_agent,
+    "maf-supervisor-standalone": run_supervisor_agent,
+    "maf-mcp-supervisor": mcp_supervisor_agent,
 }
 
 async def _emit_step(callback: StepCallback, step: "WorkflowExecutionStep") -> None:

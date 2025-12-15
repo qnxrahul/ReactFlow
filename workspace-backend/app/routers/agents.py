@@ -138,6 +138,40 @@ def run_agent(
     mcp: MCPClient = Depends(get_mcp_client),
 ) -> AgentRunResponse:
     agent = registry.find_agent_by_id(agent_id)
-    if not agent:
+    if agent:
+        return mcp.invoke(agent, payload)
+
+    # If agent isn't in the local registry, try executing it via MAF (agents catalog ids).
+    settings = get_settings()
+    maf_client = MAFClient(settings)
+    if not maf_client.enabled:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agent not found")
-    return mcp.invoke(agent, payload)
+
+    try:
+        maf_result = maf_client.execute_workflow(
+            agent_id,
+            {
+                "requestId": payload.context.get("requestId") or payload.context.get("request_id"),
+                "input": payload.input,
+                "context": payload.context,
+            },
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+    status_value = str(maf_result.get("status") or "error").lower()
+    steps = maf_result.get("steps") if isinstance(maf_result, dict) else None
+    logs: List[str] = []
+    output = ""
+    if isinstance(steps, list) and steps:
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            name = step.get("name") or step.get("agentName") or step.get("nodeId") or "step"
+            step_output = step.get("output") or ""
+            logs.append(f"{name}: {step_output}")
+        output = str(steps[-1].get("output") or logs[-1] if logs else "")
+    else:
+        output = str(maf_result)
+
+    return AgentRunResponse(status="success" if status_value == "success" else "error", output=output, logs=logs or None)
