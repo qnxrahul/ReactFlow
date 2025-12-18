@@ -1,14 +1,10 @@
-import type { WorkflowCatalogItem, WorkflowExecutionResponse, WorkflowExecutionStep } from '../workflows/types'
+import type { WorkflowCatalogItem, WorkflowExecutionStep } from '../workflows/types'
 
 const API_BASE = (import.meta.env.VITE_WORKSPACE_API_URL as string | undefined)?.replace(/\/+$/, '') || 'http://localhost:9000'
 
-async function handle<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `Request failed with status ${response.status}`)
-  }
-  return (await response.json()) as T
-}
+// Some backends mount MAF under `/workflows/catalog/maf/*` while the MAF-POC-MCP
+// server mounts it under `/workflows/catalog/*`. We support both for compatibility.
+const MAF_CATALOG_PREFIXES = ['/workflows/catalog/maf', '/workflows/catalog'] as const
 
 type WorkflowCatalogFilters = {
   domain?: string
@@ -22,9 +18,18 @@ export async function fetchMafWorkflowCatalog(filters: WorkflowCatalogFilters = 
   if (filters.intent?.trim()) params.set('intent', filters.intent.trim())
   if (filters.query?.trim()) params.set('query', filters.query.trim())
   const qs = params.toString()
-  const res = await fetch(`${API_BASE}/workflows/catalog/maf${qs ? `?${qs}` : ''}`)
-  const data = await handle<{ workflows?: WorkflowCatalogItem[] }>(res)
-  return data.workflows ?? []
+  let lastError: Error | null = null
+  for (const prefix of MAF_CATALOG_PREFIXES) {
+    const url = `${API_BASE}${prefix}${qs ? `?${qs}` : ''}`
+    const res = await fetch(url)
+    if (!res.ok) {
+      lastError = new Error((await res.text()) || `Request failed with status ${res.status}`)
+      continue
+    }
+    const data = (await res.json()) as { workflows?: WorkflowCatalogItem[] }
+    return data.workflows ?? []
+  }
+  throw lastError ?? new Error('Unable to fetch MAF workflow catalog')
 }
 
 type StreamCallbacks = {
@@ -37,15 +42,26 @@ export async function streamMafWorkflowExecution(
   payload: { requestId?: string; input?: string; context?: Record<string, unknown> } = {},
   callbacks: StreamCallbacks = {},
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/workflows/catalog/maf/${workflowId}/events`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify(payload),
-    signal: callbacks.signal,
-  })
-  if (!res.ok || !res.body) {
-    const message = await res.text()
-    throw new Error(message || `Stream failed with status ${res.status}`)
+  let res: Response | null = null
+  let lastError: Error | null = null
+  for (const prefix of MAF_CATALOG_PREFIXES) {
+    const url = `${API_BASE}${prefix}/${encodeURIComponent(workflowId)}/events`
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+      body: JSON.stringify(payload),
+      signal: callbacks.signal,
+    })
+    if (!res.ok || !res.body) {
+      lastError = new Error((await res.text()) || `Stream failed with status ${res.status}`)
+      res = null
+      continue
+    }
+    break
+  }
+
+  if (!res || !res.body) {
+    throw lastError ?? new Error('Unable to start MAF workflow stream')
   }
   const reader = res.body.getReader()
   const decoder = new TextDecoder()

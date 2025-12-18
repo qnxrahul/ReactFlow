@@ -233,6 +233,36 @@ def run_workflow_node(
         result = mcp.invoke(agent, request)
         return WorkflowRunNodeResponse(status=result.status if result.status in {"success", "running"} else "error", output=result.output)
 
+    # If this is a MAF handler, try executing it via the configured MAF server.
+    settings = get_settings()
+    maf_client = MAFClient(settings)
+    if maf_client.enabled and handler_id.startswith("maf."):
+        try:
+            agents_payload = maf_client.list_agents()
+            maf_agents = agents_payload.get("agents", []) if isinstance(agents_payload, dict) else []
+            maf_agent_id = None
+            for item in maf_agents:
+                if isinstance(item, dict) and str(item.get("handler") or "") == handler_id:
+                    maf_agent_id = item.get("id")
+                    break
+            if maf_agent_id:
+                maf_result = maf_client.execute_workflow(
+                    str(maf_agent_id),
+                    {
+                        "input": request.input,
+                        "context": request.context,
+                    },
+                )
+                steps = maf_result.get("steps") if isinstance(maf_result, dict) else None
+                if isinstance(steps, list) and steps and isinstance(steps[-1], dict):
+                    maf_output = str(steps[-1].get("output") or maf_result)
+                else:
+                    maf_output = str(maf_result)
+                maf_status = str(maf_result.get("status") or "error").lower() if isinstance(maf_result, dict) else "error"
+                return WorkflowRunNodeResponse(status="success" if maf_status == "success" else "error", output=maf_output)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to execute MAF handler '%s' via MAF API: %s", handler_id, exc)
+
     # fallback response when no agent is registered for handler
     output = f"Node {node_id} executed locally (no MCP agent registered for handler '{handler_id}')."
     return WorkflowRunNodeResponse(status="success", output=output)

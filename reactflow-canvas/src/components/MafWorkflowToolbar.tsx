@@ -67,7 +67,7 @@ function MafWorkflowToolbarComponent({
                     <p className="text-sm font-semibold text-slate-900">{workflow.title}</p>
                     {workflow.description && <p className="text-xs text-slate-500">{workflow.description}</p>}
                   </div>
-                  <Badge variant={isActive ? 'secondary' : 'outline'} className="text-[10px] uppercase">
+                  <Badge variant={isActive ? 'success' : 'outline'} className="text-[10px] uppercase">
                     {isActive ? 'Loaded' : workflow.category || 'MAF'}
                   </Badge>
                 </div>

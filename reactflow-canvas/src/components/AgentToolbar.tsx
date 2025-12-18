@@ -79,7 +79,7 @@ function AgentToolbarComponent({
                     <p className="text-sm font-semibold text-slate-900">{agent.name}</p>
                     <p className="text-xs text-slate-500">{agent.handler}</p>
                   </div>
-                  <Badge variant={selected ? 'secondary' : 'outline'} className="text-[10px] uppercase">
+                  <Badge variant={selected ? 'success' : 'outline'} className="text-[10px] uppercase">
                     {selected ? 'Pinned' : agent.mcpTool || 'Agent'}
                   </Badge>
                 </div>
