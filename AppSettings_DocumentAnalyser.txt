@@ -1,0 +1,1362 @@
+{
+  "Id": "dc4ad3c9-4392-4c42-897d-4e8f84f25958",
+  "IsActive": true,
+  "CreatedOn": "2025-12-07T16:16:23.2963857Z",
+  "ModifiedOn": "2025-12-11T07:35:14.1232372+00:00",
+  "CreatedBy": "SYSTEM",
+  "ModifiedBy": "GO-CLD-pramodsahu@kpmgdev.com",
+  "Name": "Document Analyzer - Setting",
+  "Description": "Document Analyzer - Setting",
+  "Properties": {
+    "EnvironmentId": "71255dd2-600e-4537-b0a3-70b93913d13e",
+    "KeyVaultSettings": [],
+    "AppSettings": [
+      {
+        "Name": "AZURE_STORAGE_CONTAINER",
+        "Value": "dataextractor-container"
+      },
+      {
+        "Name": "AZURE_STORAGE_CONTAINER_FILEUPLOAD",
+        "Value": "dataextractor-container"
+      },
+      {
+        "Name": "NotificationResourceKeyPrefix",
+        "Value": "DataExtractor"
+      },
+      {
+        "Name": "IS_RETRY_ENABLED_ON_FAILURE",
+        "Value": "true"
+      },
+      {
+        "Name": "EnablefileTypesForPDFConversion",
+        "Value": "true"
+      }
+    ],
+    "AISearchOptions": [],
+    "Schema": {
+      "UISchemaId": "028aa627-5306-4980-b794-ceb78ad5b251",
+      "MetaDataId": "d9983767-8ed1-4741-bd48-af9d7f0b8c61"
+    },
+    "AdaptiveCards": [
+      {
+        "Key": "DocumentAnalyzerInput",
+        "Description": "Provide parameters for extracting Relevant Data Elements (RDEs)",
+        "defaultdata": {},
+        "layout": {
+          "columns": [
+            "40%",
+            "60%"
+          ],
+          "rows": [
+            "100%"
+          ],
+          "colspan": [],
+          "rowspan": [],
+          "child": [
+            {
+              "column": 0,
+              "row": 0,
+              "AdaptiveCardlayout": {
+                "columnTitle": "Start New Task",
+                "isColumnTitileVisible": true,
+                "columns": [
+                  "10%",
+                  "90%"
+                ],
+                "rows": [
+                  "90%",
+                  "10%"
+                ],
+                "colspan": [],
+                "rowspan": [
+                  "0-0"
+                ],
+                "Iscollapsiable": "N",
+                "child": [
+                  {
+                    "column": 0,
+                    "row": 0,
+                    "fields": [
+                      {
+                        "type": "text-building-block",
+                        "icon": "person-running",
+                        "label": "Assign a task name",
+                        "hintText": "Name must be unique",
+                        "name": "Name",
+                        "placeholder": "",
+                        "scope": "Name",
+                        "editscope": "Name",
+                        "required": true,
+                        "regexpattern": "^[^\\/\\\\\\*\\:\\?<>\\|\\\"]*$",
+                        "regexerrormessage": "Remove invalid special characters if any / \\ * : ? < > | \"",
+                        "dbType": 1,
+                        "container": "UserSession",
+                        "DataServiceEnabled": true,
+                        "APIEnabled": true,
+                        "APIUrl": "DataService/validate",
+                        "signalhandler": {
+                          "RunNameValidation": {
+                            "key": "RunNameValidation",
+                            "handler": "handleRunNameValidationResponse"
+                          }
+                        }
+                      },
+                      {
+                        "type": "dropdown-building-block",
+                        "label": "Select an Agent",
+                        "icon": "file-lines",
+                        "name": "OperationInputtype",
+                        "placeholder": "",
+                        "scope": "OperationInputtype",
+                        "editscope": "OperationInputtype",
+                        "required": true,
+                        "bindobject": true,
+                        "Datasource": "metadata",
+                        "itemsource": "Properties.Operation",
+                        "Options": []
+                      },
+                      {
+                        "type": "text-building-block",
+                        "label": "Enter engagement name",
+                        "name": "Engagementname",
+                        "placeholder": "",
+                        "scope": "Engagementname",
+                        "editscope": "Engagementname",
+                        "required": false,
+                        "regexpattern": "^[^\\/\\\\\\*\\:\\?<>\\|\\\"]*$",
+                        "regexerrormessage": "Remove invalid special characters if any / \\ * : ? < > | \"",
+                        "maxlength": 50
+                      }
+                    ]
+                  },
+                  {
+                    "column": 1,
+                    "row": 1,
+                    "fields": [
+                      {
+                        "name": "Submit",
+                        "type": "submit-button-builing-block",
+                        "label": "Submit",
+                        "category": "flex-container-item",
+                        "isservervalidation": true,
+                        "validatonfield": "Name",
+                        "dbType": 1,
+                        "container": "UserSession",
+                        "DataServiceEnabled": true,
+                        "APIEnabled": true,
+                        "APIUrl": "DataService/validate",
+                        "signalhandler": {
+                          "RunNameServerValidation": {
+                            "key": "RunNameServerValidation",
+                            "handler": "handleRunNameServerValidationResponse"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "fields": []
+      }
+    ],
+    "WizardConfig": {
+      "AgentConfiguration": {
+        "AgentSelectionStrategy": "Prompt",
+        "EnableChatHistoryReducer": true,
+        "SelectionStrategyHistoryReducerCount": null,
+        "SelectionStrategyPromptId": null,
+        "TerminationStrategyPromptId": null,
+        "Agents": [
+          {
+            "id": "51238576-195a-4f9d-a029-7d5bbd9e0e0e",
+            "Name": "DataCollectionAgent",
+            "DisplayName": "Data Collection",
+            "Description": "This agent collects data from user to start the RDE extraction",
+            "IsVisibleInAgentLibSkillSection": false,
+            "CompletionStatusMessage": "Data Collection completed.",
+            "SendNotification": false,
+            "Instructions": "You are an AI assistant which returns a text 'Data Collection Completed Successfully'.",
+            "FrequencyPenalty": 0,
+            "PresencePenalty": 0,
+            "MaxTokens": null,
+            "OutputSchema": null,
+            "AgentsDependedOn": [],
+            "HumanReviewRequired": true,
+            "HumanReviewTargetStepID": 2,
+            "VisibilityState": 1,
+            "IsLastAgent": false,
+            "SubmittedNotificatonMessage": "Request for $Name$ generated",
+            "AdaptiveCards": [
+              {
+                "Key": "DocumentAnalyzerReview",
+                "Description": "Document Analyzer Review",
+                "layout": {
+                  "columns": [
+                    "100%"
+                  ],
+                  "rows": [
+                    "100%"
+                  ],
+                  "colspan": [],
+                  "rowspan": [],
+                  "child": [
+                    {
+                      "column": 0,
+                      "row": 0,
+                      "AdaptiveCardlayout": {
+                        "columnTitle": "Start New Task",
+                        "isColumnTitileVisible": true,
+                        "columns": [
+                          "30%",
+                          "70%"
+                        ],
+                        "rows": [
+                          "90%",
+                          "10%"
+                        ],
+                        "colspan": [],
+                        "rowspan": [
+                          "0-0-0"
+                        ],
+                        "Iscollapsiable": "N",
+                        "child": [
+                          {
+                            "column": 0,
+                            "row": 0,
+                            "fields": [
+                              {
+                                "type": "multi-select",
+                                "label": "Add Document Type",
+                                "name": "documenttype",
+                                "placeholder": "documenttype",
+                                "scope": "documenttype",
+                                "editscope": "documenttype",
+                                "exportOptions": true,
+                                "maxselectedtabs": 5,
+                                "required": true,
+                                "Datasource": "metadata",
+                                "itemsource": "Properties.document_type",
+                                "options": []
+                              },
+                              {
+                                "id": "doc_tabs1",
+                                "type": "tab-building-block",
+                                "name": "docTabs",
+                                "tab_iconcssClass": "fa-regular fa-file-text",
+                                "scope": "docTabs",
+                                "editscope": "docTabs",
+                                "tabNameMaxLength": 15,
+                                "multitab": true,
+                                "importTabs": true,
+                                "options": [],
+                                "fieldset": [
+                                  {
+                                    "id": "1",
+                                    "scope": "docTabs.{placeholder}",
+                                    "fields": [
+                                      {
+                                        "name": "uploadFiles",
+                                        "uploadIcon": "fa-solid fa-arrow-up-from-bracket",
+                                        "fileSizeWarning": "Max 50 MB files are allowed",
+                                        "type": "file-upload-building-block",
+                                        "label": "Step 1 : Upload document(s) for processing",
+                                        "scope": "uploadFiles",
+                                        "editscope": "uploadFiles",
+                                        "maxsize": "50",
+                                        "maxallowedfile": 5,
+                                        "liveUpload": true,
+                                        "IdToHide": true,
+                                        "APIEnabled": true,
+                                        "APIUrl": "FileStorage/FileUpload/DataSourceId",
+                                        "actionevent": [
+                                          {
+                                            "name": "RowDeleteEvent",
+                                            "action": "MarkInactiveStatus",
+                                            "apiUrl": "DataService/FileModification",
+                                            "apiModelmap": {
+                                              "FileLockerId": "id",
+                                              "Action": "MarkInactiveStatus"
+                                            }
+                                          }
+                                        ],
+                                        "signalhandler": {
+                                          "fileupload": {
+                                            "key": "fileupload",
+                                            "handler": "handleFileupload"
+                                          },
+                                          "removefile": {
+                                            "key": "removefile",
+                                            "handler": "handleRemoveFile"
+                                          }
+                                        },
+                                        "allowedsizeDisclaimer": "Max 50 MB files are allowed",
+                                        "allowedtypesDisclaimer": "Only support docx, pdf",
+                                        "allowedtypes": [
+                                          ".pdf",
+                                          ".docx"
+                                        ],
+                                        "ismultiupload": true,
+                                        "required": true,
+                                        "isgridview": true
+                                      },
+                                      {
+                                        "type": "table-grid-building-block",
+                                        "label": "Step 2 : Select data elements for extraction",
+                                        "name": "input_rdes",
+                                        "placeholder": "Elements for extaction",
+                                        "scrollHeight": "none",
+                                        "scope": "input_rdes",
+                                        "editscope": "input_rdes",
+                                        "tabEditscop": "docTabs",
+                                        "required": true,
+                                        "deleteaction": false,
+                                        "addbuttonposition": "leftbottom",
+                                        "class": "cai-document-right-grid",
+                                        "enableCheckbox": true,
+                                        "selectallcheckbox": true,
+                                        "predefineddataeditable": true,
+                                        "minrowselection": 1,
+                                        "maxrowselection": 20,
+                                        "warningmessage": "Please select a maximum of 20 data elements only.",
+                                        "addButtonText": "Add Custom Data",
+                                        "filter": "Properties.document_type.find(item => item.id == tab.id)?.rde_choices",
+                                        "Datasource": "metadata",
+                                        "metadata": [],
+                                        "rule": {
+                                          "ReloadRule": {
+                                            "ScopeList": [
+                                              "root.DocumentType"
+                                            ]
+                                          }
+                                        },
+                                        "fields": [
+                                          {
+                                            "name": "id",
+                                            "label": "Id",
+                                            "type": "number-building-block",
+                                            "scope": "input_rdes.id",
+                                            "editscope": "input_rdes.id",
+                                            "defaultvalue": 0,
+                                            "isPrimaryKey": true,
+                                            "defaultstartindex": 9999,
+                                            "ishidden": true
+                                          },
+                                          {
+                                            "name": "name",
+                                            "label": "Name",
+                                            "scope": "input_rdes.name",
+                                            "editscope": "input_rdes.name",
+                                            "type": "text-building-block",
+                                            "columnwidth": "25%",
+                                            "enableSorting": false,
+                                            "allowColumnDelete": false,
+                                            "readonly": true
+                                          },
+                                          {
+                                            "name": "description",
+                                            "label": "Description",
+                                            "scope": "input_rdes.description",
+                                            "editscope": "input_rdes.description",
+                                            "type": "text-building-block",
+                                            "columnwidth": "75%",
+                                            "enableSorting": false,
+                                            "allowColumnDelete": false,
+                                            "readonly": true
+                                          },
+                                          {
+                                            "name": "extraction_key",
+                                            "label": "extraction_key",
+                                            "scope": "input_rdes.extraction_key",
+                                            "editscope": "input_rdes.extraction_key",
+                                            "type": "text-building-block",
+                                            "ishidden": true,
+                                            "defaultvalue": ""
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "column": 1,
+                            "row": 1,
+                            "fields": [
+                              {
+                                "name": "Submit",
+                                "type": "submit-button-builing-block",
+                                "label": "Submit",
+                                "category": "flex-container-item"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "fields": []
+              }
+            ],
+            "AdaptiveCardKeys": [
+              "DataCollectionAgent"
+            ],
+            "Tools": []
+          },
+          {
+            "id": "1ceb8c6e-7360-49a5-af3c-dcf3989f479e",
+            "Name": "HybridRdeExtractionAgent",
+            "DisplayName": "RDE Extraction",
+            "Description": "This agent extracts elements from the document using Hybrid approach",
+            "IsVisibleInAgentLibSkillSection": true,
+            "CompletionStatusMessage": "Triggered RDE extraction successfully.",
+            "SendNotification": false,
+            "Instructions": "You are a HybridRdeExtractionAgent agent.\n - Do **not stop** until all goals are either completed or one fails.\n - Do not assume prior goals are completed unless verified by tool output. \n - Always use the **tools** provided — do **not guess**. \n  - **Before** each tool call, **plan** which goal you're addressing and which tool you'll use.\n  - **After** each tool call, **reflect** on success/failure and proceed accordingly.\n\n**Goals (in order):**\n  1. Save selected RDEs to file locker (must succeed, or stop).\n 2. Call Hybrid RDE extraction endpoint.\n\n Once done or stopped early, output summarizing which goals ran and their statuses.",
+            "FrequencyPenalty": 0,
+            "PresencePenalty": 0,
+            "MaxTokens": null,
+            "OutputSchema": null,
+            "AgentsDependedOn": [],
+            "HumanReviewRequired": false,
+            "HumanReviewTargetStepID": 3,
+            "VisibilityState": 1,
+            "IsLastAgent": false,
+            "YieldResult": "true",
+            "AdaptiveCards": [
+              {
+                "Key": "DocumentValidationReview",
+                "Description": "Document Validation Review",
+                "layout": {
+                  "columns": [
+                    "100%"
+                  ],
+                  "rows": [
+                    "100%"
+                  ],
+                  "colspan": [],
+                  "rowspan": [],
+                  "child": [
+                    {
+                      "column": 0,
+                      "row": 0,
+                      "AdaptiveCardlayout": {
+                        "isColumnTitileVisible": false,
+                        "columns": [
+                          "40%",
+                          "60%"
+                        ],
+                        "rows": [
+                          "50%",
+                          "50%"
+                        ],
+                        "colspan": [
+                          "1-0-0"
+                        ],
+                        "rowspan": [],
+                        "Iscollapsiable": "N",
+                        "child": [
+                          {
+                            "column": 0,
+                            "row": 0,
+                            "fields": [
+                              {
+                                "type": "accordion-building-block",
+                                "name": "outputgroup",
+                                "version": "V2",
+                                "isOpenByDefault": true,
+                                "fields": [
+                                  {
+                                    "name": "snipperOutput",
+                                    "type": "submit-button-builing-block",
+                                    "label": "Generate Output",
+                                    "labelname": "Document Management",
+                                    "icon": "arrow-right-from-bracket",
+                                    "scope": "root.snipperOutput",
+                                    "editscope": "snipperOutput",
+                                    "snippingParameter": "IsSnippingEnabled",
+                                    "isOutputEnable": true,
+                                    "parentCssClass": "bordered",
+                                    "APIUrl": "DataService/FileModification",
+                                    "buttonWithLabel": true,
+                                    "buttonWithDropdown": true,
+                                    "isAccordionHeader": true,
+                                    "rule": {
+                                      "ReloadRule": {
+                                        "APIEnabled": false,
+                                        "ScopeList": []
+                                      },
+                                      "displayRule": {
+                                        "Caller": "root.IsGenerateOutputClicked",
+                                        "Value": [
+                                          "Yes"
+                                        ]
+                                      }
+                                    },
+                                    "signalhandler": {
+                                      "verifiedResponse": {
+                                        "key": "handleVerifiedResponse",
+                                        "handler": "handleVerifiedResponse"
+                                      }
+                                    },
+                                    "options": [
+                                      {
+                                        "Id": true,
+                                        "Name": "With Data Snipper",
+                                        "parentDescription": "Enabling Data Snipper in the output may have differences in extracted values.",
+                                        "childDescription": "Please ensure you have a Data Snipper license otherwise the output will be uninterpretable."
+                                      },
+                                      {
+                                        "Id": false,
+                                        "Name": "Without Data Snipper",
+                                        "parentDescription": "",
+                                        "childDescription": ""
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "table-grid-building-block",
+                                    "label": "Click on refresh for document processing updates",
+                                    "selectallcheckbox": false,
+                                    "name": "DocManager",
+                                    "placeholder": "DocManager",
+                                    "scope": "root.DocManager",
+                                    "editscope": "DocManager",
+                                    "scrollHeight": "calc(100vh - 640px)",
+                                    "refreshbutton": true,
+                                    "cssClass": "scrollable-bordered-form-table",
+                                    "isCellhighlight": true,
+                                    "required": true,
+                                    "deleteaction": true,
+                                    "addbuttonposition": "",
+                                    "predefineddataeditable": true,
+                                    "verifyToggle": true,
+                                    "liveUpdate": true,
+                                    "addButtonText": "",
+                                    "filter": "",
+                                    "metadata": [],
+                                    "query": "SELECT c.id,c.FileName,c.Status,c.Verified,c.FilePath,c.MessageId,c.document_type FROM c WHERE ",
+                                    "entity": "fileLocker",
+                                    "entityfields": [
+                                      "id",
+                                      "filename",
+                                      "status",
+                                      "verified",
+                                      "filepath",
+                                      "messageid",
+                                      "documenttype"
+                                    ],
+                                    "container": "FileLocker",
+                                    "dbType": 1,
+                                    "mappingkey": "ce57c857-ffb6-4db1-bfb7-cbad4c0a0338",
+                                    "DataServiceEnabled": true,
+                                    "APIUrl": "DataService/Data",
+                                    "deletebuttononhover": true,
+                                    "APIEnabled": true,
+                                    "onload": true,
+                                    "actionevent": [
+                                      {
+                                        "name": "OnDataChangeEvent",
+                                        "sourceColumn": "document_type",
+                                        "showConfirmationModel": true,
+                                        "action": "ReClassification",
+                                        "apiUrl": "DataService/FileModification",
+                                        "apiModelmap": {
+                                          "FileLockerId": "id",
+                                          "IsVerified": "Verified|DefultValue=false",
+                                          "Status": "Status",
+                                          "SessionId": "",
+                                          "OutputFilePath": "FilePath",
+                                          "Action": "|DefultValue=ReClassification",
+                                          "updatedDocumentType": "document_type"
+                                        },
+                                        "confirmationModel": {
+                                          "title": "Warning: This document will be reprocessed and new RDEs extracted",
+                                          "description": "Please select an option below to continue. Would you like to reclassify this document to type: %{name}%",
+                                          "action": "ValueChange",
+                                          "buttons": [
+                                            {
+                                              "type": "ProceedAction",
+                                              "label": "Ok"
+                                            },
+                                            {
+                                              "type": "CancelAction",
+                                              "label": "Cancel"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "name": "RowDeleteEvent",
+                                        "sourceColumn": "document_type",
+                                        "showConfirmationModel": true,
+                                        "action": "MarkInactiveStatus",
+                                        "apiUrl": "DataService/FileModification",
+                                        "apiModelmap": {
+                                          "FileLockerId": "id",
+                                          "Action": "|DefultValue=MarkInactiveStatus"
+                                        },
+                                        "confirmationModel": {
+                                          "title": "Warning: This document will be reprocessed and new RDEs extracted",
+                                          "description": "Please select an option below to continue. Would you like to reclassify this document to type: %{name}%",
+                                          "action": "RowDeleteEvent",
+                                          "buttons": [
+                                            {
+                                              "type": "ProceedAction",
+                                              "label": "Ok"
+                                            },
+                                            {
+                                              "type": "CancelAction",
+                                              "label": "Cancel"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ],
+                                    "signalhandler": {
+                                      "onload": {
+                                        "key": "onload",
+                                        "handler": "handleDataService"
+                                      },
+                                      "valuechange": {
+                                        "key": "valuechange",
+                                        "handler": "handleValueChange"
+                                      }
+                                    },
+                                    "columnValueValidation": {
+                                      "columnName": "Status",
+                                      "expectedValue": "Completed"
+                                    },
+                                    "subscribe": [
+                                      {
+                                        "action": "refreshTableData",
+                                        "event": "OnGridAction"
+                                      }
+                                    ],
+                                    "rowSelection": true,
+                                    "rule": {
+                                      "ReloadRule": {
+                                        "APIEnabled": false,
+                                        "ScopeList": [
+                                          "root.PdfViewer"
+                                        ]
+                                      }
+                                    },
+                                    "fields": [
+                                      {
+                                        "name": "id",
+                                        "label": "id",
+                                        "type": "text-building-block",
+                                        "scope": "DocManager.id",
+                                        "editscope": "DocManager.id",
+                                        "ishidden": true
+                                      },
+                                      {
+                                        "name": "FileName",
+                                        "label": "FileName",
+                                        "scope": "DocManager.FileName",
+                                        "editscope": "DocManager.FileName",
+                                        "type": "label-building-block"
+                                      },
+                                      {
+                                        "name": "Status",
+                                        "label": "Processed",
+                                        "scope": "DocManager.Status",
+                                        "editscope": "DocManager.Status",
+                                        "type": "iconfield",
+                                        "tooltiplabel": "Action Name",
+                                        "options": {
+                                          "Completed": {
+                                            "container-class": "status-icon success",
+                                            "icon": "pi pi-check-circle icon-success"
+                                          },
+                                          "Failed": {
+                                            "container-class": "status-icon failed",
+                                            "icon": "pi pi-times-circle icon-failed"
+                                          },
+                                          "InProgress": {
+                                            "container-class": "status-icon pending",
+                                            "icon": "pi pi-exclamation-triangle icon-pending"
+                                          },
+                                          "New": {
+                                            "container-class": "status-icon new",
+                                            "icon": "pi pi-clock icon-new"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "name": "FilePath",
+                                        "label": "FilePath",
+                                        "type": "text-building-block",
+                                        "scope": "DocManager.FilePath",
+                                        "editscope": "DocManager.FilePath",
+                                        "ishidden": true
+                                      },
+                                      {
+                                        "name": "MessageId",
+                                        "label": "MessageId",
+                                        "type": "text-building-block",
+                                        "scope": "DocManager.MessageId",
+                                        "editscope": "DocManager.MessageId",
+                                        "ishidden": true
+                                      },
+                                      {
+                                        "name": "document_type",
+                                        "label": "Doc Classification",
+                                        "preserveLabelRepeat": true,
+                                        "cssClass": "incell-dropdown",
+                                        "type": "dropdown-building-block",
+                                        "scope": "DocManager.document_type.name",
+                                        "editscope": "DocManager.document_type.name",
+                                        "fillselectedoption": true,
+                                        "supportObjectBinding": true,
+                                        "preventRowSelect": true,
+                                        "actionitem": true
+                                      },
+                                      {
+                                        "name": "DocumentTypes",
+                                        "label": "DocumentTypes",
+                                        "type": "text-building-block",
+                                        "scope": "DocManager.DocumentTypes",
+                                        "editscope": "DocManager.DocumentTypes",
+                                        "ishidden": true
+                                      }
+                                    ],
+                                    "events": [
+                                      "OnGridRowSelect"
+                                    ]
+                                  },
+                                  {
+                                    "name": "IsGenerateOutputClicked",
+                                    "type": "radio-button-building-block",
+                                    "label": "The final results are reviewed and accepted?",
+                                    "scope": "IsGenerateOutputClicked",
+                                    "editscope": "IsGenerateOutputClicked",
+                                    "required": false,
+                                    "columnorientation": false,
+                                    "hidden": true,
+                                    "Options": [
+                                      {
+                                        "Id": "Yes",
+                                        "Name": "Yes",
+                                        "default": true
+                                      },
+                                      {
+                                        "Id": "No",
+                                        "Name": "No",
+                                        "default": false
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "accordion-building-block",
+                                "name": "rde",
+                                "version": "V2",
+                                "isOpenByDefault": true,
+                                "hideSeparator": true,
+                                "fields": [
+                                  {
+                                    "name": "label",
+                                    "type": "label-building-block",
+                                    "labelname": "RDEs",
+                                    "cssClass": "accordion-header-label",
+                                    "isAccordionHeader": true
+                                  },
+                                  {
+                                    "id": "RdesList",
+                                    "type": "tab-building-block",
+                                    "name": "RdesList",
+                                    "parentCssClass": "bordered",
+                                    "cssClass": "tabBuildingblockClass",
+                                    "headerCssClass": "rdesTable",
+                                    "scope": "root.RdesList",
+                                    "editscope": "RdesList",
+                                    "multitab": true,
+                                    "individual": false,
+                                    "defaulttabid": "1",
+                                    "options": [
+                                      {
+                                        "id": "1",
+                                        "name": "Doc Level Review",
+                                        "icon": "clock-rotate-left",
+                                        "fieldset": "1"
+                                      },
+                                      {
+                                        "id": "2",
+                                        "name": "Table Level Review",
+                                        "icon": "folder",
+                                        "fieldset": "2"
+                                      }
+                                    ],
+                                    "fieldset": [
+                                      {
+                                        "id": "1",
+                                        "scope": "RdesList.{placeholder}",
+                                        "fields": [
+                                          {
+                                            "type": "table-grid-building-block",
+                                            "name": "DocLevel",
+                                            "placeholder": "Doc Level Review",
+                                            "scope": "root.DocLevel",
+                                            "editscope": "DocLevel",
+                                            "predefineddataeditable": true,
+                                            "itemsource": "doc_rdes",
+                                            "scrollHeight": "calc(100vh - 475px)",
+                                            "addbuttonposition": "leftbottom",
+                                            "selectallcheckbox": false,
+                                            "addButtonText": "Add New RDE",
+                                            "Metadata": [],
+                                            "query": "SELECT c.extracted_rdes.doc_rdes FROM c WHERE ",
+                                            "entity": "fileLocker",
+                                            "entityfields": [
+                                              "extracted_doc_rdes"
+                                            ],
+                                            "container": "FileLocker",
+                                            "dbType": 1,
+                                            "mappingkey": "ce57c857-ffb6-4db1-bfb7-cbad4c0a0338",
+                                            "DataServiceEnabled": true,
+                                            "iseditdisableondefault": true,
+                                            "onblurevent": true,
+                                            "APIUrl": "DataService/Data",
+                                            "APIEnabled": true,
+                                            "isrdetable": true,
+                                            "onload": false,
+                                            "addandupdateaction": true,
+                                            "snipping": {
+                                              "coordinate": "coords",
+                                              "snippingtext": "value"
+                                            },
+                                            "signalhandler": {
+                                              "rde": {
+                                                "key": "docrdes",
+                                                "handler": "handleDataService"
+                                              },
+                                              "getdata": {
+                                                "key": "docrdes",
+                                                "handler": "handleDataService"
+                                              },
+                                              "row": {
+                                                "add": {
+                                                  "key": "addrde",
+                                                  "handler": "handleDataElementService"
+                                                },
+                                                "update": {
+                                                  "key": "updaterde",
+                                                  "handler": "handleDataElementService"
+                                                },
+                                                "delete": {
+                                                  "key": "deleterde",
+                                                  "handler": "handleDataElementService"
+                                                }
+                                              }
+                                            },
+                                            "fields": [
+                                              {
+                                                "name": "id",
+                                                "label": "Id",
+                                                "type": "number-building-block",
+                                                "scope": "DocLevel.id",
+                                                "editscope": "DocLevel.id",
+                                                "ishidden": true,
+                                                "defaultvalue": 0,
+                                                "isPrimaryKey": true,
+                                                "defaultstartindex": 999999
+                                              },
+                                              {
+                                                "name": "name",
+                                                "label": "Name",
+                                                "scope": "DocLevel.name",
+                                                "editscope": "DocLevel.name",
+                                                "type": "text-building-block",
+                                                "columnwidth": "25%",
+                                                "readonly": true
+                                              },
+                                              {
+                                                "name": "value",
+                                                "label": "Extracted Source value",
+                                                "scope": "DocLevel.value",
+                                                "editscope": "DocLevel.value",
+                                                "type": "text-building-block",
+                                                "columnwidth": "75%",
+                                                "readonly": true
+                                              },
+                                              {
+                                                "name": "coords",
+                                                "label": "coords",
+                                                "scope": "DocLevel.coords",
+                                                "editscope": "DocLevel.coords",
+                                                "type": "text-building-block",
+                                                "columnwidth": "75%",
+                                                "ishidden": true
+                                              },
+                                              {
+                                                "name": "initial_value",
+                                                "label": "initial_value",
+                                                "scope": "DocLevel.initial_value",
+                                                "editscope": "DocLevel.initial_value",
+                                                "type": "text-building-block",
+                                                "ishidden": true
+                                              }
+                                            ],
+                                            "rule": {
+                                              "ReloadRule": {
+                                                "APIEnabled": true,
+                                                "LoadAPIUrl": "/adaptivecard/data",
+                                                "ScopeList": [
+                                                  "root.DocManager"
+                                                ]
+                                              }
+                                            },
+                                            "subscribe": [
+                                              {
+                                                "event": "OnGridRowSelect",
+                                                "scope": "DocManager",
+                                                "action": "LoaddocRDEs"
+                                              }
+                                            ],
+                                            "events": [
+                                              "OnGridAction"
+                                            ],
+                                            "deletebuttononhover": true
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "2",
+                                        "scope": "RdesList.{placeholder}",
+                                        "fields": [
+                                          {
+                                            "type": "grouparray",
+                                            "name": "TablelevelRDE",
+                                            "placeholder": "TablelevelRDE",
+                                            "scope": "root.TablelevelRDE",
+                                            "primarykeyfield": "Id",
+                                            "editscope": "TablelevelRDE",
+                                            "required": true,
+                                            "displayaddbutton": false,
+                                            "displayremovebutton": false,
+                                            "displaylable": false,
+                                            "tablerendering": {
+                                              "dynamictable": true,
+                                              "tablekey": "table_name"
+                                            },
+                                            "itemsource": "table_rdes",
+                                            "query": "SELECT c.extracted_rdes.table_rdes FROM c WHERE ",
+                                            "entity": "fileLocker",
+                                            "entityfields": [
+                                              "extracted_table_rdes"
+                                            ],
+                                            "container": "FileLocker",
+                                            "dbType": 1,
+                                            "mappingkey": "ce57c857-ffb6-4db1-bfb7-cbad4c0a0338",
+                                            "DataServiceEnabled": true,
+                                            "APIUrl": "DataService/Data",
+                                            "APIEnabled": true,
+                                            "onload": false,
+                                            "signalhandler": {
+                                              "grouprde": {
+                                                "key": "grouptablerdes",
+                                                "handler": "handleDataService"
+                                              }
+                                            },
+                                            "rule": {
+                                              "ReloadRule": {
+                                                "APIEnabled": true,
+                                                "LoadAPIUrl": "/adaptivecard/data",
+                                                "ScopeList": [
+                                                  "root.DocManager"
+                                                ]
+                                              }
+                                            },
+                                            "subscribe": [
+                                              {
+                                                "event": "OnGridRowSelect",
+                                                "scope": "DocManager",
+                                                "action": "LoadTableRDEs"
+                                              }
+                                            ],
+                                            "fields": [
+                                              {
+                                                "type": "table-grid-building-block",
+                                                "name": "TableLevel",
+                                                "placeholder": "Table Level Review",
+                                                "scope": "root.TableLevel",
+                                                "editscope": "TableLevel",
+                                                "predefineddataeditable": true,
+                                                "addbuttonposition": "leftbottom",
+                                                "allowColumnDelete": true,
+                                                "selectallcheckbox": false,
+                                                "addButtonText": "Add New RDE",
+                                                "DataServiceEnabled": true,
+                                                "iseditdisableondefault": true,
+                                                "onblurevent": true,
+                                                "isrdetable": true,
+                                                "APIUrl": "DataService/Data",
+                                                "metadata": [],
+                                                "signalhandler": {
+                                                  "column": {
+                                                    "delete": {
+                                                      "key": "deletecolumnrde",
+                                                      "handler": "handleDataElementService"
+                                                    }
+                                                  },
+                                                  "row": {
+                                                    "add": {
+                                                      "key": "addrde",
+                                                      "handler": "handleDataElementService"
+                                                    },
+                                                    "update": {
+                                                      "key": "updaterde",
+                                                      "handler": "handleDataElementService"
+                                                    },
+                                                    "delete": {
+                                                      "key": "deleterde",
+                                                      "handler": "handleDataElementService"
+                                                    }
+                                                  }
+                                                },
+                                                "fields": [],
+                                                "events": [
+                                                  "OnGridAction"
+                                                ]
+                                              }
+                                            ],
+                                            "Options": []
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "column": 1,
+                            "row": 0,
+                            "isMaxViewEnabled": true,
+                            "fields": [
+                              {
+                                "type": "pdf-viewer-building-block",
+                                "label": "File Viewer",
+                                "name": "PdfViewer",
+                                "cssClass": "file-label-title",
+                                "placeholder": "Pdf Viewer",
+                                "scope": "PdfViewer",
+                                "editscope": "PdfViewer",
+                                "displayFileName": true,
+                                "highlightannotationdata": {
+                                  "datasourcefield": "Element"
+                                },
+                                "showspinner": true,
+                                "issnippingenabled": true,
+                                "importUrl": "Document/GetAgentDocument",
+                                "savedocumentUrl": "Document/SaveDocument",
+                                "inputfoldername": "input",
+                                "outputfoldername": "output",
+                                "filenamesuffix": "annotated",
+                                "query": "SELECT c.extracted_rdes.doc_rdes,c.extracted_rdes.table_rdes FROM c WHERE ",
+                                "entity": "fileLocker",
+                                "entityfields": [
+                                  "extracted_doc_rdes",
+                                  "extracted_table_rdes"
+                                ],
+                                "container": "FileLocker",
+                                "dbType": 1,
+                                "mappingkey": "ce57c857-ffb6-4db1-bfb7-cbad4c0a0338",
+                                "DataServiceEnabled": true,
+                                "APIUrl": "DataService/Data",
+                                "APIEnabled": true,
+                                "onload": true,
+                                "signalhandler": {
+                                  "pdfannotation": {
+                                    "key": "pdfannotation",
+                                    "handler": "handleDataService"
+                                  },
+                                  "SavePDFDocument": {
+                                    "key": "SavePDFDocument",
+                                    "handler": "exportPdf"
+                                  },
+                                  "pdfload": {
+                                    "key": "pdfload",
+                                    "handler": "handlePDFResponse"
+                                  }
+                                },
+                                "rule": {
+                                  "ReloadRule": {
+                                    "APIEnabled": true,
+                                    "LoadAPIUrl": "/adaptivecard/data",
+                                    "ScopeList": [
+                                      "root.DocManager"
+                                    ]
+                                  }
+                                },
+                                "importSettings": {
+                                  "type": "BlobFile"
+                                },
+                                "subscribe": [
+                                  {
+                                    "event": "OnGridRowSelect",
+                                    "scope": "DocManager",
+                                    "action": "LoadFile"
+                                  },
+                                  {
+                                    "event": "OnGridAction",
+                                    "action": "LoadAnnotation"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "fields": []
+              }
+            ],
+            "AdaptiveCardKeys": [],
+            "Tools": [
+              "3cbaef90-3797-4db3-9ae7-8af7fd328ba2",
+              "8730c5e2-f11b-48d1-9639-fe15e9008f2e"
+            ]
+          },
+          {
+            "id": "a6c8719e-6cc2-4256-8961-15b242208e9b",
+            "Name": "ReClassificationAgent",
+            "DisplayName": "Reclassification",
+            "Description": "This agent assists in changing the document type classification",
+            "IsVisibleInAgentLibSkillSection": true,
+            "CompletionStatusMessage": "Re-Classification request submitted.",
+            "SendNotification": false,
+            "Instructions": "You are an ReClassificationAgent agent.\n - Do **not stop** until all goals are either completed or one fails.\n - Ignore all previous responses generated by this agent. Do not assume prior goals are completed unless verified by **current tool output**.\n-Always use the **tools** provided — do **not guess**. \n  - **Before** each tool call, **plan** which goal you're addressing and which tool you'll use.\n - Confirm that the current file_id exists in `ClassificationRequestedFiles` context. \n  - **After** each tool call, **reflect** on success/failure and proceed accordingly. \n  - **Do not remove or overwrite `ClassificationRequestedFiles` entries for other files.** Treat the context as shared and append-only.\n\n**Goals (in order):**\n  1. Cleanup files in file locker (must succeed, or stop).\n 2. Call Hybrid RDE extraction endpoint — only if `ClassificationRequestedFiles` contains the file_id. \n\nOnce done or stopped early, output a summary of: \n - Which goals ran and their statuses \n - The processed file_id.",
+            "FrequencyPenalty": 0,
+            "PresencePenalty": 0,
+            "MaxTokens": null,
+            "OutputSchema": null,
+            "AgentsDependedOn": [
+              "DataCollectionAgent"
+            ],
+            "HumanReviewRequired": false,
+            "HumanReviewTargetStepID": null,
+            "VisibilityState": 1,
+            "IsLastAgent": false,
+            "YieldResult": "true",
+            "AdaptiveCards": [],
+            "AdaptiveCardKeys": [],
+            "Tools": [
+              "fc2c8187-18a6-4c25-b8fe-8986a061fcb2",
+              "8730c5e2-f11b-48d1-9639-fe15e9008f2e"
+            ]
+          },
+          {
+            "id": "938a640a-cda3-499a-8d63-cfc22c495199",
+            "Name": "GenerateAnnotationAgent",
+            "DisplayName": "PDF Annotation",
+            "IsVisibleInAgentLibSkillSection": true,
+            "Description": "This agent helps to invoke adding annotations in pdf",
+            "CompletionStatusMessage": "PDF annotations completed successfully.",
+            "SendNotification": false,
+            "Instructions": "You are an GenerateAnnotationAgent agent.\n - Do **not stop** until all goals are either completed or one fails.\n - Ignore all previous responses generated by this agent. Do not assume prior goals are completed unless verified by tool output.  \n  - Always use the **tools** provided — do **not guess**. \n  - **Before** each tool call, **plan** which goal you're addressing and which tool you'll use.\n  - **After** each tool call, **reflect** on success/failure and proceed accordingly.\n\n**Goals (in order):**\n 1. Generate annotations for files only if FilesReadyForAnnotations is available in the userinputs. \n\nOnce done or stopped early, output summarizing which goals ran and their statuses along with the processed file id.",
+            "FrequencyPenalty": 0,
+            "PresencePenalty": 0,
+            "MaxTokens": null,
+            "OutputSchema": null,
+            "AgentsDependedOn": [],
+            "HumanReviewRequired": true,
+            "HumanReviewTargetStepID": null,
+            "VisibilityState": 1,
+            "YieldResult": "true",
+            "IsLastAgent": false,
+            "AdaptiveCards": [],
+            "AdaptiveCardKeys": [],
+            "Tools": [
+              "10ca7040-7864-4263-8eec-dcaa8867218a"
+            ]
+          },
+          {
+            "id": "a66bdb80-bedf-4527-9cf9-6131cc8c109c",
+            "Name": "GenerateOutputAgent",
+            "DisplayName": "Generate Output",
+            "Description": "This Agent creates the final output",
+            "IsVisibleInAgentLibSkillSection": false,
+            "CompletionStatusMessage": "Triggered Workpaper API successfully.",
+            "SendNotification": false,
+            "Instructions": "You are an AI agent who are assigned to perform below goals. Always ensure the goals are processed in the same order. If any of the tools failed, end the agent execution immediately.\r\n\r\n## Goals\r\n1. Invoke generate workpaper API endpoint. Make sure Generate Workpaper completed successfully before processing to next goal. If it failed, stop the execution immediately to interrupt further goals getting processed.\r\n2.Send Email. Your second goal is to send an email with the following instructions. \r\n **Instruction:** Send an email with the subject as \"Document Analyzer for the %Name% completed\" with Message value \"<div><p>Hi,</p><p>Your Document Analyzer request for entity '%Name%' has been successfully processed. The output is now ready for review on your {{ActivityDashboard}}   </p><p>Thanks,</br>KPMG Clara AI</p></div>\". Ensure that you take the given Message value as a HTML plain string without any html notation.\n Ensure you replaced the value of %Name% with the actual value provided by the user.\r\n 3. Call the method `GetAdaptiveData` using the **exact** blob file path provided (do not modify the path). This step must always be executed. Always take from the tool response. \n \n Make sure all tasks are completed Successfully. \r\n\r\n**Generate final response based on the goals invoked and its status in less than 25 words.**",
+            "FrequencyPenalty": 0,
+            "PresencePenalty": 0,
+            "MaxTokens": null,
+            "OutputSchema": {
+              "type": "object",
+              "properties": {
+                "Output": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "Value will always be 'BlobFile'"
+                    },
+                    "blobFilePath": {
+                      "type": "string",
+                      "description": "blob file path provided in Workpaper blob path"
+                    },
+                    "fileName": {
+                      "type": "string",
+                      "description": "File name with extension provided in Workpaper blob path"
+                    },
+                    "datasourceId": {
+                      "type": "string",
+                      "description": "datasourceId provided for adaptive card data"
+                    },
+                    "datasourceSettingsId": {
+                      "type": "string",
+                      "description": "datasourceSettingsId provided for adaptive card data"
+                    },
+                    "messageId": {
+                      "type": "string",
+                      "description": "messageId"
+                    },
+                    "reasoning": {
+                      "type": "string",
+                      "description": "provide a concise reasoning on the steps you did to to generate the download data"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "blobFilePath",
+                    "fileName",
+                    "datasourceId",
+                    "datasourceSettingsId",
+                    "messageId",
+                    "reasoning"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "Output"
+              ],
+              "additionalProperties": false
+            },
+            "AgentsDependedOn": [],
+            "HumanReviewRequired": true,
+            "HumanReviewTargetStepID": 4,
+            "VisibilityState": 1,
+            "IsLastAgent": true,
+            "CompletionNotificationMessage": "Request for $Name$ completed",
+            "AdaptiveCards": [
+              {
+                "Key": "DocumentAnalyzerParameterInput",
+                "Description": "Please select an option to select the type of Document Analyzer to be generated:",
+                "Type": "Input",
+                "layout": {
+                  "columns": [
+                    "100%"
+                  ],
+                  "rows": [
+                    "100%"
+                  ],
+                  "child": [
+                    {
+                      "column": 0,
+                      "row": 0,
+                      "AdaptiveCardlayout": {
+                        "columns": [
+                          "50%",
+                          "50%"
+                        ],
+                        "rows": [
+                          "100%"
+                        ],
+                        "colspan": [],
+                        "rowspan": [],
+                        "Iscollapsiable": "N",
+                        "child": [
+                          {
+                            "column": 0,
+                            "row": 0,
+                            "fields": [
+                              {
+                                "name": "label",
+                                "type": "label-building-block",
+                                "displaydata": "Click to download the generated output."
+                              },
+                              {
+                                "name": "Download",
+                                "type": "button-building-block",
+                                "label": "Download",
+                                "icon": "download",
+                                "scope": "Download",
+                                "action": "Download",
+                                "editscope": "Download",
+                                "messageContext": "Output"
+                              }
+                            ]
+                          },
+                          {
+                            "column": 1,
+                            "row": 0,
+                            "fields": []
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "AdaptiveCardKeys": [],
+            "Tools": [
+              "baa80f02-98c3-42bc-9321-4973e71da2ea",
+              "a6228c36-11ef-4e76-9fbd-09b12c3f1c10",
+              "1a4785aa-4a48-4f6a-966e-0eff219fe6bd"
+            ]
+          }
+        ]
+      },
+      "llmContextExclusionList": [
+        "docTabs",
+        "RdesList",
+        "DocManager"
+      ]
+    },
+    "DataSourceAddEnable": false,
+    "EnableExternalJs": false,
+    "IsShowStandAloneDatasourcePopup": false,
+    "IsShowStandAlonePerosnaPopup": false,
+    "SkipNegotiation": false,
+    "EnableStreaming": false,
+    "IsDownloadButtonVisible": false,
+    "translationMode": false,
+    "EnableMultipleFileUpload": false,
+    "EnableFileUpload": false,
+    "EnableLockerEdit": false,
+    "IsResetButtonVisible": false,
+    "EnableEditButton": false,
+    "FileUploadWarningMessageVisible": false,
+    "ResumeLastChatSession": false,
+    "IsChatSessionVisible": false,
+    "IsChatSessionLoadFromServer": false,
+    "CaptureChatHistory": false,
+    "IsRemoveQuestionFromHistory": false,
+    "HardDeleteChatHistory": false,
+    "AllowChatHistorySingleScroll": false,
+    "ChatHistoryWarningMessageVisible": false,
+    "LoadCitationUrlsinNewTab": false
+  },
+  "Tags": null,
+  "IsValid": null,
+  "ValidatedBy": "",
+  "ValidatedOn": "0001-01-01T00:00:00",
+  "ValidationMessage": null,
+  "Doctype": "DocumentAnalyzer",
+  "hash": "",
+  "ExpiredOn": null
+}
