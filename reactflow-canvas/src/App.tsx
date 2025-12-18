@@ -29,10 +29,14 @@ import { runNode } from './services/fastAgent'
 import { AgentInterruptModal } from './components/AgentInterruptModal'
 import { useAguiAgent } from './hooks/useAguiAgent'
 import type { Message } from '@ag-ui/client'
+import { AdaptiveCardNode, type AdaptiveCardNodeData } from './components/AdaptiveCardNode'
+import { importDocumentAnalyzerConfig, isDocumentAnalyzerConfig } from './utils/importDocumentAnalyzerConfig'
 
 type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo' | 'report'
+type CanvasNodeData = TurboNodeData | ReportNodeData | AdaptiveCardNodeData | Record<string, unknown>
+type CanvasNode = Node<CanvasNodeData>
 
-const initialNodes: Node<any>[] = [
+const initialNodes: CanvasNode[] = [
   {
     id: 'n-1',
     type: 'turbo',
@@ -43,7 +47,7 @@ const initialNodes: Node<any>[] = [
 
 const initialEdges: Edge[] = []
 
-const nodeTypes = { turbo: TurboNode, report: ReportNode }
+const nodeTypes = { turbo: TurboNode, report: ReportNode, adaptiveCard: AdaptiveCardNode }
 const edgeTypes = { turbo: TurboEdge }
 
 const defaultEdgeOptions: Partial<Edge> = {
@@ -52,12 +56,12 @@ const defaultEdgeOptions: Partial<Edge> = {
 }
 
 export default function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<any>>(initialNodes)
+  const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const rfRef = useRef<ReactFlowInstance<Node<any>, Edge> | null>(null)
+  const rfRef = useRef<ReactFlowInstance<CanvasNode, Edge> | null>(null)
   const [agentPrompt, setAgentPrompt] = useState('')
   const [aguiTargetNodeId, setAguiTargetNodeId] = useState<string | null>(null)
 
@@ -133,7 +137,7 @@ export default function App() {
 
   const proOptions = useMemo(() => ({ hideAttribution: true }), [])
 
-  const onNodeClick = useCallback((_: any, node: Node<TurboNodeData>) => {
+  const onNodeClick = useCallback((_: unknown, node: CanvasNode) => {
     setSelectedNodeId(node.id)
   }, [])
 
@@ -146,10 +150,7 @@ export default function App() {
     setContextMenu(null)
   }, [])
 
-  const selectedNode = useMemo(
-    () => nodes.find((n) => n.id === selectedNodeId) as Node<TurboNodeData> | undefined,
-    [nodes, selectedNodeId],
-  )
+  const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId), [nodes, selectedNodeId])
 
   const updateSelectedNode = useCallback(
     (updates: Partial<TurboNodeData>) => {
@@ -370,7 +371,7 @@ export default function App() {
           </button>
           <input
             type="file"
-            accept="application/json"
+            accept="application/json,.json,text/plain,.txt"
             ref={fileInputRef}
             style={{ display: 'none' }}
             onChange={async (e) => {
@@ -378,10 +379,19 @@ export default function App() {
               if (!f) return
               const txt = await f.text()
               try {
-                const { nodes: n, edges: ed } = JSON.parse(txt)
-                setNodes(n)
-                setEdges(ed)
-              } catch {}
+                const parsed = JSON.parse(txt)
+                if (isDocumentAnalyzerConfig(parsed)) {
+                  const imported = importDocumentAnalyzerConfig(parsed)
+                  setNodes(imported.nodes)
+                  setEdges(imported.edges)
+                } else {
+                  const { nodes: n, edges: ed } = parsed
+                  setNodes(n)
+                  setEdges(ed)
+                }
+              } catch {
+                /* ignore invalid JSON */
+              }
             }}
           />
         </div>
@@ -487,40 +497,72 @@ export default function App() {
           <div className="section-title">Properties</div>
           {selectedNode ? (
             <div className="form">
-              <label className="field">
-                <span>Title</span>
-                <input
-                  value={selectedNode.data?.title ?? ''}
-                  onChange={(e) => updateSelectedNode({ title: e.target.value })}
-                />
-              </label>
-              <label className="field">
-                <span>Type</span>
-                <select
-                  value={selectedNode.data?.subtitle ?? 'action'}
-                  onChange={(e) => {
-                    const t = e.target.value as NodeType
-                    const icon = t === 'input' ? <FiPlay /> : t === 'action' ? <FiZap /> : t === 'decision' ? <FiGitBranch /> : t === 'output' ? <FiCheckCircle /> : undefined
-                    updateSelectedNode({ subtitle: t, icon })
-                  }}
-                >
-                  <option value="input">Input</option>
-                  <option value="action">Action</option>
-                  <option value="decision">Decision</option>
-                  <option value="output">Output</option>
-                </select>
-              </label>
-              <label className="field">
-                <span>Subtitle</span>
-                <input
-                  value={selectedNode.data?.subtitle ?? ''}
-                  onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
-                />
-              </label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => selectedNode && executeNode(selectedNode.id)}>Run</button>
-                <button onClick={() => selectedNode && executeFrom(selectedNode.id)}>Run From Here</button>
-              </div>
+              {selectedNode.type === 'turbo' ? (
+                <>
+                  <label className="field">
+                    <span>Title</span>
+                    <input
+                      value={(selectedNode.data as TurboNodeData)?.title ?? ''}
+                      onChange={(e) => updateSelectedNode({ title: e.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Type</span>
+                    <select
+                      value={(selectedNode.data as TurboNodeData)?.subtitle ?? 'action'}
+                      onChange={(e) => {
+                        const t = e.target.value as NodeType
+                        const icon =
+                          t === 'input'
+                            ? <FiPlay />
+                            : t === 'action'
+                              ? <FiZap />
+                              : t === 'decision'
+                                ? <FiGitBranch />
+                                : t === 'output'
+                                  ? <FiCheckCircle />
+                                  : undefined
+                        updateSelectedNode({ subtitle: t, icon })
+                      }}
+                    >
+                      <option value="input">Input</option>
+                      <option value="action">Action</option>
+                      <option value="decision">Decision</option>
+                      <option value="output">Output</option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Subtitle</span>
+                    <input
+                      value={(selectedNode.data as TurboNodeData)?.subtitle ?? ''}
+                      onChange={(e) => updateSelectedNode({ subtitle: e.target.value })}
+                    />
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => executeNode(selectedNode.id)}>Run</button>
+                    <button onClick={() => executeFrom(selectedNode.id)}>Run From Here</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="muted">Node type: {String(selectedNode.type ?? 'unknown')}</div>
+                  <pre
+                    style={{
+                      marginTop: 8,
+                      maxHeight: 320,
+                      overflow: 'auto',
+                      background: '#0f1013',
+                      border: '1px solid #2a2a2a',
+                      borderRadius: 8,
+                      padding: 8,
+                      fontSize: 11,
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {JSON.stringify(selectedNode.data as AdaptiveCardNodeData, null, 2)}
+                  </pre>
+                </>
+              )}
             </div>
           ) : (
             <div className="muted">Select a node to edit</div>

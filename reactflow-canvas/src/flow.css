@@ -106,6 +106,71 @@ html, body { margin: 0; }
 .react-flow__node-report .accordion summary { cursor: pointer; color: #9aa2b2; }
 .react-flow__node-report .adv { display: flex; gap: 10px; margin-top: 6px; color: #c5cbd6; }
 
+.react-flow__node-adaptiveCard .ac-node {
+  width: 360px;
+  background: #0e0e10;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px;
+  color: #e5e7eb;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+
+.react-flow__node-adaptiveCard .ac-node--agent {
+  border-left: 4px solid rgba(42, 138, 246, 0.9);
+}
+
+.react-flow__node-adaptiveCard .ac-node--card {
+  border-left: 4px solid rgba(168, 83, 186, 0.9);
+}
+
+.react-flow__node-adaptiveCard .ac-node__title { font-weight: 650; font-size: 14px; }
+.react-flow__node-adaptiveCard .ac-node__subtitle { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.react-flow__node-adaptiveCard .ac-node__desc { font-size: 12px; color: #cbd5e1; margin-top: 8px; }
+.react-flow__node-adaptiveCard .ac-node__meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.react-flow__node-adaptiveCard .ac-node__badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgba(255,255,255,0.8);
+}
+.react-flow__node-adaptiveCard .ac-node__pill {
+  font-size: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgba(255,255,255,0.75);
+}
+
+.react-flow__node-adaptiveCard .ac-node__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.react-flow__node-adaptiveCard .ac-node__chip {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(229,231,235,0.85);
+}
+
+.react-flow__node-adaptiveCard .ac-node__depends { margin-top: 10px; font-size: 12px; color: rgba(203,213,225,0.9); }
+.react-flow__node-adaptiveCard .ac-node__dependsLabel { color: rgba(156,163,175,0.9); margin-right: 6px; }
+.react-flow__node-adaptiveCard .ac-node__raw { margin-top: 10px; }
+.react-flow__node-adaptiveCard .ac-node__raw summary { cursor: pointer; color: rgba(156,163,175,0.9); font-size: 12px; }
+.react-flow__node-adaptiveCard .ac-node__raw pre {
+  margin-top: 8px;
+  max-height: 220px;
+  overflow: auto;
+  background: #0f1013;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
 .agent-panel {
   display: flex;
   flex-direction: column;
