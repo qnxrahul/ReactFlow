@@ -141,7 +141,7 @@ export default function App() {
     setSelectedNodeId(node.id)
   }, [])
 
-  const onNodeContextMenu = useCallback((evt: React.MouseEvent, node: Node<TurboNodeData>) => {
+  const onNodeContextMenu = useCallback((evt: React.MouseEvent, node: CanvasNode) => {
     evt.preventDefault()
     setContextMenu({ id: node.id, x: evt.clientX, y: evt.clientY })
   }, [])
@@ -274,10 +274,11 @@ export default function App() {
   const handleAguiRun = useCallback(() => {
     if (!selectedNode || !aguiEnabled) return
 
+    const turboData = selectedNode.type === 'turbo' ? (selectedNode.data as TurboNodeData) : undefined
     const prompt =
       agentPrompt.trim().length > 0
         ? agentPrompt.trim()
-        : `Help me reason about node "${selectedNode.data?.title ?? selectedNode.id}" and propose the next action.`
+        : `Help me reason about node "${turboData?.title ?? selectedNode.id}" and propose the next action.`
 
     const baseMessages: Message[] = [
       {
@@ -296,9 +297,9 @@ export default function App() {
     const state = {
       node: {
         id: selectedNode.id,
-        title: selectedNode.data?.title,
-        subtitle: selectedNode.data?.subtitle,
-        status: selectedNode.data?.status,
+        title: turboData?.title,
+        subtitle: turboData?.subtitle,
+        status: turboData?.status,
       },
       metrics: {
         nodeCount: nodes.length,
