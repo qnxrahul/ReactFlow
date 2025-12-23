@@ -74,6 +74,86 @@ html, body { margin: 0; }
 .palette-item:hover { border-color: #94a3b8; background: #f1f5f9; }
 .export { margin-top: auto; }
 
+.da-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 12px;
+}
+.da-stepper__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.da-stepper__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  font-weight: 650;
+}
+.da-stepper__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #475569;
+  user-select: none;
+}
+.da-stepper__toggle input {
+  width: 14px;
+  height: 14px;
+}
+.da-stepper__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.da-step button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+.da-step button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.da-step--active button {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.da-step__index {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.da-step__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.da-step__label { font-size: 13px; font-weight: 650; color: #0f172a; line-height: 1.1; }
+.da-step__desc { font-size: 12px; color: #64748b; }
+.da-stepper__actions { display: flex; gap: 8px; justify-content: space-between; }
+.da-stepper__actions button { flex: 1; }
+
 .section { border-top: 1px solid #e2e8f0; padding-top: 14px; }
 .section-title { font-size: 12px; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
 .form { display: flex; flex-direction: column; gap: 8px; }
