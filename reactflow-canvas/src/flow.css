@@ -106,6 +106,167 @@ html, body { margin: 0; }
 .react-flow__node-report .accordion summary { cursor: pointer; color: #9aa2b2; }
 .react-flow__node-report .adv { display: flex; gap: 10px; margin-top: 6px; color: #c5cbd6; }
 
+.react-flow__node-adaptiveCard .ac-node {
+  width: 360px;
+  background: #0e0e10;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px;
+  color: #e5e7eb;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+
+.react-flow__node-adaptiveCard .ac-node--agent {
+  border-left: 4px solid rgba(42, 138, 246, 0.9);
+}
+
+.react-flow__node-adaptiveCard .ac-node--card {
+  border-left: 4px solid rgba(168, 83, 186, 0.9);
+}
+
+.react-flow__node-adaptiveCard .ac-node__title { font-weight: 650; font-size: 14px; }
+.react-flow__node-adaptiveCard .ac-node__subtitle { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.react-flow__node-adaptiveCard .ac-node__desc { font-size: 12px; color: #cbd5e1; margin-top: 8px; }
+.react-flow__node-adaptiveCard .ac-node__meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.react-flow__node-adaptiveCard .ac-node__badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgba(255,255,255,0.8);
+}
+.react-flow__node-adaptiveCard .ac-node__pill {
+  font-size: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgba(255,255,255,0.75);
+}
+
+.react-flow__node-adaptiveCard .ac-node__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.react-flow__node-adaptiveCard .ac-node__chip {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(229,231,235,0.85);
+}
+
+.react-flow__node-adaptiveCard .ac-node__depends { margin-top: 10px; font-size: 12px; color: rgba(203,213,225,0.9); }
+.react-flow__node-adaptiveCard .ac-node__dependsLabel { color: rgba(156,163,175,0.9); margin-right: 6px; }
+.react-flow__node-adaptiveCard .ac-node__raw { margin-top: 10px; }
+.react-flow__node-adaptiveCard .ac-node__raw summary { cursor: pointer; color: rgba(156,163,175,0.9); font-size: 12px; }
+.react-flow__node-adaptiveCard .ac-node__raw pre {
+  margin-top: 8px;
+  max-height: 220px;
+  overflow: auto;
+  background: #0f1013;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.react-flow__node-adaptiveCard .ac-form { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.react-flow__node-adaptiveCard .ac-form__section { display: flex; flex-direction: column; gap: 10px; }
+.react-flow__node-adaptiveCard .ac-form__fields { display: flex; flex-direction: column; gap: 10px; }
+.react-flow__node-adaptiveCard .ac-form__row { display: flex; flex-direction: column; gap: 6px; }
+.react-flow__node-adaptiveCard .ac-form__label { font-size: 12px; color: rgba(229,231,235,0.9); }
+.react-flow__node-adaptiveCard .ac-form__req { color: #f87171; margin-left: 4px; }
+.react-flow__node-adaptiveCard .ac-form__text { font-size: 12px; color: rgba(203,213,225,0.95); }
+.react-flow__node-adaptiveCard .ac-form__muted { font-size: 12px; color: rgba(156,163,175,0.9); }
+.react-flow__node-adaptiveCard .ac-form__lastAction { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; }
+
+.react-flow__node-adaptiveCard .ac-form__input,
+.react-flow__node-adaptiveCard .ac-form__select,
+.react-flow__node-adaptiveCard .ac-form__textarea {
+  background: #0f1013;
+  border: 1px solid #2a2a2a;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+}
+.react-flow__node-adaptiveCard .ac-form__input:focus,
+.react-flow__node-adaptiveCard .ac-form__select:focus,
+.react-flow__node-adaptiveCard .ac-form__textarea:focus {
+  border-color: rgba(42, 138, 246, 0.75);
+  box-shadow: 0 0 0 2px rgba(42, 138, 246, 0.15);
+}
+
+.react-flow__node-adaptiveCard .ac-form__button {
+  width: 100%;
+  background: #14161a;
+  color: #eaeef6;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.react-flow__node-adaptiveCard .ac-form__button:hover { background: #171a20; border-color: #3a3a3a; }
+
+.react-flow__node-adaptiveCard .ac-form__radioGroup,
+.react-flow__node-adaptiveCard .ac-form__checkboxGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.react-flow__node-adaptiveCard .ac-form__radio,
+.react-flow__node-adaptiveCard .ac-form__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(229,231,235,0.92);
+}
+
+.react-flow__node-adaptiveCard .ac-form__accordion {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  padding: 8px;
+}
+.react-flow__node-adaptiveCard .ac-form__accordionSummary { cursor: pointer; color: rgba(229,231,235,0.9); font-size: 12px; }
+.react-flow__node-adaptiveCard .ac-form__accordionBody { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+
+.react-flow__node-adaptiveCard .ac-form__tabs { display: flex; flex-direction: column; gap: 8px; }
+.react-flow__node-adaptiveCard .ac-form__tabBar { display: flex; flex-wrap: wrap; gap: 6px; }
+.react-flow__node-adaptiveCard .ac-form__tab {
+  background: #111316;
+  color: #e5e7eb;
+  border: 1px solid #2a2a2a;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.react-flow__node-adaptiveCard .ac-form__tab--active { background: #1a1d22; border-color: #3a3a3a; }
+.react-flow__node-adaptiveCard .ac-form__tabPanel { display: flex; flex-direction: column; gap: 10px; }
+
+.react-flow__node-adaptiveCard .ac-form__table {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.react-flow__node-adaptiveCard .ac-form__tableHeader { display: flex; flex-wrap: wrap; gap: 8px; }
+.react-flow__node-adaptiveCard .ac-form__th {
+  font-size: 11px;
+  color: rgba(156,163,175,0.95);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
 .agent-panel {
   display: flex;
   flex-direction: column;
