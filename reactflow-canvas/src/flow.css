@@ -3,8 +3,9 @@ html, body { margin: 0; }
 
 /* Match KPMG-ish blue accent + light panels */
 :root {
-  --kpmg-blue: #00338d;
-  --kpmg-blue-hover: #002a75;
+  /* Light blue accent (KPMG-ish) */
+  --kpmg-blue: #00a3e0;
+  --kpmg-blue-hover: #008fc4;
 }
 .app-root {
   display: grid;
@@ -63,6 +64,19 @@ html, body { margin: 0; }
 .topbar button:hover,
 .rightbar button:hover,
 .leftbar button:hover {
+  background: var(--kpmg-blue-hover);
+  border-color: var(--kpmg-blue-hover);
+}
+
+/* Buttons inside card nodes (AdaptiveCard / Report) */
+.react-flow__node-adaptiveCard .ac-form__button,
+.react-flow__node-report .actions button {
+  background: var(--kpmg-blue);
+  border-color: var(--kpmg-blue);
+  color: #ffffff;
+}
+.react-flow__node-adaptiveCard .ac-form__button:hover,
+.react-flow__node-report .actions button:hover {
   background: var(--kpmg-blue-hover);
   border-color: var(--kpmg-blue-hover);
 }
