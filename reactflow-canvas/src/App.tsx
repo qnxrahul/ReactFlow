@@ -31,6 +31,8 @@ import { useAguiAgent } from './hooks/useAguiAgent'
 import type { Message } from '@ag-ui/client'
 import { AdaptiveCardNode, type AdaptiveCardNodeData } from './components/AdaptiveCardNode'
 import { importDocumentAnalyzerConfig, isDocumentAnalyzerConfig } from './utils/importDocumentAnalyzerConfig'
+import DocumentAnalyzerStepper from './components/DocumentAnalyzerStepper'
+import { applyDocumentAnalyzerStepVisibility, getDocumentAnalyzerAgentSteps } from './utils/documentAnalyzerStepper'
 
 type NodeType = 'input' | 'action' | 'decision' | 'output' | 'turbo' | 'report'
 type CanvasNodeData = TurboNodeData | ReportNodeData | AdaptiveCardNodeData | Record<string, unknown>
@@ -64,6 +66,10 @@ export default function App() {
   const rfRef = useRef<ReactFlowInstance<CanvasNode, Edge> | null>(null)
   const [agentPrompt, setAgentPrompt] = useState('')
   const [aguiTargetNodeId, setAguiTargetNodeId] = useState<string | null>(null)
+
+  const [daSteps, setDaSteps] = useState<Array<{ id: string; title: string; subtitle?: string }>>([])
+  const [daActiveAgentId, setDaActiveAgentId] = useState<string | null>(null)
+  const [daShowAll, setDaShowAll] = useState(false)
 
   const {
     enabled: aguiEnabled,
@@ -151,6 +157,18 @@ export default function App() {
   }, [])
 
   const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId), [nodes, selectedNodeId])
+
+  const setActiveAgentStep = useCallback(
+    (agentId: string | null, nextShowAll = daShowAll) => {
+      setDaActiveAgentId(agentId)
+      const vis = applyDocumentAnalyzerStepVisibility(nodes as unknown as Node[], edges, agentId, nextShowAll)
+      setNodes(vis.nodes as unknown as CanvasNode[])
+      setEdges(vis.edges)
+      if (agentId) setSelectedNodeId(agentId)
+      setTimeout(() => rfRef.current?.fitView({ padding: 0.25 }), 0)
+    },
+    [daShowAll, edges, nodes, setEdges, setNodes],
+  )
 
   const updateSelectedNode = useCallback(
     (updates: Partial<TurboNodeData>) => {
@@ -271,6 +289,20 @@ export default function App() {
     }
   }, [edges, executeNode])
 
+  const prevDaStep = useCallback(() => {
+    if (daShowAll || !daActiveAgentId || daSteps.length === 0) return
+    const idx = daSteps.findIndex((s) => s.id === daActiveAgentId)
+    if (idx <= 0) return
+    setActiveAgentStep(daSteps[idx - 1].id)
+  }, [daActiveAgentId, daShowAll, daSteps, setActiveAgentStep])
+
+  const nextDaStep = useCallback(() => {
+    if (daShowAll || !daActiveAgentId || daSteps.length === 0) return
+    const idx = daSteps.findIndex((s) => s.id === daActiveAgentId)
+    if (idx < 0 || idx >= daSteps.length - 1) return
+    setActiveAgentStep(daSteps[idx + 1].id)
+  }, [daActiveAgentId, daShowAll, daSteps, setActiveAgentStep])
+
   const handleAguiRun = useCallback(() => {
     if (!selectedNode || !aguiEnabled) return
 
@@ -350,6 +382,24 @@ export default function App() {
   return (
     <div className="app-root">
       <div className="leftbar">
+        {daSteps.length > 0 && (
+          <DocumentAnalyzerStepper
+            steps={daSteps}
+            activeId={daActiveAgentId}
+            showAll={daShowAll}
+            onSelect={(id) => setActiveAgentStep(id)}
+            onPrev={prevDaStep}
+            onNext={nextDaStep}
+            onToggleShowAll={() => {
+              const next = !daShowAll
+              setDaShowAll(next)
+              const vis = applyDocumentAnalyzerStepVisibility(nodes as unknown as Node[], edges, daActiveAgentId, next)
+              setNodes(vis.nodes as unknown as CanvasNode[])
+              setEdges(vis.edges)
+              setTimeout(() => rfRef.current?.fitView({ padding: 0.25 }), 0)
+            }}
+          />
+        )}
         <Palette />
         <div className="spacer" />
         <div className="section actions">
@@ -383,12 +433,23 @@ export default function App() {
                 const parsed = JSON.parse(txt)
                 if (isDocumentAnalyzerConfig(parsed)) {
                   const imported = importDocumentAnalyzerConfig(parsed)
-                  setNodes(imported.nodes)
-                  setEdges(imported.edges)
+                  const steps = getDocumentAnalyzerAgentSteps(imported.nodes, imported.edges)
+                  setDaSteps(steps)
+                  setDaShowAll(false)
+                  const firstAgentId = steps[0]?.id ?? null
+                  setDaActiveAgentId(firstAgentId)
+                  const vis = applyDocumentAnalyzerStepVisibility(imported.nodes, imported.edges, firstAgentId, false)
+                  setNodes(vis.nodes as unknown as CanvasNode[])
+                  setEdges(vis.edges)
+                  setSelectedNodeId(firstAgentId)
+                  setTimeout(() => rfRef.current?.fitView({ padding: 0.25 }), 0)
                 } else {
                   const { nodes: n, edges: ed } = parsed
                   setNodes(n)
                   setEdges(ed)
+                  setDaSteps([])
+                  setDaActiveAgentId(null)
+                  setDaShowAll(false)
                 }
               } catch {
                 /* ignore invalid JSON */
@@ -552,10 +613,10 @@ export default function App() {
                       marginTop: 8,
                       maxHeight: 320,
                       overflow: 'auto',
-                      background: '#0f1013',
-                      border: '1px solid #2a2a2a',
-                      borderRadius: 8,
-                      padding: 8,
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 12,
+                      padding: 10,
                       fontSize: 11,
                       whiteSpace: 'pre-wrap',
                     }}
