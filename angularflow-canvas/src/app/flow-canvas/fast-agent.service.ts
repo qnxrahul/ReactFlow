@@ -91,7 +91,8 @@ export class FastAgentService {
           json = { output: text }
         }
 
-        const output = typeof json.output === 'string' ? json.output : JSON.stringify(json)
+        const outputValue = json['output']
+        const output = typeof outputValue === 'string' ? outputValue : JSON.stringify(json)
         return { output, data: json }
       }
 

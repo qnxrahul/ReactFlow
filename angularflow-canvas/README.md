@@ -1,59 +1,52 @@
-# AngularflowCanvas
+# Angular Foblex Flow Canvas (ReactFlow parity demo)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.4.
+This Angular app replicates the core behavior of the `reactflow-canvas` “ClassicCanvas” using **Foblex/f-flow**:
 
-## Development server
+- **Palette drag/drop → create nodes**
+- **Connect nodes with edges**
+- **Select node → edit properties**
+- **Right-click node → Duplicate / Run Node / Run From Here / Delete**
+- **Import/Export** workflow JSON (`{ nodes, edges }`)
+- **Run node / run from here** executes via a mock Fast Agent client (optional real backend)
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Run
 
 ```bash
-ng generate component component-name
+cd angularflow-canvas
+npm install
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Then open `http://localhost:4200/`.
 
-```bash
-ng generate --help
+## Workflow JSON format
+
+Export produces:
+
+```json
+{
+  "nodes": [
+    { "id": "n-1", "type": "turbo", "position": { "x": 150, "y": 100 }, "data": { "title": "Start", "subtitle": "trigger" } }
+  ],
+  "edges": [
+    { "id": "e-1", "outputId": "o:n-1", "inputId": "i:n-2" }
+  ]
+}
 ```
 
-## Building
+## Optional: connect to a real Fast Agent backend
 
-To build the project run:
+By default the “Run” actions use mock responses. To point at a real backend, set these values at runtime:
 
-```bash
-ng build
+```js
+globalThis.__env = {
+  FAST_AGENT_BASE_URL: 'http://localhost:8000',
+  // optional:
+  // FAST_AGENT_API_KEY: '...',
+  // FAST_AGENT_AGENT_ID: '...',
+  // FAST_AGENT_RUN_PATH: '/api/v1/agents/:id/run',
+  // FAST_AGENT_FORCE_NETWORK: 'true',
+}
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The client logic mirrors `reactflow-canvas/src/services/fastAgent.ts` (tries common run endpoints, falls back to mock if unreachable).
