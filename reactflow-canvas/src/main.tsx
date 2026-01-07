@@ -15,6 +15,7 @@ import DataExtraction from './pages/DataExtraction/DataExtraction'
 import DynamicWorkflowCanvas from './pages/DynamicWorkflowCanvas'
 import DevUiWorkflowCanvas from './pages/DevUiWorkflowCanvas'
 import RegistryAdmin from './pages/RegistryAdmin'
+import A2UIPage from './pages/A2UI'
 import { registerLicense } from '@syncfusion/ej2-base';
 import { NodeRegistryProvider } from './workflows/NodeRegistryProvider'
 
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/dynamic', element: <DynamicWorkflowCanvas /> },
       { path: '/devui', element: <DevUiWorkflowCanvas /> },
       { path: '/registry', element: <RegistryAdmin /> },
+      { path: '/A2UI', element: <A2UIPage /> },
     ],
   },
 ])
