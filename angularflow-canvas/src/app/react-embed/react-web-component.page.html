@@ -1,0 +1,23 @@
+<div class="react-embed-root">
+  <div class="react-embed-topbar">
+    <div class="react-embed-title">React canvas (Web Component)</div>
+    <a class="react-embed-link" routerLink="/">Back to Angular canvas</a>
+  </div>
+
+  @if (loading()) {
+    <div class="react-embed-status">Loading React bundle…</div>
+  } @else if (error()) {
+    <div class="react-embed-status react-embed-status--error">
+      Failed to load React bundle.
+      <pre class="react-embed-error">{{ error() }}</pre>
+      <div class="react-embed-hint">
+        Build it first: <code>npm --prefix reactflow-canvas run build:wc</code>
+      </div>
+    </div>
+  } @else {
+    <div class="react-embed-canvas">
+      <reactflow-canvas style="height: 100%; width: 100%"></reactflow-canvas>
+    </div>
+  }
+</div>
+
