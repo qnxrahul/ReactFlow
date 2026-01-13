@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnInit, signal } from '@angular/core'
+import { CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, signal } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { ReactCanvasAssetsService } from './react-canvas-assets.service'
 
@@ -9,6 +9,7 @@ import { ReactCanvasAssetsService } from './react-canvas-assets.service'
   imports: [CommonModule, RouterLink],
   templateUrl: './react-web-component.page.html',
   styleUrl: './react-web-component.page.css',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ReactWebComponentPageComponent implements OnInit {
   protected readonly loading = signal(true)

@@ -11,7 +11,9 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist-mfe',
-    emptyOutDir: true,
+    // Keep a marker file in git (dist-mfe/.gitkeep) so Angular asset copying doesn't fail
+    // when React hasn't been built yet.
+    emptyOutDir: false,
     sourcemap: true,
     cssCodeSplit: false,
     lib: {
