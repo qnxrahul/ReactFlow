@@ -9,6 +9,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: './',
+  /**
+   * Some dependencies still reference `process.env.NODE_ENV`.
+   * In browsers, `process` is not defined; replacing this expression avoids a runtime ReferenceError.
+   */
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
   build: {
     outDir: 'dist-mfe',
     // Keep a marker file in git (dist-mfe/.gitkeep) so Angular asset copying doesn't fail
