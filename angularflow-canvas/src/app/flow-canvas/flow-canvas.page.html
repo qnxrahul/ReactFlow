@@ -1,0 +1,165 @@
+<div class="app-root" (click)="clearContextMenu()">
+  <div class="leftbar" (click)="$event.stopPropagation()">
+    <div class="section">
+      <div class="section-title">Nodes</div>
+      <div class="palette">
+        @for (item of palette; track item.type) {
+          <div class="palette-item" fExternalItem [fData]="item">
+            {{ item.label }}
+          </div>
+        }
+      </div>
+      <div class="hint">Drag a node into the canvas.</div>
+    </div>
+  </div>
+
+  <div class="canvas" (click)="$event.stopPropagation()">
+    <div class="topbar" (click)="$event.stopPropagation()">
+      <button type="button" (click)="zoomOut()">Zoom -</button>
+      <button type="button" (click)="zoomIn()">Zoom +</button>
+      <button type="button" (click)="resetZoom()">Reset</button>
+      <span class="divider"></span>
+      <label class="file-btn">
+        Import
+        <input
+          type="file"
+          accept="application/json,.json,text/plain,.txt"
+          (change)="importJson($any($event.target).files?.[0]); $any($event.target).value = ''"
+        />
+      </label>
+      <button type="button" (click)="exportJson()">Export</button>
+    </div>
+
+    <f-flow
+      fDraggable
+      (fCreateNode)="onCreateNode($event)"
+      (fCreateConnection)="onCreateConnection($event)"
+      (fMoveNodes)="onMoveNodes($event)"
+    >
+      <f-canvas fZoom #zoom="fComponent" class="flow-canvas">
+        @for (e of edges(); track e.id) {
+          <f-connection [fConnectionId]="e.id" [fOutputId]="e.outputId" [fInputId]="e.inputId"></f-connection>
+        }
+
+        @for (n of nodes(); track n.id) {
+          <div
+            class="node"
+            [class.node--selected]="n.id === selectedNodeId()"
+            fNode
+            [fNodeId]="n.id"
+            [fNodePosition]="n.position"
+            (click)="selectNode(n.id); $event.stopPropagation()"
+            (contextmenu)="openContextMenu($event, n.id)"
+          >
+            <div class="connector connector--left" fNodeInput [fInputId]="inputId(n.id)" fInputConnectableSide="left"></div>
+            <div class="connector connector--right" fNodeOutput [fOutputId]="outputId(n.id)" fOutputConnectableSide="right"></div>
+
+            @if (n.type === 'turbo') {
+              <div class="node-body" fDragHandle>
+                <div class="node-title">{{ $any(n.data).title }}</div>
+                @if ($any(n.data).subtitle) {
+                  <div class="node-subtitle">{{ $any(n.data).subtitle }}</div>
+                }
+                @if ($any(n.data).status) {
+                  <div class="node-status node-status--{{ $any(n.data).status }}">
+                    {{ $any(n.data).status }}
+                  </div>
+                }
+                @if ($any(n.data).output) {
+                  <div class="node-output" [title]="$any(n.data).output">
+                    {{ $any(n.data).output }}
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="node-body node-body--report" fDragHandle>
+                <div class="node-title">{{ $any(n.data).title }}</div>
+                @if ($any(n.data).subtitle) {
+                  <div class="node-subtitle">{{ $any(n.data).subtitle }}</div>
+                }
+                @if ($any(n.data).summary) {
+                  <div class="node-output" [title]="$any(n.data).summary">
+                    {{ $any(n.data).summary }}
+                  </div>
+                }
+                @if ($any(n.data).confidence != null) {
+                  <div class="node-meta">
+                    confidence: {{ ($any(n.data).confidence * 100).toFixed(0) }}%
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </f-canvas>
+    </f-flow>
+
+    @if (contextMenu(); as menu) {
+      <div class="context-menu" [style.left.px]="menu.x" [style.top.px]="menu.y" (click)="$event.stopPropagation()">
+        <button type="button" (click)="duplicateNode(menu.id); clearContextMenu()">Duplicate</button>
+        <button type="button" (click)="executeNode(menu.id); clearContextMenu()">Run Node</button>
+        <button type="button" (click)="executeFrom(menu.id); clearContextMenu()">Run From Here</button>
+        <button type="button" class="danger" (click)="deleteNode(menu.id)">Delete</button>
+      </div>
+    }
+  </div>
+
+  <div class="rightbar" (click)="$event.stopPropagation()">
+    <div class="section">
+      <div class="section-title">Properties</div>
+      @if (selectedNode(); as n) {
+        @if (n.type === 'turbo') {
+          <div class="form">
+            <label class="field">
+              <span>Title</span>
+              <input [ngModel]="$any(n.data).title" (ngModelChange)="updateSelectedNodeTitle($event)" />
+            </label>
+            <label class="field">
+              <span>Type</span>
+              <select [ngModel]="$any(n.data).subtitle" (ngModelChange)="updateSelectedNodeType($event)">
+                <option value="input">Input</option>
+                <option value="action">Action</option>
+                <option value="decision">Decision</option>
+                <option value="output">Output</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Subtitle</span>
+              <input [ngModel]="$any(n.data).subtitle" (ngModelChange)="updateSelectedNodeSubtitle($event)" />
+            </label>
+            <div class="row">
+              <button type="button" (click)="runSelectedNode()">Run</button>
+              <button type="button" (click)="runFromSelectedNode()">Run From Here</button>
+            </div>
+          </div>
+        } @else {
+          <div class="muted">Node type: {{ n.type }}</div>
+        }
+      } @else {
+        <div class="muted">Select a node to edit</div>
+      }
+    </div>
+
+    <div class="section">
+      <div class="section-title">Agent prompt (mocked via runNode input)</div>
+      <div class="form">
+        <label class="field">
+          <span>Prompt</span>
+          <textarea
+            rows="3"
+            [ngModel]="agentPrompt()"
+            (ngModelChange)="agentPrompt.set($event)"
+            placeholder="Describe what you want the agent to do with the selected node."
+          ></textarea>
+        </label>
+        <button type="button" (click)="runWithAgentPrompt()" [disabled]="!selectedNode()">
+          Run
+        </button>
+      </div>
+      <div class="hint">
+        To call a real Fast Agent backend, set <code>globalThis.__env.FAST_AGENT_BASE_URL</code> at runtime.
+      </div>
+    </div>
+  </div>
+</div>
+
