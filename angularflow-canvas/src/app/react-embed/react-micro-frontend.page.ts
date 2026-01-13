@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common'
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core'
-import { RouterLink } from '@angular/router'
+import { ActivatedRoute, RouterLink } from '@angular/router'
 import { ReactCanvasAssetsService } from './react-canvas-assets.service'
 
 type ReactCanvasMfeApi = {
-  mount: (container: HTMLElement) => void
+  mount: (container: HTMLElement, options?: { initialPath?: string }) => void
   unmount: (container: HTMLElement) => void
+  navigate?: (container: HTMLElement, path: string) => void
 }
 
 declare global {
@@ -30,7 +31,10 @@ export class ReactMicroFrontendPageComponent implements AfterViewInit, OnDestroy
 
   private mounted = false
 
-  constructor(private readonly assets: ReactCanvasAssetsService) {}
+  constructor(
+    private readonly assets: ReactCanvasAssetsService,
+    private readonly route: ActivatedRoute,
+  ) {}
 
   async ngAfterViewInit() {
     try {
@@ -43,7 +47,9 @@ export class ReactMicroFrontendPageComponent implements AfterViewInit, OnDestroy
       }
       if (!el) throw new Error('Mount container not found.')
 
-      api.mount(el)
+      const qp = this.route.snapshot.queryParamMap.get('path')
+      const initialPath = qp && qp.startsWith('/') ? qp : qp ? `/${qp}` : '/workspace'
+      api.mount(el, { initialPath })
       this.mounted = true
     } catch (e) {
       this.error.set(String(e))
