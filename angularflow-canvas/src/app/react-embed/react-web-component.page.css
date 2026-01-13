@@ -58,5 +58,13 @@
 .react-embed-canvas {
   flex: 1;
   min-height: 0;
+  height: 100%;
+}
+
+/* Ensure the custom element always receives a concrete size. */
+.react-embed-canvas > reactflow-canvas {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 

@@ -1,9 +1,9 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import './index.css'
 
-// Reuse the existing canvas implementation as the embedded view.
 import App from './App'
+import FluentCanvas from './pages/FluentCanvas'
 
 type ReactFlowCanvasElementProps = {
   /**
@@ -11,6 +11,36 @@ type ReactFlowCanvasElementProps = {
    * Reserved for future: "light" | "dark"
    */
   theme?: string
+
+  /**
+   * Which React canvas/page to render inside the host app.
+   * - classic: current ReactFlow canvas (App)
+   * - fluent: Fluent UI canvas
+   */
+  page?: 'classic' | 'fluent'
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+
+  override componentDidCatch(error: Error) {
+    // Keep a console breadcrumb for debugging from the host app.
+    console.error('[reactflow-canvas] render error', error)
+  }
+
+  override render() {
+    if (!this.state.error) return this.props.children
+    return (
+      <div style={{ padding: 12, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>React canvas crashed while rendering.</div>
+        <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{String(this.state.error?.stack || this.state.error)}</pre>
+      </div>
+    )
+  }
 }
 
 class ReactFlowCanvasElement extends HTMLElement {
@@ -18,7 +48,7 @@ class ReactFlowCanvasElement extends HTMLElement {
   private _mountNode: HTMLDivElement | null = null
 
   static get observedAttributes() {
-    return ['theme']
+    return ['theme', 'page']
   }
 
   connectedCallback() {
@@ -54,17 +84,22 @@ class ReactFlowCanvasElement extends HTMLElement {
   private getProps(): ReactFlowCanvasElementProps {
     return {
       theme: this.getAttribute('theme') ?? undefined,
+      page: (this.getAttribute('page') as ReactFlowCanvasElementProps['page']) ?? 'classic',
     }
   }
 
   private render() {
     if (!this._root) return
-    // Props currently unused, but plumbed for future host integration.
-    void this.getProps()
+    const props = this.getProps()
+
+    const view =
+      props.page === 'fluent'
+        ? <FluentCanvas />
+        : <App />
 
     this._root.render(
       <StrictMode>
-        <App />
+        <ErrorBoundary>{view}</ErrorBoundary>
       </StrictMode>,
     )
   }
