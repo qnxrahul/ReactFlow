@@ -1,0 +1,33 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+/**
+ * Web Component build:
+ * - Emits an ES module that registers <reactflow-canvas>.
+ * - Intended to be copied/served by the Angular app and loaded via <script type="module">.
+ */
+export default defineConfig({
+  plugins: [react()],
+  base: './',
+  build: {
+    outDir: 'dist-wc',
+    emptyOutDir: true,
+    sourcemap: true,
+    cssCodeSplit: false,
+    lib: {
+      entry: 'src/web-component.tsx',
+      formats: ['es'],
+      fileName: () => 'reactflow-canvas.wc.js',
+    },
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          // Ensure predictable filenames so host apps can reference them.
+          if (assetInfo.name?.endsWith('.css')) return 'reactflow-canvas.wc.css'
+          return assetInfo.name ?? 'asset-[hash][extname]'
+        },
+      },
+    },
+  },
+})
+

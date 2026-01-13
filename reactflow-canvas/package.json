@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:wc": "vite build -c vite.wc.config.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "yjs": "y-websocket-server --port 1234"
