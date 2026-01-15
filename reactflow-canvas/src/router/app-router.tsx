@@ -13,6 +13,7 @@ import DynamicWorkflowCanvas from '../pages/DynamicWorkflowCanvas'
 import DevUiWorkflowCanvas from '../pages/DevUiWorkflowCanvas'
 import RegistryAdmin from '../pages/RegistryAdmin'
 import A2UIPage from '../pages/A2UI'
+import MsalAuthTest from '../pages/MsalAuthTest'
 
 // Registering Syncfusion license key (needed by some routed pages).
 registerLicense(
@@ -41,6 +42,7 @@ export const appRoutes: RouteObject[] = [
       { path: '/devui', element: <DevUiWorkflowCanvas /> },
       { path: '/registry', element: <RegistryAdmin /> },
       { path: '/A2UI', element: <A2UIPage /> },
+      { path: '/auth-test', element: <MsalAuthTest /> },
     ],
   },
 ]
