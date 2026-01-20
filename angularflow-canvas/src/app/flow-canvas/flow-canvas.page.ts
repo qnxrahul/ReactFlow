@@ -3,6 +3,7 @@ import { Component, ViewChild, computed, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule, type FCreateConnectionEvent, type FCreateNodeEvent, type FMoveNodesEvent, FZoomDirective } from '@foblex/flow'
 import type { IPoint } from '@foblex/2d'
+import { RouterLink } from '@angular/router'
 import { FastAgentService } from './fast-agent.service'
 import type { CanvasEdge, CanvasNode, PaletteItem, ReportNodeData, TurboNodeData, WorkflowJson } from './models'
 
@@ -13,7 +14,7 @@ function nowId(prefix: string) {
 @Component({
   selector: 'app-flow-canvas-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, FFlowModule],
+  imports: [CommonModule, FormsModule, FFlowModule, RouterLink],
   templateUrl: './flow-canvas.page.html',
   styleUrl: './flow-canvas.page.css',
 })

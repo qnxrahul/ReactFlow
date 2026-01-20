@@ -22,6 +22,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "../reactflow-canvas/dist-wc",
+                "output": "assets/reactflow-canvas"
+              },
+              {
+                "glob": "**/*",
+                "input": "../reactflow-canvas/dist-mfe",
+                "output": "assets/reactflow-canvas"
               }
             ],
             "styles": [

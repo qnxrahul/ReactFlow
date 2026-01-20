@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:wc": "vite build -c vite.wc.config.ts",
+    "build:mfe": "vite build -c vite.mfe.config.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "yjs": "y-websocket-server --port 1234"
@@ -13,12 +15,14 @@
   "dependencies": {
     "@ag-ui/client": "^0.0.41",
     "@ag-ui/core": "^0.0.41",
+    "@azure/msal-browser": "^4.28.0",
+    "@azure/msal-react": "^3.0.24",
     "@fluentui/react-components": "^9.72.2",
     "@fluentui/react-icons": "^2.0.312",
+    "@radix-ui/react-slot": "^1.1.2",
     "@syncfusion/ej2-base": "^31.2.12",
     "@syncfusion/ej2-react-documenteditor": "^31.2.15",
     "@syncfusion/ej2-react-pdfviewer": "^31.2.15",
-    "@radix-ui/react-slot": "^1.1.2",
     "@syncfusion/ej2-react-spreadsheet": "^31.2.15",
     "@xyflow/react": "^12.8.6",
     "class-variance-authority": "^0.7.0",

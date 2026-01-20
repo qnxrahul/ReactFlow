@@ -1,7 +1,13 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
 /.vs/slnx.sqlite
 /.vs/ReactFlow/FileContentIndex
 /.vs/slnx.sqlite-journal
+
+# React embedded bundle outputs (built locally / in CI)
+/reactflow-canvas/dist-wc/*
+!/reactflow-canvas/dist-wc/.gitkeep
+/reactflow-canvas/dist-mfe/*
+!/reactflow-canvas/dist-mfe/.gitkeep
